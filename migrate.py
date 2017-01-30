@@ -335,7 +335,53 @@ for mapping in mappings:
 
     db_mappings[id_string] = dest_record
 
-# TODO: implemement sponsors/contacts as relations
+# Creating funder records
+print('Adding funding relationships...')
+for sponsor in sponsors:
+    standard = sponsor['standard']
+    id_string = None
+    slug = None
+    if 'name' in sponsor:
+        slug = createSlug(sponsor['name'])
+        if slug in g_index:
+            id_string = g_index[slug]
+    else:
+        if 'url' in sponsor:
+            for org in db_organizations:
+                if 'locations' in org:
+                    for location in org['locations']:
+                        if 'url' in location:
+                            if sponsor['url'] == location['url']:
+                                org_ids = org['identifiers']
+                                for org_id in org_ids:
+                                    if 'scheme' in org_id and org_id['scheme'] == 'RDA-MSCWG':
+                                        id_string = org_id['id']
+                                        break
+                                        break
+                                        break
+    if (not id_string) and slug:
+        # Need to create new record
+        print('INFO: creating stub for {}. Is this right?'.format(slug))
+        g += 1
+        id_string = 'msc:g{}'.format(g)
+        g_index[slug] = id_string
+        dest_record = dict()
+        dest_record['name'] = sponsor['name']
+        locations = list()
+        if 'url' in sponsor:
+            location = { 'url': sponsor['url'], 'type': 'website' }
+            locations.append(location)
+            dest_record['locations'] = locations
+        db_organizations[slug] = dest_record
+    if id_string:
+        # We can add a cross-reference now
+        relation = { 'id': id_string, 'type': 'funder' }
+        if not 'relatedEntities' in db_standards[standard]:
+            db_standards[standard]['relatedEntities'] = list()
+        db_standards[standard]['relatedEntities'].append(relation)
+    else:
+        print('WARNING: incomplete sponsor information in {}.'.format(standard))
+
 
 ## Writing migrated data to files
 
