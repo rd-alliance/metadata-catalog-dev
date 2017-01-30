@@ -206,6 +206,43 @@ for record in profiles:
 
     db_standards[slug] = dest_record
 
+# Parsing tool records
+db_tools = dict()
+
+print('Converting tools to MSC data model...')
+for record in tools:
+    t += 1
+    slug = os.path.splitext(os.path.basename(record))[0]
+    id_string = 'msc:t{}'.format(t)
+    t_index[slug] = id_string
+    dest_record = dict()
+
+    with open(record, 'r') as r:
+        source_records = yaml.safe_load_all(r)
+        source_record = next(source_records)
+        if 'title' in source_record:
+            dest_record['title'] = source_record['title']
+        record_id = { 'id': id_string, 'scheme': 'RDA-MSCWG' }
+        dest_record['identifiers'] = [ record_id ]
+        if 'description' in source_record:
+            dest_record['description'] = source_record['description']
+        locations = list()
+        if 'website' in source_record:
+            location = { 'url': source_record['website'], 'type': 'website' }
+            locations.append(location)
+        if len(locations) > 0:
+            dest_record['locations'] = locations
+        dest_record['relatedEntities'] = list()
+        if 'standards' in source_record:
+            for standard in source_record['standards']:
+                if standard in m_index:
+                    supported = { 'id': m_index[standard], 'role': 'supported scheme' }
+                    dest_record['relatedEntities'].append(supported)
+                else:
+                    print('WARNING: unknown slug {} in tool {}.'.format(standard, slug))
+
+    db_tools[slug] = dest_record
+
 # Creating mappings records
 db_mappings = dict()
 
@@ -268,8 +305,13 @@ for slug, dest_record in db_standards.items():
     new_record = os.path.join(args.dest, 'metadata-schemes', slug + '.yml')
     with open(new_record, 'w') as r:
         yaml.safe_dump(dest_record, r)
+for slug, dest_record in db_tools.items():
+    new_record = os.path.join(args.dest, 'tools', slug + '.yml')
+    with open(new_record, 'w') as r:
+        yaml.safe_dump(dest_record, r)
 for id_string, dest_record in db_mappings.items():
-    new_record = os.path.join(args.dest, 'mappings', id_string + '.yml')
+    fn = id_string.replace(':', '-') + '.yml'
+    new_record = os.path.join(args.dest, 'mappings', fn)
     with open(new_record, 'w') as r:
         yaml.safe_dump(dest_record, r)
 
