@@ -69,6 +69,7 @@ def translateKeyword(kw):
 
 def createSlug(string):
     output = string.strip().lower().replace(' ', '-')
+    output = re.sub(r'-+', '-', output)
     output = re.sub(r'[^-A-Za-z0-9_]+', '', output)
     return output
 
@@ -161,6 +162,50 @@ for record in standards:
 
     db_standards[slug] = dest_record
 
+# Parsing profiles
+print('Converting profiles to MSC data model...')
+for record in profiles:
+    m += 1
+    slug = os.path.splitext(os.path.basename(record))[0]
+    id_string = 'msc:m{}'.format(m)
+    m_index[slug] = id_string
+    dest_record = dict()
+
+    with open(record, 'r') as r:
+        source_records = yaml.safe_load_all(r)
+        source_record = next(source_records)
+        if 'title' in source_record:
+            dest_record['title'] = source_record['title']
+        record_id = { 'id': id_string, 'scheme': 'RDA-MSCWG' }
+        dest_record['identifiers'] = [ record_id ]
+        if 'description' in source_record:
+            dest_record['description'] = source_record['description']
+        if 'disciplines' in source_record:
+            keywords = list()
+            for discipine in source_record['disciplines']:
+                kw = translateKeyword(discipine)
+                if kw:
+                    keywords.append(kw)
+            if len(keywords) == 0:
+                keywords.append('multidisciplinary')
+            dest_record['keywords'] = keywords
+        locations = list()
+        if 'website' in source_record:
+            location = { 'url': source_record['website'], 'type': 'website' }
+            locations.append(location)
+        if len(locations) > 0:
+            dest_record['locations'] = locations
+        dest_record['relatedEntities'] = list()
+        if 'standards' in source_record:
+            for standard in source_record['standards']:
+                if standard in m_index:
+                    parent = { 'id': m_index[standard], 'role': 'parent scheme' }
+                    dest_record['relatedEntities'].append(parent)
+                else:
+                    print('WARNING: unknown slug {} in profile {}.'.format(standard, slug))
+
+    db_standards[slug] = dest_record
+
 # Creating mappings records
 db_mappings = dict()
 
@@ -197,6 +242,7 @@ for mapping in mappings:
             relation['id'] = m_index[slug]
         else:
             # unknown scheme: create stub
+            print('INFO: creating stub for {}. Is this right?'.format(slug))
             m += 1
             standard_id_string = 'msc:m{}'.format(m)
             m_index[slug] = standard_id_string
