@@ -347,7 +347,7 @@ for sponsor in sponsors:
             id_string = g_index[slug]
     else:
         if 'url' in sponsor:
-            for org in db_organizations:
+            for org_slug, org in db_organizations:
                 if 'locations' in org:
                     for location in org['locations']:
                         if 'url' in location:
@@ -356,6 +356,7 @@ for sponsor in sponsors:
                                 for org_id in org_ids:
                                     if 'scheme' in org_id and org_id['scheme'] == 'RDA-MSCWG':
                                         id_string = org_id['id']
+                                        slug = org_slug
                                         break
                                         break
                                         break
@@ -382,6 +383,67 @@ for sponsor in sponsors:
     else:
         print('WARNING: incomplete sponsor information in {}.'.format(standard))
 
+# Creating contact records
+print('Adding maintainer relationships...')
+for contact in contacts:
+    standard = contact['standard']
+    id_string = None
+    slug = None
+    if 'name' in contact:
+        slug = createSlug(contact['name'])
+        if slug in g_index:
+            id_string = g_index[slug]
+    else:
+        if 'email' in contact:
+            for org_slug, org in db_organizations:
+                if 'locations' in org:
+                    for location in org['locations']:
+                        if 'url' in location:
+                            if contact['email'] == location['url']:
+                                org_ids = org['identifiers']
+                                for org_id in org_ids:
+                                    if 'scheme' in org_id and org_id['scheme'] == 'RDA-MSCWG':
+                                        id_string = org_id['id']
+                                        slug = org_slug
+                                        break
+                                        break
+                                        break
+    if (not id_string) and slug:
+        # Need to create new record
+        print('INFO: creating stub for {}. Is this right?'.format(slug))
+        g += 1
+        id_string = 'msc:g{}'.format(g)
+        g_index[slug] = id_string
+        dest_record = dict()
+        dest_record['name'] = contact['name']
+        locations = list()
+        if 'email' in contact:
+            location = { 'url': contact['email'], 'type': 'email' }
+            locations.append(location)
+            dest_record['locations'] = locations
+        db_organizations[slug] = dest_record
+    if id_string and slug:
+        # We can add a cross-reference now
+        relation = { 'id': id_string, 'type': 'funder' }
+        if not 'relatedEntities' in db_standards[standard]:
+            db_standards[standard]['relatedEntities'] = list()
+        db_standards[standard]['relatedEntities'].append(relation)
+        # Add email address to org record if missing
+        if 'email' in contact:
+            if 'locations' in db_organizations[slug]:
+                hasEmail = False
+                for location in db_organizations[slug]['locations']:
+                    if 'type' in location and location['type'] == 'email':
+                        hasEmail = True
+                if not hasEmail:
+                    location = { 'url': contact['email'], 'type': 'email' }
+                    db_organizations[slug]['locations'].append(location)
+            else:
+                db_organizations[slug]['locations'] = list()
+                location = { 'url': contact['email'], 'type': 'email' }
+                db_organizations[slug]['locations'].append(location)
+    else:
+        print('WARNING: incomplete contact information in {}.'.format(standard))
 
 ## Writing migrated data to files
 
