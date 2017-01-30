@@ -243,6 +243,45 @@ for record in tools:
 
     db_tools[slug] = dest_record
 
+# Parsing use case records
+db_organizations = dict()
+
+print('Converting use cases to MSC data model...')
+for record in users:
+    g += 1
+    slug = os.path.splitext(os.path.basename(record))[0]
+    id_string = 'msc:g{}'.format(g)
+    g_index[slug] = id_string
+    dest_record = dict()
+
+    with open(record, 'r') as r:
+        source_records = yaml.safe_load_all(r)
+        source_record = next(source_records)
+        if 'title' in source_record:
+            dest_record['name'] = source_record['title']
+        record_id = { 'id': id_string, 'scheme': 'RDA-MSCWG' }
+        dest_record['identifiers'] = [ record_id ]
+        if 'description' in source_record:
+            dest_record['description'] = source_record['description']
+        locations = list()
+        if 'website' in source_record:
+            location = { 'url': source_record['website'], 'type': 'website' }
+            locations.append(location)
+        if len(locations) > 0:
+            dest_record['locations'] = locations
+        if 'standards' in source_record:
+            for standard in source_record['standards']:
+                if standard in m_index:
+                    # Insert relation in other record
+                    relation = { 'id': record_id, 'type': 'user' }
+                    if not 'relatedEntities' in db_standards[standard]:
+                        db_standards[standard]['relatedEntities'] = list()
+                    db_standards[standard]['relatedEntities'].append(relation)
+                else:
+                    print('WARNING: unknown slug {} in user {}.'.format(standard, slug))
+
+    db_organizations[slug] = dest_record
+
 # Creating mappings records
 db_mappings = dict()
 
@@ -307,6 +346,10 @@ for slug, dest_record in db_standards.items():
         yaml.safe_dump(dest_record, r)
 for slug, dest_record in db_tools.items():
     new_record = os.path.join(args.dest, 'tools', slug + '.yml')
+    with open(new_record, 'w') as r:
+        yaml.safe_dump(dest_record, r)
+for slug, dest_record in db_organizations.items():
+    new_record = os.path.join(args.dest, 'organizations', slug + '.yml')
     with open(new_record, 'w') as r:
         yaml.safe_dump(dest_record, r)
 for id_string, dest_record in db_mappings.items():
