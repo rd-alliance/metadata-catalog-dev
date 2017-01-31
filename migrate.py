@@ -58,7 +58,7 @@ print('Checking {} for data structure...'.format(args.dest))
 for folder in [ 'metadata-schemes', 'organizations', 'tools', 'mappings', 'endorsements' ]:
     if not os.path.isdir(os.path.join(args.dest, folder)):
         print ('Subdirectory {} missing, creating...'.format(folder))
-        os.mkdir(os.path.join(args.dest, folder))
+        os.makedirs(os.path.join(args.dest, folder))
 
 ## Utility functions
 
