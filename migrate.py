@@ -10,8 +10,10 @@ import argparse, os, sys, yaml, re, datetime
 
 default_source = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..', 'metadata-directory'))
 default_dest = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'db'))
-log_file = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'migration-log.txt'))
+kw_mapping = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'jacs2unesco.yml'))
 
+log_file = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'migration-log.txt'))
+kw_file = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'disciplines.yml'))
 ## Command-line arguments
 
 parser = argparse.ArgumentParser(description='''
@@ -24,6 +26,11 @@ parser.add_argument('-f', '--from'\
     ,dest='source')
 parser.add_argument('-t', '--to'\
     ,help='Location of MSC data files'\
+    ,action='store'\
+    ,default=default_dest\
+    ,dest='dest')
+parser.add_argument('-v', '--vocab'\
+    ,help='Location of a YAML file containing a mapping from MSD disciplines to MSC subject keywords'\
     ,action='store'\
     ,default=default_dest\
     ,dest='dest')
@@ -51,9 +58,14 @@ def loadRecord(path):
     else:
         return None
 
-# TODO: define vocabulary mapping
+usedKeywords = set()
+with open (kw_mapping, 'r') as r:
+    kw_map = yaml.safe_load(r)
 def translateKeyword(kw):
+    usedKeywords.add(kw)
     output = None
+    if kw in kw_map:
+        output = kw_map[kw]
     return output
 
 def createSlug(string):
@@ -134,8 +146,6 @@ for series, folder in { 'm': 'metadata-schemes', 'g': 'organizations', 't': 'too
         print ('Subdirectory {} missing, creating...'.format(folder))
         os.makedirs(os.path.join(args.dest, folder))
 
-# TODO: scan for existing data and reuse identifiers?
-
 ## Parsing data files
 
 # Parsing standards
@@ -170,12 +180,15 @@ for record in standards:
             dest_record['description'] = source_record['description']
         if 'disciplines' in source_record:
             keywords = list()
-            for discipine in source_record['disciplines']:
-                kw = translateKeyword(discipine)
+            for discipline in source_record['disciplines']:
+                kw = translateKeyword(discipline)
                 if kw:
-                    keywords.append(kw)
+                    if isinstance(kw, str):
+                        keywords.append(kw)
+                    else:
+                        keywords += kw
             if len(keywords) == 0:
-                keywords.append('multidisciplinary')
+                keywords.append('Multidisciplinary')
             dest_record['keywords'] = keywords
         locations = list()
         if 'specification_url' in source_record:
@@ -237,12 +250,15 @@ for record in profiles:
             dest_record['description'] = source_record['description']
         if 'disciplines' in source_record:
             keywords = list()
-            for discipine in source_record['disciplines']:
-                kw = translateKeyword(discipine)
+            for discipline in source_record['disciplines']:
+                kw = translateKeyword(discipline)
                 if kw:
-                    keywords.append(kw)
+                    if isinstance(kw, str):
+                        keywords.append(kw)
+                    else:
+                        keywords += kw
             if len(keywords) == 0:
-                keywords.append('multidisciplinary')
+                keywords.append('Multidisciplinary')
             dest_record['keywords'] = keywords
         locations = list()
         if 'website' in source_record:
@@ -617,5 +633,12 @@ log = 'Migration log: {}\n\n'.format(datetime.datetime.now(datetime.timezone.utc
 if log:
     with open(log_file, 'w') as l:
         l.write(log)
+
+if len(usedKeywords) > 0:
+    with open(kw_file, 'w') as k:
+        kw_list = list(usedKeywords)
+        kw_list.sort()
+        for kw in kw_list:
+            k.write(kw + '\n')
 
 print('Finished!')
