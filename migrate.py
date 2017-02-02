@@ -8,12 +8,15 @@ import argparse, os, sys, yaml, re, datetime
 
 ## Calculate defaults
 
-default_source = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..', 'metadata-directory'))
-default_dest = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'db'))
-kw_mapping = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'jacs2unesco.yml'))
+script_dir = os.path.dirname(sys.argv[0])
 
-log_file = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'migration-log.txt'))
-kw_file = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), 'disciplines.yml'))
+default_source = os.path.realpath(os.path.join(script_dir, '..', 'metadata-directory'))
+default_dest = os.path.realpath(os.path.join(script_dir, 'db'))
+kw_mapping = os.path.realpath(os.path.join(script_dir, 'jacs2unesco.yml'))
+
+log_file = os.path.realpath(os.path.join(script_dir, 'migration-log.txt'))
+kw_file = os.path.realpath(os.path.join(script_dir, 'disciplines.yml'))
+
 ## Command-line arguments
 
 parser = argparse.ArgumentParser(description='''
@@ -35,6 +38,29 @@ parser.add_argument('-v', '--vocab'\
     ,default=default_dest\
     ,dest='dest')
 args = parser.parse_args()
+
+## Utility variables
+
+# Lookup for slug -> new ID
+m_index = dict()
+g_index = dict()
+t_index = dict()
+
+# Collecting information for post-processing
+mappings = list()
+sponsors = list()
+contacts = list()
+
+# Incremental ID integers
+m = 0
+g = 0
+t = 0
+c = 0
+e = 0
+
+# Log file contents
+log = ''
+isNewLog = False
 
 ## Utility functions
 
@@ -61,6 +87,7 @@ def loadRecord(path):
 usedKeywords = set()
 with open (kw_mapping, 'r') as r:
     kw_map = yaml.safe_load(r)
+
 def translateKeyword(kw):
     usedKeywords.add(kw)
     output = None
@@ -73,29 +100,6 @@ def createSlug(string):
     output = re.sub(r'-+', '-', output)
     output = re.sub(r'[^-A-Za-z0-9_]+', '', output)
     return output
-
-## Utility variables
-
-# Lookup for slug -> new ID
-m_index = dict()
-g_index = dict()
-t_index = dict()
-
-# Collecting information for post-processing
-mappings = list()
-sponsors = list()
-contacts = list()
-
-# Incremental ID integers
-m = 0
-g = 0
-t = 0
-c = 0
-e = 0
-
-# Log file contents
-log = ''
-isNewLog = False
 
 ### Processing
 
@@ -187,6 +191,8 @@ for record in standards:
                         keywords.append(kw)
                     else:
                         keywords += kw
+                else:
+                    log += 'Found unsupported discipline {} in standard {}.\n'.format(discipline, slug)
             if len(keywords) == 0:
                 keywords.append('Multidisciplinary')
             dest_record['keywords'] = keywords
@@ -257,6 +263,8 @@ for record in profiles:
                         keywords.append(kw)
                     else:
                         keywords += kw
+                else:
+                    log += 'Found unsupported discipline {} in extension {}.\n'.format(discipline, slug)
             if len(keywords) == 0:
                 keywords.append('Multidisciplinary')
             dest_record['keywords'] = keywords
