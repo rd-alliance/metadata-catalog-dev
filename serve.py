@@ -12,7 +12,7 @@
 from flask import Flask
 
 # See http://tinydb.readthedocs.io/en/latest/intro.html
-# Install from PyPi: pip install tinydb
+# Install from PyPi: sudo pip3 install tinydb
 from tinydb import TinyDB, Query
 
 ### Basic setup

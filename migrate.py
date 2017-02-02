@@ -2,7 +2,13 @@
 
 ### Dependencies
 
-import argparse, os, sys, yaml, re, datetime
+## Standard
+
+import argparse, os, sys, re, datetime
+
+## Non-standard
+
+import yaml
 
 ### Initializing
 
@@ -23,20 +29,20 @@ parser = argparse.ArgumentParser(description='''
 Converts RDA metadata standards directory data into the new RDA metadata
 standards catalog data model, ready for importing into a NoSQL database.''')
 parser.add_argument('-f', '--from'\
-    ,help='Location of MSD data files'\
+    ,help='location of MSD data files'\
     ,action='store'\
     ,default=default_source\
     ,dest='source')
 parser.add_argument('-t', '--to'\
-    ,help='Location of MSC data files'\
+    ,help='location of MSC data files'\
     ,action='store'\
     ,default=default_dest\
     ,dest='dest')
 parser.add_argument('-v', '--vocab'\
-    ,help='Location of a YAML file containing a mapping from MSD disciplines to MSC subject keywords'\
+    ,help='YAML file containing a mapping from MSD disciplines to MSC subject keywords'\
     ,action='store'\
-    ,default=default_dest\
-    ,dest='dest')
+    ,default=kw_mapping\
+    ,dest='map')
 args = parser.parse_args()
 
 ## Utility variables
@@ -85,7 +91,7 @@ def loadRecord(path):
         return None
 
 usedKeywords = set()
-with open (kw_mapping, 'r') as r:
+with open (args.map, 'r') as r:
     kw_map = yaml.safe_load(r)
 
 def translateKeyword(kw):
@@ -366,7 +372,7 @@ for record in users:
             for standard in source_record['standards']:
                 if standard in m_index:
                     # Insert relation in other record
-                    relation = { 'id': record_id, 'type': 'user' }
+                    relation = { 'id': id_string, 'type': 'user' }
                     if not 'relatedEntities' in db_standards[standard]:
                         db_standards[standard]['relatedEntities'] = list()
                     db_standards[standard]['relatedEntities'].append(relation)
@@ -622,19 +628,19 @@ print('Writing out new records...')
 for slug, dest_record in db_standards.items():
     new_record = os.path.join(args.dest, 'metadata-schemes', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r)
+        yaml.safe_dump(dest_record, r, default_flow_style=False)
 for slug, dest_record in db_tools.items():
     new_record = os.path.join(args.dest, 'tools', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r)
+        yaml.safe_dump(dest_record, r, default_flow_style=False)
 for slug, dest_record in db_organizations.items():
     new_record = os.path.join(args.dest, 'organizations', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r)
+        yaml.safe_dump(dest_record, r, default_flow_style=False)
 for slug, dest_record in db_mappings.items():
     new_record = os.path.join(args.dest, 'mappings', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r)
+        yaml.safe_dump(dest_record, r, default_flow_style=False)
 
 print('There were issues you should look at: see migration log.')
 log = 'Migration log: {}\n\n'.format(datetime.datetime.now(datetime.timezone.utc).isoformat(' ')) + log
