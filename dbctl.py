@@ -14,7 +14,7 @@ import yaml
 # See http://tinydb.readthedocs.io/en/latest/intro.html
 # Install from PyPi: sudo pip3 install tinydb
 # sudo apt install python3-ujson
-from tinydb import TinyDB, Query
+from tinydb import TinyDB
 
 ### Initializing
 
