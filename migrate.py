@@ -372,7 +372,7 @@ for record in users:
             for standard in source_record['standards']:
                 if standard in m_index:
                     # Insert relation in other record
-                    relation = { 'id': id_string, 'type': 'user' }
+                    relation = { 'id': id_string, 'role': 'user' }
                     if not 'relatedEntities' in db_standards[standard]:
                         db_standards[standard]['relatedEntities'] = list()
                     db_standards[standard]['relatedEntities'].append(relation)
@@ -427,7 +427,7 @@ for mapping in mappings:
             log += 'Mapping encountered from unknown standard {}. There is a bug in the migration script.\n'.format(slug_from)
             isNewLog = True
             description += slug_from
-        relation['type'] = 'input scheme'
+        relation['role'] = 'input scheme'
         related.append(relation)
     if 'to' in mapping:
         relation = dict()
@@ -456,7 +456,7 @@ for mapping in mappings:
                 standard_record['title'] = name
                 db_standards[slug_to] = standard_record
                 relation['id'] = standard_id_string
-        relation['type'] = 'output scheme'
+        relation['role'] = 'output scheme'
         related.append(relation)
     dest_record['relatedEntities'] = related
     dest_record['description'] = description
@@ -526,7 +526,7 @@ for sponsor in sponsors:
         db_organizations[slug] = dest_record
     if id_string:
         # We can add a cross-reference now
-        relation = { 'id': id_string, 'type': 'funder' }
+        relation = { 'id': id_string, 'role': 'funder' }
         if not 'relatedEntities' in db_standards[standard]:
             db_standards[standard]['relatedEntities'] = list()
         db_standards[standard]['relatedEntities'].append(relation)
@@ -596,7 +596,7 @@ for contact in contacts:
         db_organizations[slug] = dest_record
     if id_string and slug:
         # We can add a cross-reference now
-        relation = { 'id': id_string, 'type': 'funder' }
+        relation = { 'id': id_string, 'role': 'funder' }
         if not 'relatedEntities' in db_standards[standard]:
             db_standards[standard]['relatedEntities'] = list()
         db_standards[standard]['relatedEntities'].append(relation)
