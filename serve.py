@@ -16,7 +16,7 @@ from flask import Flask, request, url_for, render_template, g
 
 # See http://tinydb.readthedocs.io/en/latest/intro.html
 # Install from PyPi: sudo pip3 install tinydb
-from tinydb import TinyDB, Query
+from tinydb import TinyDB, Query, where
 
 ### Basic setup
 
@@ -37,6 +37,7 @@ def hello():
 def scheme(number):
     schemes = db.table('metadata-schemes')
     element = schemes.get(eid=number)
+
     # Here we interpret the meaning of the versions
     versions = None
     if 'versions' in element:
@@ -77,8 +78,100 @@ def scheme(number):
             if version['status'] == '':
                 version['status'] = 'current'
                 break
+
+    # Here we assemble information about related entities
+    endorsements = db.table('endorsements')
+    tools = db.table('tools')
+    mappings = db.table('mappings')
+    relations = dict()
+    endorsement_ids = list()
+    hasRelatedSchemes = False
+    if 'relatedEntities' in element:
+        organizations = db.table('organizations')
+        for entity in element['relatedEntities']:
+            if entity['role'] == 'parent scheme':
+                if not 'parents' in relations:
+                    relations['parents'] = list()
+                entity_number = int(entity['id'][5:])
+                element_record = schemes.get(eid=entity_number)
+                if element_record:
+                    relations['parents'].append(element_record)
+                    hasRelatedSchemes = True
+
+            elif entity['role'] == 'maintainer':
+                if not 'maintainers' in relations:
+                    relations['maintainers'] = list()
+                entity_number = int(entity['id'][5:])
+                element_record = organizations.get(eid=entity_number)
+                if element_record:
+                    relations['maintainers'].append(element_record)
+
+            elif entity['role'] == 'funder':
+                if not 'funders' in relations:
+                    relations['funders'] = list()
+                entity_number = int(entity['id'][5:])
+                element_record = organizations.get(eid=entity_number)
+                if element_record:
+                    relations['funders'].append(element_record)
+
+            elif entity['role'] == 'user':
+                if not 'users' in relations:
+                    relations['users'] = list()
+                entity_number = int(entity['id'][5:])
+                element_record = organizations.get(eid=entity_number)
+                if element_record:
+                    relations['users'].append(element_record)
+
+            elif entity['role'] == 'endorsement':
+                if not entity['id'] in endorsement_ids:
+                    endorsement_ids.append(entity['id'])
+
+    Endorsement = Query()
+    related_endorsements = endorsements.search(Endorsement.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    for entity in related_endorsements:
+        entity_id = 'msc:e{}'.format(entity.eid)
+        if not entity_id in endorsement_ids:
+            endorsement_ids.append(entity_id)
+    if len(endorsement_ids) > 0:
+        relations['endorsements'] = list()
+        for endorsement_id in endorsement_ids:
+            entity_number = int(endorsement_id['id'][5:])
+            element_record = endorsements.get(eid=entity_number)
+            if element_record:
+                relations['endorsements'].append(element_record)
+
+    Scheme = Query()
+    # This optimization relies on schemes only pointing to parent schemes
+    child_schemes = schemes.search(Scheme.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    print('DEBUG: msc:m{} has {} profiles.'.format(number, len(child_schemes)))
+    if len(child_schemes) > 0:
+        relations['children'] = child_schemes
+        hasRelatedSchemes = True
+
+    Tool = Query()
+    related_tools = tools.search(Tool.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    if len(related_tools) > 0:
+        relations['tools'] = related_tools
+
+    Mapping = Query()
+    related_mappings = mappings.search(Mapping.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    mappings_from = list()
+    mappings_to = list()
+    for related_mapping in related_mappings:
+        for relation in related_mapping['relatedEntities']:
+            if relation['id'] == 'msc:m{}'.format(number):
+                if relation['role'] == 'input scheme':
+                    mappings_from.append(related_mapping)
+                elif relation['role'] == 'output scheme':
+                    mappings_to.append(related_mapping)
+    if len(mappings_from) > 0:
+        relations['mappings from'] = mappings_from
+        hasRelatedSchemes = True
+    if len(mappings_to) > 0:
+        relations['mappings to'] = mappings_to
+        hasRelatedSchemes = True
     return render_template('metadata-scheme.html', record=element,\
-        versions=versions)
+        versions=versions, relations=relations, hasRelatedSchemes=hasRelatedSchemes)
 
 ### Search form
 
