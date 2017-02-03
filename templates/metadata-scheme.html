@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ record['title'] }} – Metadata Standards Catalog</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <h1>{{ record['title'] }}</h1>
+  {% if 'description' in record %}
+  {{ record['description']|safe }}
+  {% endif %}
+  {% if 'keywords' in record %}
+  <div class="keywords">
+    <p>Used in</p>
+    <ul>{% for keyword in record['keywords'] %}
+      <li>{{ keyword }}</li>
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if 'dataTypes' in record %}
+  <div class="dataTypes">
+    <p>Used for</p>
+    <ul>{% for type in record['dataTypes'] %}
+      <li>{{ type }}</li>
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if 'locations' in record %}
+  <div class="locations">
+    <h2>Documentation</h2>
+    <ul>{% for location in record['locations'] %}
+      {% if location['type'] == 'website' %}<li><a href="{{ location['url'] }}">Visit website</a></li>
+      {% elif location['type'] == 'document' %}<li><a href="{{ location['url'] }}">View specification</a></li>
+      {% else %}<li><a href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
+      {% endif %}
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if 'samples' in record %}
+  <div class="samples">
+    <h2>Samples</h2>
+    <ul>{% for sample in record['samples'] %}
+      <li><a href="{{ sample['url'] }}">{{ sample['title'] }}</a></li>
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+  <div class="identifiers">
+    <h2>Identifiers</h2>
+    <ul>{% for identifier in record['identifiers'] %}
+      {% if identifier['scheme'] == 'RDA-MSCWG' %}<li>Internal MSC ID: <a href="{{ url_for('scheme', number=identifier['id'][5:]) }}">{{ identifier['id'] }}</a></li>
+      {% elif identifier['scheme'] == 'DOI' %}<li>DOI: <a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></li>
+      {% else %}<li>{{ identifier['scheme'] }}: {{ identifier['id'] }}</li>
+      {% endif %}
+    {% endfor %}</ul>
+  </div>
+  {% if versions %}
+  <div class="versions">
+    <h2>Version history</h2>
+    <ul>{% for version in versions %}
+      <li>
+        <p>{{ version['date'] }}: version {{ version['number'] }}{% if 'status' in version %} ({{ version['status'] }}){% endif %}</p>
+      </li>
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+</body>
+</html>
