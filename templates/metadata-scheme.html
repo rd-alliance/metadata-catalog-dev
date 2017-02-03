@@ -8,7 +8,7 @@
 <body>
   <h1>{{ record['title'] }}</h1>
   {% if 'description' in record %}
-  {{ record['description']|safe }}
+  <div class="description">{{ record['description']|safe }}</div>
   {% endif %}
   {% if 'keywords' in record %}
   <div class="keywords">
@@ -60,6 +60,41 @@
     <ul>{% for version in versions %}
       <li>
         <p>{{ version['date'] }}: version {{ version['number'] }}{% if 'status' in version %} ({{ version['status'] }}){% endif %}</p>
+      </li>
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if hasRelatedSchemes %}
+  <div class="related_schemes">
+    <h2>Relationships to other metadata standards</h2>
+    <ul>
+    {% for parent in relations['parents'] %}
+      <li><p>This scheme is a profile of <a href="{{ url_for('scheme', number=parent.eid) }}">{{ parent['title'] }}</a>.</p></li>
+    {% endfor %}
+    {% for child in relations['children'] %}
+      <li><p><a href="{{ url_for('scheme', number=child.eid) }}">{{ child['title'] }}</a> is a profile of this scheme.</p></li>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if 'tools' in relations %}
+  <div class="tools">
+    <h2>Tools</h2>
+    <ul>{% for tool in relations['tools'] %}
+      <li>
+        <p><a href="{{ url_for('tool', number=tool.eid) }}">{{ tool['title'] }}</a></p>
+        {% if 'description' in tool %}<div class="description">{{ tool['description']|safe }}</div>{% endif %}
+      </li>
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if 'users' in relations %}
+  <div class="users">
+    <h2>Known users</h2>
+    <ul>{% for user in relations['users'] %}
+      <li>
+        <p><a href="{{ user['locations'][0]['url'] }}">{{ user['name'] }}</a></p>
+        {% if 'description' in user %}<div class="description">{{ user['description']|safe }}</div>{% endif %}
       </li>
     {% endfor %}</ul>
   </div>
