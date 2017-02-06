@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ record['title'] }} – {% endblock %}
+{% block main %}
+  <h1>{{ record['title'] }}</h1>
+  {% if 'description' in record %}
+  <div class="description">{{ record['description']|safe }}</div>
+  {% endif %}
+  {% if 'types' in record %}
+  <div class="types">
+    <ul>
+    {% for type in record['types'] %}
+      <li>{{ type }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if 'locations' in record %}
+  <div class="locations">
+    <h2>Documentation</h2>
+    <ul class="locations">
+    {% for location in record['locations'] %}
+      {% if location['type'] == 'website' %}
+      <li><a href="{{ location['url'] }}">Visit website</a></li>
+      {% elif location['type'] == 'document' %}
+      <li><a href="{{ location['url'] }}">View documentation</a></li>
+      {% elif location['type'] == 'application' %}
+      <li><a href="{{ location['url'] }}">Use tool online</a></li>
+      {% elif location['type'] == 'service' %}
+      <li><a href="{{ location['url'] }}">Service endpoint</a></li>
+      {% endif %}
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if 'maintainers' in relations or 'funders' in relations or 'creators' in record %}
+  <div class="organizations">
+    <h2>Responsible people and organizations</h2>
+    <ul>
+    {% for creator in record['creators'] %}
+      <li>
+        <p>Creator: {% if 'fullName' in creator %}{{ creator['fullName'] }}{% else %}{{ creator['givenName'] }} {{ creator['familyName'] }}{% endif %}</p>
+      </li>
+    {% endfor %}
+    {% for org in relations['maintainers'] %}
+      <li>
+        <p>Maintainer: {{ org['name'] }}</p>
+      {% if 'locations' in org %}
+        <ul class="locations">
+        {% for location in org['locations'] %}
+          <li><a href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      </li>
+    {% endfor %}
+    {% for org in relations['funders'] %}
+      <li>
+        <p>Funder: {{ org['name'] }}</p>
+      {% if 'locations' in org %}
+        <ul class="locations">
+        {% for location in org['locations'] %}
+          <li><a href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  <div class="identifiers">
+    <h2>Identifiers</h2>
+    <ul>
+    {% for identifier in record['identifiers'] %}
+      {% if identifier['scheme'] == 'RDA-MSCWG' %}
+      <li>Internal MSC ID: <a href="{{ url_for('tool', number=identifier['id'][5:]) }}">{{ identifier['id'] }}</a></li>
+      {% elif identifier['scheme'] == 'DOI' %}
+      <li>DOI: <a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></li>
+      {% else %}
+      <li>{{ identifier['scheme'] }}: {{ identifier['id'] }}</li>
+      {% endif %}
+    {% endfor %}
+    </ul>
+  </div>
+  {% if versions %}
+  <div class="versions">
+    <h2>Version history</h2>
+    <ul>
+    {% for version in versions %}
+      <li>
+        <p>{{ version['date'] }}: version {{ version['number'] }}</p>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if 'supported schemes' in relations %}
+  <div class="related_schemes">
+    <h2>Supported metadata standards</h2>
+    <p>This tool is used with the following schemes:</p>
+    <ul>
+    {% for scheme in relations['supported schemes'] %}
+      <li><a href="{{ url_for('scheme', number=scheme.eid) }}">{{ scheme['title'] }}</a></li>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+{% endblock %}

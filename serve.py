@@ -199,7 +199,54 @@ def scheme(number):
 
 @app.route('/msc/t<int:number>')
 def tool(number):
-    pass
+    tools = db.table('tools')
+    element = tools.get(eid=number)
+
+    # Here we sanity-check and sort the versions
+    versions = None
+    if 'versions' in element:
+        versions = list()
+        raw_versions = element['versions']
+        for v in raw_versions:
+            if not 'number' in v:
+                continue
+            if not 'date' in v:
+                continue
+            versions.append(v)
+        versions = sorted(versions, key=lambda k: k['date'], reverse=True)
+
+    # Here we assemble information about related entities
+    schemes = db.table('metadata-schemes')
+    organizations = db.table('organizations')
+    relations = dict()
+    if 'relatedEntities' in element:
+        for entity in element['relatedEntities']:
+            if entity['role'] == 'supported scheme':
+                if not 'supported schemes' in relations:
+                    relations['supported schemes'] = list()
+                entity_number = int(entity['id'][5:])
+                element_record = schemes.get(eid=entity_number)
+                if element_record:
+                    relations['supported schemes'].append(element_record)
+
+            elif entity['role'] == 'maintainer':
+                if not 'maintainers' in relations:
+                    relations['maintainers'] = list()
+                entity_number = int(entity['id'][5:])
+                element_record = organizations.get(eid=entity_number)
+                if element_record:
+                    relations['maintainers'].append(element_record)
+
+            elif entity['role'] == 'funder':
+                if not 'funders' in relations:
+                    relations['funders'] = list()
+                entity_number = int(entity['id'][5:])
+                element_record = organizations.get(eid=entity_number)
+                if element_record:
+                    relations['funders'].append(element_record)
+
+    return render_template('tool.html', record=element, versions=versions,\
+        relations=relations)
 
 ### Search form
 
