@@ -14,9 +14,15 @@ import os, sys
 #   - latest version: sudo pip3 install flask
 from flask import Flask, request, url_for, render_template, g
 
-# See http://tinydb.readthedocs.io/en/latest/intro.html
+# See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo pip3 install tinydb
 from tinydb import TinyDB, Query, where
+
+# See http://rdflib.readthedocs.io/
+# On Debian, Ubuntu, etc.:
+#   - old version: sudo apt-get install python3-rdflib
+#   - latest version: sudo pip3 install rdflib
+import rdflib
 
 ### Basic setup
 
@@ -247,6 +253,25 @@ def tool(number):
 
     return render_template('tool.html', record=element, versions=versions,\
         relations=relations)
+
+### Per-subject lists of standards
+
+@app.route('/subject/<subject>')
+def subject(subject):
+    # Interpret subject
+    # 1. Load vocabulary
+    g = rdflib.Graph()
+    g.parse("unesco-thesaurus.ttl")
+    # 2. Translate term into concept ID
+    qres = g.query(
+        """SELECT DISTINCT ?concept
+           WHERE {
+             ?concept skos:prefLabel "{}"en
+           }""".format(subject))
+    
+    schemes = db.table('metadata-schemes')
+    Scheme = Query()
+    scheme_list = dict()
 
 ### Search form
 
