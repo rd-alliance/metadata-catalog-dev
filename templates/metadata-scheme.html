@@ -74,6 +74,22 @@
     {% for child in relations['children'] %}
       <li><p><a href="{{ url_for('scheme', number=child.eid) }}">{{ child['title'] }}</a> is a profile of this scheme.</p></li>
     {% endfor %}
+    {% for mapping in relations['mappings from'] %}
+      <li class="mappings">
+        <p>This scheme can be mapped to <a href="{{ url_for('scheme', number=mapping['output scheme'].eid) }}">{{ mapping['output scheme']['title'] }}</a>.</p>
+        {% if 'description' in mapping %}<div class="description">{{ mapping['description'] }}</div>{% endif %}
+        <ul>{% for location in mapping['locations'] %}
+          <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
+        {% endfor %}</ul>
+    {% endfor %}
+    {% for mapping in relations['mappings to'] %}
+      <li class="mappings">
+        <p>This scheme can be mapped from <a href="{{ url_for('scheme', number=mapping['input scheme'].eid) }}">{{ mapping['input scheme']['title'] }}</a>.</p>
+        {% if 'description' in mapping %}<div class="description">{{ mapping['description'] }}</div>{% endif %}
+        <ul>{% for location in mapping['locations'] %}
+          <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
+        {% endfor %}</ul>
+    {% endfor %}
     </ul>
   </div>
   {% endif %}

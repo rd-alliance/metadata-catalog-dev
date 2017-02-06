@@ -158,12 +158,20 @@ def scheme(number):
     mappings_from = list()
     mappings_to = list()
     for related_mapping in related_mappings:
+        # This assumes the mapping has one input and one output, one of which is
+        # the current scheme, and the other is a different scheme.
         for relation in related_mapping['relatedEntities']:
-            if relation['id'] == 'msc:m{}'.format(number):
+            if relation['id'] != 'msc:m{}'.format(number):
                 if relation['role'] == 'input scheme':
-                    mappings_from.append(related_mapping)
+                    entity_number = int(relation['id'][5:])
+                    related_mapping['input scheme'] = schemes.get(eid=entity_number)
                 elif relation['role'] == 'output scheme':
-                    mappings_to.append(related_mapping)
+                    entity_number = int(relation['id'][5:])
+                    related_mapping['output scheme'] = schemes.get(eid=entity_number)
+        if 'output scheme' in related_mapping:
+            mappings_from.append(related_mapping)
+        elif 'input scheme' in related_mapping:
+            mappings_to.append(related_mapping)
     if len(mappings_from) > 0:
         relations['mappings from'] = mappings_from
         hasRelatedSchemes = True
