@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {% block head %}
+  <meta charset="UTF-8">
+  <title>{% block title %}{% endblock %}Metadata Standards Catalog</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+  {% endblock %}
+</head>
+<body>
+  <main>
+  {% block main %}{% endblock %}
+  </main>
+</body>
+</html>

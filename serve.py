@@ -21,6 +21,8 @@ from tinydb import TinyDB, Query, where
 ### Basic setup
 
 app = Flask (__name__)
+app.jinja_env.trim_blocks = True
+app.jinja_env.lstrip_blocks = True
 
 script_dir = os.path.dirname(sys.argv[0])
 db = TinyDB(os.path.realpath(os.path.join(script_dir, 'db.json')))
@@ -156,7 +158,6 @@ def scheme(number):
     Scheme = Query()
     # This optimization relies on schemes only pointing to parent schemes
     child_schemes = schemes.search(Scheme.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
-    print('DEBUG: msc:m{} has {} profiles.'.format(number, len(child_schemes)))
     if len(child_schemes) > 0:
         relations['children'] = child_schemes
         hasRelatedSchemes = True
@@ -193,6 +194,12 @@ def scheme(number):
         hasRelatedSchemes = True
     return render_template('metadata-scheme.html', record=element,\
         versions=versions, relations=relations, hasRelatedSchemes=hasRelatedSchemes)
+
+### Display tool
+
+@app.route('/msc/t<int:number>')
+def tool(number):
+    pass
 
 ### Search form
 

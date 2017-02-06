@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>{{ record['title'] }} – Metadata Standards Catalog</title>
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}{{ record['title'] }} – {% endblock %}
+{% block main %}
   <h1>{{ record['title'] }}</h1>
   {% if 'description' in record %}
   <div class="description">{{ record['description']|safe }}</div>
@@ -13,28 +8,68 @@
   {% if 'keywords' in record %}
   <div class="keywords">
     <p>Used in</p>
-    <ul>{% for keyword in record['keywords'] %}
+    <ul>
+    {% for keyword in record['keywords'] %}
       <li>{{ keyword }}</li>
-    {% endfor %}</ul>
+    {% endfor %}
+    </ul>
   </div>
   {% endif %}
   {% if 'dataTypes' in record %}
   <div class="dataTypes">
     <p>Used for</p>
-    <ul>{% for type in record['dataTypes'] %}
+    <ul>
+    {% for type in record['dataTypes'] %}
       <li>{{ type }}</li>
-    {% endfor %}</ul>
+    {% endfor %}
+    </ul>
   </div>
   {% endif %}
   {% if 'locations' in record %}
   <div class="locations">
     <h2>Documentation</h2>
-    <ul>{% for location in record['locations'] %}
-      {% if location['type'] == 'website' %}<li><a href="{{ location['url'] }}">Visit website</a></li>
-      {% elif location['type'] == 'document' %}<li><a href="{{ location['url'] }}">View specification</a></li>
-      {% else %}<li><a href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
+    <ul>
+    {% for location in record['locations'] %}
+      {% if location['type'] == 'website' %}
+      <li><a href="{{ location['url'] }}">Visit website</a></li>
+      {% elif location['type'] == 'document' %}
+      <li><a href="{{ location['url'] }}">View specification</a></li>
+      {% else %}
+      <li><a href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
       {% endif %}
-    {% endfor %}</ul>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if 'maintainers' in relations or 'funders' in relations %}
+  <div class="organizations">
+    <h2>Responsible organizations</h2>
+    <ul>
+    {% for org in relations['maintainers'] %}
+      <li>
+        <p>Maintainer: {{ org['name'] }}</p>
+      {% if 'locations' in org %}
+        <ul>
+        {% for location in org['locations'] %}
+          <li><a href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      </li>
+    {% endfor %}
+    {% for org in relations['funders'] %}
+      <li>
+        <p>Funder: {{ org['name'] }}</p>
+      {% if 'locations' in org %}
+        <ul>
+        {% for location in org['locations'] %}
+          <li><a href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
   </div>
   {% endif %}
   {% if 'samples' in record %}
@@ -47,21 +82,28 @@
   {% endif %}
   <div class="identifiers">
     <h2>Identifiers</h2>
-    <ul>{% for identifier in record['identifiers'] %}
-      {% if identifier['scheme'] == 'RDA-MSCWG' %}<li>Internal MSC ID: <a href="{{ url_for('scheme', number=identifier['id'][5:]) }}">{{ identifier['id'] }}</a></li>
-      {% elif identifier['scheme'] == 'DOI' %}<li>DOI: <a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></li>
-      {% else %}<li>{{ identifier['scheme'] }}: {{ identifier['id'] }}</li>
+    <ul>
+    {% for identifier in record['identifiers'] %}
+      {% if identifier['scheme'] == 'RDA-MSCWG' %}
+      <li>Internal MSC ID: <a href="{{ url_for('scheme', number=identifier['id'][5:]) }}">{{ identifier['id'] }}</a></li>
+      {% elif identifier['scheme'] == 'DOI' %}
+      <li>DOI: <a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></li>
+      {% else %}
+      <li>{{ identifier['scheme'] }}: {{ identifier['id'] }}</li>
       {% endif %}
-    {% endfor %}</ul>
+    {% endfor %}
+    </ul>
   </div>
   {% if versions %}
   <div class="versions">
     <h2>Version history</h2>
-    <ul>{% for version in versions %}
+    <ul>
+    {% for version in versions %}
       <li>
         <p>{{ version['date'] }}: version {{ version['number'] }}{% if 'status' in version %} ({{ version['status'] }}){% endif %}</p>
       </li>
-    {% endfor %}</ul>
+    {% endfor %}
+    </ul>
   </div>
   {% endif %}
   {% if hasRelatedSchemes %}
@@ -77,18 +119,26 @@
     {% for mapping in relations['mappings from'] %}
       <li class="mappings">
         <p>This scheme can be mapped to <a href="{{ url_for('scheme', number=mapping['output scheme'].eid) }}">{{ mapping['output scheme']['title'] }}</a>.</p>
-        {% if 'description' in mapping %}<div class="description">{{ mapping['description']|safe }}</div>{% endif %}
-        <ul>{% for location in mapping['locations'] %}
+        {% if 'description' in mapping %}
+        <div class="description">{{ mapping['description']|safe }}</div>
+        {% endif %}
+        <ul>
+        {% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
-        {% endfor %}</ul>
+        {% endfor %}
+        </ul>
     {% endfor %}
     {% for mapping in relations['mappings to'] %}
       <li class="mappings">
         <p>This scheme can be mapped from <a href="{{ url_for('scheme', number=mapping['input scheme'].eid) }}">{{ mapping['input scheme']['title'] }}</a>.</p>
-        {% if 'description' in mapping %}<div class="description">{{ mapping['description']|safe }}</div>{% endif %}
-        <ul>{% for location in mapping['locations'] %}
+        {% if 'description' in mapping %}
+        <div class="description">{{ mapping['description']|safe }}</div>
+        {% endif %}
+        <ul>
+        {% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
-        {% endfor %}</ul>
+        {% endfor %}
+        </ul>
     {% endfor %}
     </ul>
   </div>
@@ -96,40 +146,58 @@
   {% if 'tools' in relations %}
   <div class="tools">
     <h2>Tools</h2>
-    <ul>{% for tool in relations['tools'] %}
+    <ul>
+    {% for tool in relations['tools'] %}
       <li>
         <p><a href="{{ url_for('tool', number=tool.eid) }}">{{ tool['title'] }}</a></p>
-        {% if 'description' in tool %}<div class="description">{{ tool['description']|safe }}</div>{% endif %}
+        {% if 'description' in tool %}
+        <div class="description">{{ tool['description']|safe }}</div>
+        {% endif %}
       </li>
-    {% endfor %}</ul>
+    {% endfor %}
+    </ul>
   </div>
   {% endif %}
   {% if 'users' in relations %}
   <div class="users">
     <h2>Known users</h2>
-    <ul>{% for user in relations['users'] %}
+    <ul>
+    {% for user in relations['users'] %}
       <li>
         <p><a href="{{ user['locations'][0]['url'] }}">{{ user['name'] }}</a></p>
-        {% if 'description' in user %}<div class="description">{{ user['description']|safe }}</div>{% endif %}
+        {% if 'description' in user %}
+        <div class="description">{{ user['description']|safe }}</div>
+        {% endif %}
       </li>
-    {% endfor %}</ul>
+    {% endfor %}
+    </ul>
   </div>
   {% endif %}
   {% if 'endorsements' in relations %}
   <div class="endorsements">
     <h2>Endorsements of this scheme</h2>
-    <ul>{% for endorsement in relations['endorsements'] %}
+    <ul>
+    {% for endorsement in relations['endorsements'] %}
       <li>
-        {% if 'citation' in endorsement %}<p>{{ endorsement['citation'] }}</p>{% elif 'originator' in endorsement %}<p>{{ endorsement['originator'] }}</p>{% endif %}
-        {% if 'valid from' in endorsement %}<p>Endorsed {% if 'valid until' in endorsement %}between {{ endorsement['valid from'] }} and {{ endorsement['valid until'] }}{% else %}since {{ endorsement['valid from'] }}{% endif %}</p>{% elif 'issued' in endorsement %}<p>Endorsed on {{ endorsement['issued'] }}</p>{% endif %}
+        {% if 'citation' in endorsement %}
+        <p>{{ endorsement['citation'] }}</p>
+        {% elif 'originator' in endorsement %}
+        <p>{{ endorsement['originator'] }}</p>
+        {% endif %}
+        {% if 'valid from' in endorsement %}
+        <p>Endorsed {% if 'valid until' in endorsement %}between {{ endorsement['valid from'] }} and {{ endorsement['valid until'] }}{% else %}since {{ endorsement['valid from'] }}{% endif %}</p>
+        {% elif 'issued' in endorsement %}
+        <p>Endorsed on {{ endorsement['issued'] }}</p>
+        {% endif %}
         {% if 'locations' in endorsement %}
-        <ul>{% for location in mapping['locations'] %}
+        <ul>
+        {% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">View endorsement</a></li>
-        {% endfor %}</ul>
+        {% endfor %}
+        </ul>
         {% endif %}
       </li>
     {% endfor %}</ul>
   </div>
   {% endif %}
-</body>
-</html>
+{% endblock %}
