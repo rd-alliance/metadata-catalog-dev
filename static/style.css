@@ -1,11 +1,93 @@
-body {
+html {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 16px;
+	color: black;
+}
+
+/* Page blocks */
+
+main {
 	margin-left:auto;
 	margin-right:auto;
-	max-width:80ex;
+	max-width:40rem;
 }
-figure, .title, .author, .date {
-	text-align:center;
+
+/* Global styles */
+
+h1, h2, h3 {
+	font-weight: 300;
 }
-figure img {
-	max-width:70ex;
+
+h1 {
+	font-size: 3em;
+}
+
+h2 {
+	font-size: 2em;
+}
+
+h3 {
+	font-size: 1.5em;
+}
+
+p {
+	margin: 1em 0em;
+	padding: 0px;
+}
+
+a[href] {
+	text-decoration: none;
+}
+
+a:link {
+	color: #0D47A1;
+}
+
+/* Special styles */
+
+div.description {
+	margin: 1em 0em;
+	padding: 0px;
+}
+
+div.description p:first-child {
+	margin-top: 0px;
+}
+
+div.description p:last-child {
+	margin-bottom: 0px;
+}
+
+div.keywords p, div.keywords ul, div.keywords li,
+div.dataTypes p, div.dataTypes ul, div.dataTypes li,
+ul.locations, ul.locations li {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+div.keywords ul, div.dataTypes ul {
+	max-width: 35rem;
+}
+
+div.keywords ul, div.dataTypes ul, ul.locations {
+	padding: 0px;
+	margin: 0px;
+}
+
+div.keywords li, div.dataTypes li, ul.locations li {
+	border-radius: 1rem;
+	padding: 0.5rem;
+	margin: 0.25rem;
+}
+
+div.keywords li {
+	background-color:  #E3F2FD;
+}
+
+div.dataTypes li {
+	background-color:   #FFF8E1;
+}
+
+ul.locations li {
+	background-color:   #E8F5E9;
 }

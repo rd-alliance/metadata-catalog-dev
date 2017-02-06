@@ -28,7 +28,7 @@
   {% if 'locations' in record %}
   <div class="locations">
     <h2>Documentation</h2>
-    <ul>
+    <ul class="locations">
     {% for location in record['locations'] %}
       {% if location['type'] == 'website' %}
       <li><a href="{{ location['url'] }}">Visit website</a></li>
@@ -49,7 +49,7 @@
       <li>
         <p>Maintainer: {{ org['name'] }}</p>
       {% if 'locations' in org %}
-        <ul>
+        <ul class="locations">
         {% for location in org['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
@@ -61,7 +61,7 @@
       <li>
         <p>Funder: {{ org['name'] }}</p>
       {% if 'locations' in org %}
-        <ul>
+        <ul class="locations">
         {% for location in org['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
@@ -122,11 +122,13 @@
         {% if 'description' in mapping %}
         <div class="description">{{ mapping['description']|safe }}</div>
         {% endif %}
-        <ul>
+        {% if 'locations' in mapping %}
+        <ul class="locations">
         {% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}
         </ul>
+        {% endif %}
     {% endfor %}
     {% for mapping in relations['mappings to'] %}
       <li class="mappings">
@@ -134,11 +136,13 @@
         {% if 'description' in mapping %}
         <div class="description">{{ mapping['description']|safe }}</div>
         {% endif %}
-        <ul>
+        {% if 'locations' in mapping %}
+        <ul class="locations">
         {% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}
         </ul>
+        {% endif %}
     {% endfor %}
     </ul>
   </div>
@@ -190,7 +194,7 @@
         <p>Endorsed on {{ endorsement['issued'] }}</p>
         {% endif %}
         {% if 'locations' in endorsement %}
-        <ul>
+        <ul class="locations">
         {% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">View endorsement</a></li>
         {% endfor %}
