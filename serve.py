@@ -80,6 +80,7 @@ def scheme(number):
                 break
 
     # Here we assemble information about related entities
+    organizations = db.table('organizations')
     endorsements = db.table('endorsements')
     tools = db.table('tools')
     mappings = db.table('mappings')
@@ -87,7 +88,6 @@ def scheme(number):
     endorsement_ids = list()
     hasRelatedSchemes = False
     if 'relatedEntities' in element:
-        organizations = db.table('organizations')
         for entity in element['relatedEntities']:
             if entity['role'] == 'parent scheme':
                 if not 'parents' in relations:
@@ -138,6 +138,19 @@ def scheme(number):
             entity_number = int(endorsement_id['id'][5:])
             element_record = endorsements.get(eid=entity_number)
             if element_record:
+                if 'relatedEntities' in element_record:
+                    for entity in element_record['relatedEntities']:
+                        if entity['role'] == 'originator':
+                            org_entity_number = int(entity['id'][5:])
+                            org_record = organizations.get(eid=org_entity_number)
+                            element_record['originator'] = org_record['name']
+                if 'valid' in element_record:
+                    if '/' in element_record['valid']:
+                        date_range = element_record['valid'].partition('/')
+                        element_record['valid from'] = date_range[0]
+                        element_record['valid until'] = date_range[2]
+                    else:
+                        element_record['valid from'] = element_record['valid']
                 relations['endorsements'].append(element_record)
 
     Scheme = Query()

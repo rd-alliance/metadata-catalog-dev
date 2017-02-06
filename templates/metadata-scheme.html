@@ -77,7 +77,7 @@
     {% for mapping in relations['mappings from'] %}
       <li class="mappings">
         <p>This scheme can be mapped to <a href="{{ url_for('scheme', number=mapping['output scheme'].eid) }}">{{ mapping['output scheme']['title'] }}</a>.</p>
-        {% if 'description' in mapping %}<div class="description">{{ mapping['description'] }}</div>{% endif %}
+        {% if 'description' in mapping %}<div class="description">{{ mapping['description']|safe }}</div>{% endif %}
         <ul>{% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}</ul>
@@ -85,7 +85,7 @@
     {% for mapping in relations['mappings to'] %}
       <li class="mappings">
         <p>This scheme can be mapped from <a href="{{ url_for('scheme', number=mapping['input scheme'].eid) }}">{{ mapping['input scheme']['title'] }}</a>.</p>
-        {% if 'description' in mapping %}<div class="description">{{ mapping['description'] }}</div>{% endif %}
+        {% if 'description' in mapping %}<div class="description">{{ mapping['description']|safe }}</div>{% endif %}
         <ul>{% for location in mapping['locations'] %}
           <li><a href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}</ul>
@@ -111,6 +111,22 @@
       <li>
         <p><a href="{{ user['locations'][0]['url'] }}">{{ user['name'] }}</a></p>
         {% if 'description' in user %}<div class="description">{{ user['description']|safe }}</div>{% endif %}
+      </li>
+    {% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if 'endorsements' in relations %}
+  <div class="endorsements">
+    <h2>Endorsements of this scheme</h2>
+    <ul>{% for endorsement in relations['endorsements'] %}
+      <li>
+        {% if 'citation' in endorsement %}<p>{{ endorsement['citation'] }}</p>{% elif 'originator' in endorsement %}<p>{{ endorsement['originator'] }}</p>{% endif %}
+        {% if 'valid from' in endorsement %}<p>Endorsed {% if 'valid until' in endorsement %}between {{ endorsement['valid from'] }} and {{ endorsement['valid until'] }}{% else %}since {{ endorsement['valid from'] }}{% endif %}</p>{% elif 'issued' in endorsement %}<p>Endorsed on {{ endorsement['issued'] }}</p>{% endif %}
+        {% if 'locations' in endorsement %}
+        <ul>{% for location in mapping['locations'] %}
+          <li><a href="{{ location['url'] }}">View endorsement</a></li>
+        {% endfor %}</ul>
+        {% endif %}
       </li>
     {% endfor %}</ul>
   </div>
