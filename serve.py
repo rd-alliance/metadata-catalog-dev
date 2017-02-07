@@ -23,8 +23,8 @@ from tinydb import TinyDB, Query, where
 #   - old version: sudo apt-get install python3-rdflib
 #   - latest version: sudo pip3 install rdflib
 import rdflib
-from rdflib import Literal
-from rdflib.namespace import SKOS
+from rdflib import Literal, Namespace
+from rdflib.namespace import SKOS, RDF
 
 ### Basic setup
 
@@ -36,7 +36,8 @@ script_dir = os.path.dirname(sys.argv[0])
 db = TinyDB(os.path.realpath(os.path.join(script_dir, 'db.json')))
 
 thesaurus = rdflib.Graph()
-thesaurus.parse('unesco-thesaurus.ttl', format='turtle')
+thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
+UNO = Namespace('http://vocabularies.unesco.org/ontology#')
 
 ### Utility functions
 
@@ -286,11 +287,20 @@ def subject(subject):
 
     # Interpret subject
     # - Translate term into concept ID
-    qres = thesaurus.query(r'SELECT ?concept WHERE { ?concept a skos:Concept . ?concept skos:prefLabel "' + query_string + '"@en . }')
     concept_id = None
-    for row in qres:
-        concept_id = row[0]
-        break
+    concept_ids = thesaurus.subjects(SKOS.prefLabel, Literal(query_string, lang="en"))
+    priority = 0
+    for uri in concept_ids:
+        concept_type = thesaurus.value(subject=uri, predicate=RDF.type)
+        if concept_type == UNO.Domain and priority < 3:
+            concept_id = uri
+            priority = 3
+        elif concept_type == UNO.MicroThesaurus and priority < 2:
+            concept_id = uri
+            priority = 2
+        elif priority < 1:
+            concept_id = uri
+            priority = 1
     if not concept_id:
         message += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
         return render_template('search-results.html', query=query_string, message=message)

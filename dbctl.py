@@ -16,6 +16,14 @@ import yaml
 # sudo apt install python3-ujson
 from tinydb import TinyDB
 
+# See http://rdflib.readthedocs.io/
+# On Debian, Ubuntu, etc.:
+#   - old version: sudo apt-get install python3-rdflib
+#   - latest version: sudo pip3 install rdflib
+import rdflib
+from rdflib import Literal, Namespace
+from rdflib.namespace import SKOS, RDF
+
 ### Initializing
 
 ## Calculate defaults
@@ -46,6 +54,7 @@ parser.add_argument('-d', '--db'\
 subparsers = parser.add_subparsers(title='subcommands', help='perform database operation')
 parser_compile = subparsers.add_parser('compile', help='compile YAML files to TinyDB database')
 parser_dump = subparsers.add_parser('dump', help='dump TinyDB database to YAML files')
+parser_vocab = subparsers.add_parser('vocab', help='fetch and optimise UNESCO Vocabulary')
 
 ### Operations
 
@@ -157,6 +166,44 @@ def dbDump(args):
                 yaml.safe_dump(dict(record), r, default_flow_style=False)
 
 parser_dump.set_defaults(func=dbDump)
+
+### Vocabulary generation
+
+def dbVocab(args):
+    thesaurus = rdflib.Graph()
+    if os.path.isfile(os.path.join(script_dir, 'unesco-thesaurus.ttl')):
+        print('Loading UNESCO Vocabulary from local file.')
+        thesaurus.parse('unesco-thesaurus.ttl', format='turtle')
+    else:
+        print('Loading UNESCO Vocabulary from the Internet.')
+        thesaurus.parse(r'http://vocabularies.unesco.org/browser/rest/v1/thesaurus/data?format=text/turtle', format='turtle')
+
+    thesaurus.parse('unesco-thesaurus.ttl', format='turtle')
+    simplified = rdflib.Graph(namespace_manager=thesaurus.namespace_manager)
+    simplified.bind('uno', 'http://vocabularies.unesco.org/ontology#')
+    UNO = Namespace('http://vocabularies.unesco.org/ontology#')
+
+    print('Cherry-picking the triples used by the app...')
+    # We want the labels and types
+    simplified += thesaurus.triples( (None, SKOS.prefLabel, None) )
+    # simplified += thesaurus.triples( (None, SKOS.altLabel, None) ) # Not yet, but planned
+    simplified += thesaurus.triples( (None, RDF.type, SKOS.Concept) )
+    simplified += thesaurus.triples( (None, RDF.type, UNO.MicroThesaurus) )
+    simplified += thesaurus.triples( (None, RDF.type, UNO.Domain) )
+
+    # Among the concepts, these are the ones we use
+    simplified += thesaurus.triples( (None, SKOS.broader, None) )
+    simplified += thesaurus.triples( (None, SKOS.narrower, None) )
+
+    # We convert domains to top-level concepts
+    for s, p, o in thesaurus.triples( (None, SKOS.member, None) ):
+        simplified.add( (s, SKOS.narrower, o) )
+        simplified.add( (o, SKOS.broader, s) )
+
+    print('Writing simplified thesaurus.')
+    simplified.serialize('simple-unesco-thesaurus.ttl', format='turtle')
+
+parser_vocab.set_defaults(func=dbVocab)
 
 ### Processing
 
