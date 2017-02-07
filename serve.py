@@ -12,7 +12,7 @@ import os, sys
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo pip3 install flask
-from flask import Flask, request, url_for, render_template, g
+from flask import Flask, request, url_for, render_template, abort
 
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo pip3 install tinydb
@@ -23,6 +23,8 @@ from tinydb import TinyDB, Query, where
 #   - old version: sudo apt-get install python3-rdflib
 #   - latest version: sudo pip3 install rdflib
 import rdflib
+from rdflib import Literal
+from rdflib.namespace import SKOS
 
 ### Basic setup
 
@@ -32,6 +34,26 @@ app.jinja_env.lstrip_blocks = True
 
 script_dir = os.path.dirname(sys.argv[0])
 db = TinyDB(os.path.realpath(os.path.join(script_dir, 'db.json')))
+
+thesaurus = rdflib.Graph()
+thesaurus.parse('unesco-thesaurus.ttl', format='turtle')
+
+### Utility functions
+
+def getTermList(uri, broader=True, narrower=True):
+    terms = list()
+    terms.append(uri)
+    if broader:
+        broader_terms = thesaurus.objects(uri, SKOS.broader)
+        for broader_term in broader_terms:
+            if not broader_term in terms:
+                terms = getTermList(broader_term, narrower=False) + terms
+    if narrower:
+        narrower_terms = thesaurus.objects(uri, SKOS.narrower)
+        for narrower_term in narrower_terms:
+            if not narrower_term in terms:
+                terms += getTermList(narrower_term, broader=False)
+    return terms
 
 ### Front page
 
@@ -258,20 +280,39 @@ def tool(number):
 
 @app.route('/subject/<subject>')
 def subject(subject):
+    query_string = '{}{}'.format(subject[0:1].upper(), subject[1:]).replace('+', ' ')
+    message = ''
+    results = list()
+
     # Interpret subject
-    # 1. Load vocabulary
-    g = rdflib.Graph()
-    g.parse("unesco-thesaurus.ttl")
-    # 2. Translate term into concept ID
-    qres = g.query(
-        """SELECT DISTINCT ?concept
-           WHERE {
-             ?concept skos:prefLabel "{}"en
-           }""".format(subject))
-    
+    # - Translate term into concept ID
+    qres = thesaurus.query(r'SELECT ?concept WHERE { ?concept a skos:Concept . ?concept skos:prefLabel "' + query_string + '"@en . }')
+    concept_id = None
+    for row in qres:
+        concept_id = row[0]
+        break
+    if not concept_id:
+        message += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
+        return render_template('search-results.html', query=query_string, message=message)
+    # - Find list of broader and narrower terms
+    term_uri_list = getTermList(concept_id)
+    term_list = list()
+    for term_uri in term_uri_list:
+        term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
+        if not term in term_list:
+            term_list.append(term)
+
+    # Search for matching schemes
     schemes = db.table('metadata-schemes')
     Scheme = Query()
-    scheme_list = dict()
+    results = schemes.search(Scheme.keywords.any(term_list))
+    no_of_hits = len(results)
+    if no_of_hits == 1:
+        message = 'There is 1 scheme related to {}.'.format(', '.join(term_list))
+    else:
+        message = 'There are {} schemes related to {}.'.format(no_of_hits, ', '.join(term_list))
+    return render_template('search-results.html', query=query_string, message=message,\
+        results=results)
 
 ### Search form
 

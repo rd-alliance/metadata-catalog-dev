@@ -81,13 +81,36 @@ div.keywords li, div.dataTypes li, ul.locations li {
 }
 
 div.keywords li {
-	background-color:  #E3F2FD;
+	background-color: #E3F2FD;
 }
 
 div.dataTypes li {
-	background-color:   #FFF8E1;
+	background-color: #FFF8E1;
 }
 
 ul.locations li {
-	background-color:   #E8F5E9;
+	background-color: #E8F5E9;
+}
+
+p.alert {
+	border-radius: 1em;
+	padding: 1em;
+	margin: 1em 0em;
+	background-color: #FFCDD2;
+}
+
+div.result {
+	border: 2pt solid #EEEEEE;
+	border-radius: 1rem;
+	padding: 0rem 1rem;
+	margin: 1rem 0rem;
+}
+
+div.result p.name {
+	border: 2pt solid #EEEEEE;
+	border-radius: 1rem 1rem 0rem 0rem;
+	background-color: #EEEEEE;
+	font-size: 1.5em;
+	padding: 1rem;
+	margin: -2pt -1rem 0rem;
 }
