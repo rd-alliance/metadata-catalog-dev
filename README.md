@@ -57,10 +57,12 @@ This should produce the following files and folders:
 Once you are happy with the data in its human-friendly YAML format, you will
 need to compile it to a single app-friendly JSON file. For this you can use the
 [Python 3] script `dbctl.py`. You will again need [PyYAML] but you will also
-need the non-standard library [TinyDB]. (This has not been packaged for Ubuntu
-so you will probably want to install it with `python3-pip`.)
+need the non-standard libraries [TinyDB] and [RDFLib]. (TinyDB has not been
+packaged for Ubuntu so you will probably want to install it with `python3-pip`.
+RDFLib has been packaged as `python3-rdflib`.)
 
 [TinyDB]: http://tinydb.readthedocs.io/
+[RDFLib]: http://rdflib.readthedocs.io/
 
 If you are using the defaults you should be able to generate a file `db.json` by
 running the script with the `compile` action:
@@ -79,11 +81,26 @@ you can do this with the `dump` action:
 If this would overwrite your original set of YAML files, you have the choice of
 deleting them, backing them up (to `db0`, `db1`, `db2`, etc.), or cancelling.
 
+## Generating the subject ontology
+
+The `dbctl.py` script can also be used to generate the RDF subject thesaurus
+used by the Catalog.
+
+~~~{.bash}
+./dbctl.py vocab
+~~~
+
+This will take either the local file `unesco-thesaurus.ttl` or the live version
+of the UNESCO Vocabulary on the Web and transform it into
+`simple-unesco-thesaurus.ttl`. The transformation consists of stripping out
+unused triples and (in a somewhat hackish manner) enabling the domains and
+microthesauri to be traversed as if they were higher level concepts.
+
 ## Running the prototype Metadata Standards Catalog
 
-To run the prototype Catalog, you will need [TinyDB] and [Flask]. It is
-currently compatible with Flask 0.10 (this is what `python3-flask` gives you in
-Ubuntu LTS releases).
+To run the prototype Catalog, you will need [TinyDB], [RDFLib] and [Flask]. It
+is currently compatible with Flask 0.10 (this is what `python3-flask` gives you
+in Ubuntu LTS releases).
 
 [Flask]: http://flask.pocoo.org/
 
