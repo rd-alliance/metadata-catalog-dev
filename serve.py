@@ -5,6 +5,7 @@
 ## Standard
 
 import os, sys
+from collections import deque
 
 ## Non-standard
 
@@ -42,7 +43,7 @@ UNO = Namespace('http://vocabularies.unesco.org/ontology#')
 ### Utility functions
 
 def getTermList(uri, broader=True, narrower=True):
-    terms = list()
+    terms = deque()
     terms.append(uri)
     if broader:
         broader_terms = thesaurus.objects(uri, SKOS.broader)
@@ -55,6 +56,23 @@ def getTermList(uri, broader=True, narrower=True):
             if not narrower_term in terms:
                 terms += getTermList(narrower_term, broader=False)
     return terms
+
+def getTermURI(term):
+    concept_id = None
+    concept_ids = thesaurus.subjects(SKOS.prefLabel, Literal(term, lang="en"))
+    priority = 0
+    for uri in concept_ids:
+        concept_type = thesaurus.value(subject=uri, predicate=RDF.type)
+        if concept_type == UNO.Domain and priority < 3:
+            concept_id = uri
+            priority = 3
+        elif concept_type == UNO.MicroThesaurus and priority < 2:
+            concept_id = uri
+            priority = 2
+        elif priority < 1:
+            concept_id = uri
+            priority = 1
+    return concept_id
 
 ### Front page
 
@@ -287,20 +305,7 @@ def subject(subject):
 
     # Interpret subject
     # - Translate term into concept ID
-    concept_id = None
-    concept_ids = thesaurus.subjects(SKOS.prefLabel, Literal(query_string, lang="en"))
-    priority = 0
-    for uri in concept_ids:
-        concept_type = thesaurus.value(subject=uri, predicate=RDF.type)
-        if concept_type == UNO.Domain and priority < 3:
-            concept_id = uri
-            priority = 3
-        elif concept_type == UNO.MicroThesaurus and priority < 2:
-            concept_id = uri
-            priority = 2
-        elif priority < 1:
-            concept_id = uri
-            priority = 1
+    concept_id = getTermURI(query_string)
     if not concept_id:
         message += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
         return render_template('search-results.html', query=query_string, message=message)
@@ -323,6 +328,32 @@ def subject(subject):
         message = 'There are {} schemes related to {}.'.format(no_of_hits, ', '.join(term_list))
     return render_template('search-results.html', query=query_string, message=message,\
         results=results)
+
+### Subject index
+
+@app.route('/subject-index')
+def subject_index():
+    # Get a list of all the keywords used in the database
+    schemes = db.table('metadata-schemes')
+    Scheme = Query()
+    classified_schemes = schemes.search(Scheme.keywords.exists())
+    keyword_set = set()
+    for classified_scheme in classified_schemes:
+        for keyword in classified_scheme['keywords']:
+            keyword_set.add(keyword)
+    # Transform to URIs
+    keyword_uris = set()
+    for keyword in keyword_set:
+        uri = getTermURI(keyword)
+        keyword_uris.add( uri )
+    # Get ancestor terms of all these
+    full_keyword_uris = set()
+    term_tree = dict()
+    for keyword_uri in keyword_uris:
+        if keyword_uri in full_keyword_uris:
+            continue
+        keyword_uri_list = getTermList(keyword_uri, narrower=False)
+        full_keyword_uris.update(keyword_uri_list)
 
 ### Search form
 
