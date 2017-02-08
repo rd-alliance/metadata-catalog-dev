@@ -98,15 +98,16 @@ def getDBNode(table, id, type):
     entity = table.get(eid=id)
     result['name'] = entity['title']
     result['url'] = url_for(type, number=id)
-    Main = Query()
-    Related = Query()
-    child_schemes = table.search(Main.relatedEntities.any( (Related.role == 'parent scheme') & (Related.id == 'msc:m{}'.format(id)) ))
-    if len(child_schemes) > 0:
-        children = list()
-        for child_scheme in child_schemes:
-            children.append( getDBNode(table, child_scheme.eid, type) )
-        children.sort(key=lambda k: k['name'])
-        result['children'] = children
+    if type == 'scheme':
+        Main = Query()
+        Related = Query()
+        child_schemes = table.search(Main.relatedEntities.any( (Related.role == 'parent scheme') & (Related.id == 'msc:m{}'.format(id)) ))
+        if len(child_schemes) > 0:
+            children = list()
+            for child_scheme in child_schemes:
+                children.append( getDBNode(table, child_scheme.eid, type) )
+            children.sort(key=lambda k: k['name'])
+            result['children'] = children
     return result
 
 ### Front page
@@ -382,6 +383,21 @@ def scheme_index():
     scheme_tree.sort(key=lambda k: k['name'])
     return render_template('contents.html', title='List of metadata standards',\
         tree=scheme_tree)
+
+### List of tools
+
+@app.route('/tool-index')
+def tool_index():
+    tools = db.table('tools')
+    Tool = Query()
+    Entity = Query()
+    all_tools = tools.all()
+    tool_tree = list()
+    for tool in all_tools:
+        tool_tree.append( getDBNode(tools, tool.eid, 'tool') )
+    tool_tree.sort(key=lambda k: k['name'])
+    return render_template('contents.html', title='List of metadata tools',\
+        tree=tool_tree)
 
 ### Subject index
 
