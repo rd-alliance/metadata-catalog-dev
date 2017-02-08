@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} – {% endblock %}
+{% block main %}
+  <h1>{{ title }}</h1>
+  {% if message %}
+  <p class="alert">{{ message|safe }}</p>
+  {% endif %}
+  <ul class="index">
+  {% for item in tree recursive %}
+    <li><a href="{{ item['url'] }}">{{ item['name'] }}</a>
+    {% if item['children'] %}
+        <ul class="subindex">{{ loop(item['children']) }}</ul>
+    {% endif %}</li>
+  {% endfor %}
+  </ul>
+{% endblock %}
