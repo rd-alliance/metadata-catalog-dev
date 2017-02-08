@@ -21,7 +21,7 @@ from tinydb import TinyDB
 #   - old version: sudo apt-get install python3-rdflib
 #   - latest version: sudo pip3 install rdflib
 import rdflib
-from rdflib import Literal, Namespace
+from rdflib import Literal, Namespace, URIRef
 from rdflib.namespace import SKOS, RDF
 
 ### Initializing
@@ -197,6 +197,9 @@ def dbVocab(args):
 
     # We convert domains to top-level concepts
     for s, p, o in thesaurus.triples( (None, SKOS.member, None) ):
+        if (o, RDF.type, SKOS.Concept) in thesaurus\
+            and not (o, SKOS.topConceptOf, URIRef('http://vocabularies.unesco.org/thesaurus')) in thesaurus:
+            continue
         simplified.add( (s, SKOS.narrower, o) )
         simplified.add( (o, SKOS.broader, s) )
 

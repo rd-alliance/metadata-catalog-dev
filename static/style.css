@@ -92,11 +92,18 @@ ul.locations li {
 	background-color: #E8F5E9;
 }
 
-p.alert {
+p.error {
 	border-radius: 1em;
 	padding: 1em;
 	margin: 1em 0em;
 	background-color: #FFCDD2;
+}
+
+p.message {
+	border-radius: 1em;
+	padding: 1em;
+	margin: 1em 0em;
+	background-color: #DCEDC8;
 }
 
 div.result {

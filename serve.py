@@ -5,7 +5,6 @@
 ## Standard
 
 import os, sys
-from collections import deque
 
 ## Non-standard
 
@@ -43,7 +42,7 @@ UNO = Namespace('http://vocabularies.unesco.org/ontology#')
 ### Utility functions
 
 def getTermList(uri, broader=True, narrower=True):
-    terms = deque()
+    terms = list()
     terms.append(uri)
     if broader:
         broader_terms = thesaurus.objects(uri, SKOS.broader)
@@ -73,6 +72,26 @@ def getTermURI(term):
             concept_id = uri
             priority = 1
     return concept_id
+
+def getTreeNode(uri, filter=list()):
+    result = dict()
+    term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
+    result['name'] = term
+    slug = term.lower().replace(' ', '+',)
+    result['url'] = url_for('subject', subject=slug)
+    narrower_ids = thesaurus.objects(uri, SKOS.narrower)
+    children = list()
+    if len(filter) > 0:
+        for narrower_id in narrower_ids:
+            if narrower_id in filter:
+                children.append( getTreeNode(narrower_id, filter=filter) )
+    else:
+        for narrower_id in narrower_ids:
+            children.append( getTreeNode(narrower_id, filter=filter) )
+    if len(children) > 0:
+        children.sort(key=lambda k: k['name'])
+        result['children'] = children
+    return result
 
 ### Front page
 
@@ -118,7 +137,7 @@ def scheme(number):
                 this_version['date'] = v['available']
                 this_version['status'] = 'proposed'
             versions.append(this_version)
-        versions = sorted(versions, key=lambda k: k['date'], reverse=True)
+        versions.sort(key=lambda k: k['date'], reverse=True)
         for version in versions:
             if version['status'] == 'current':
                 break
@@ -260,7 +279,7 @@ def tool(number):
             if not 'date' in v:
                 continue
             versions.append(v)
-        versions = sorted(versions, key=lambda k: k['date'], reverse=True)
+        versions.sort(key=lambda k: k['date'], reverse=True)
 
     # Here we assemble information about related entities
     schemes = db.table('metadata-schemes')
@@ -304,18 +323,21 @@ def subject(subject):
     results = list()
 
     # Interpret subject
-    # - Translate term into concept ID
-    concept_id = getTermURI(query_string)
-    if not concept_id:
-        message += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
-        return render_template('search-results.html', query=query_string, message=message)
-    # - Find list of broader and narrower terms
-    term_uri_list = getTermList(concept_id)
     term_list = list()
-    for term_uri in term_uri_list:
-        term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
-        if not term in term_list:
-            term_list.append(term)
+    if subject == 'multidisciplinary':
+        term_list.append('Multidisciplinary')
+    else:
+        # - Translate term into concept ID
+        concept_id = getTermURI(query_string)
+        if not concept_id:
+            message += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
+            return render_template('search-results.html', query=query_string, message=message)
+        # - Find list of broader and narrower terms
+        term_uri_list = getTermList(concept_id)
+        for term_uri in term_uri_list:
+            term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
+            if not term in term_list:
+                term_list.append(term)
 
     # Search for matching schemes
     schemes = db.table('metadata-schemes')
@@ -323,9 +345,10 @@ def subject(subject):
     results = schemes.search(Scheme.keywords.any(term_list))
     no_of_hits = len(results)
     if no_of_hits == 1:
-        message = 'There is 1 scheme related to {}.'.format(', '.join(term_list))
+        message = 'Found 1 scheme.'
     else:
-        message = 'There are {} schemes related to {}.'.format(no_of_hits, ', '.join(term_list))
+        message = 'Found {} schemes.'.format(no_of_hits)
+        results.sort(key=lambda k: k['title'])
     return render_template('search-results.html', query=query_string, message=message,\
         results=results)
 
@@ -345,15 +368,26 @@ def subject_index():
     keyword_uris = set()
     for keyword in keyword_set:
         uri = getTermURI(keyword)
-        keyword_uris.add( uri )
+        if uri:
+            keyword_uris.add( uri )
     # Get ancestor terms of all these
     full_keyword_uris = set()
-    term_tree = dict()
     for keyword_uri in keyword_uris:
         if keyword_uri in full_keyword_uris:
             continue
         keyword_uri_list = getTermList(keyword_uri, narrower=False)
         full_keyword_uris.update(keyword_uri_list)
+    # Populate subject tree top-down, filtering out unused terms
+    subject_tree = list()
+    domains = thesaurus.subjects(RDF.type, UNO.Domain)
+    for domain in domains:
+        if domain in full_keyword_uris:
+            subject_tree.append( getTreeNode(domain, filter=full_keyword_uris) )
+    subject_tree.sort(key=lambda k: k['name'])
+    subject_tree.insert(0, { 'name': 'Multidisciplinary',\
+        'url': url_for('subject', subject='multidisciplinary')})
+    return render_template('contents.html', title='Index of subjects',\
+        tree=subject_tree)
 
 ### Search form
 

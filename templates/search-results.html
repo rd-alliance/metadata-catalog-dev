@@ -3,7 +3,7 @@
 {% block main %}
   <h1>{{ query }}</h1>
   {% if message %}
-  <p class="alert">{{ message|safe }}</p>
+  <p class="message">{{ message|safe }}</p>
   {% endif %}
   {% for result in results %}
   <div class="result">
@@ -13,4 +13,4 @@
     {% endif %}
   </div>
   {% endfor %}
-{% endblock %} 
+{% endblock %}
