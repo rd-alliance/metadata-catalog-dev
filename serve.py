@@ -93,6 +93,22 @@ def getTreeNode(uri, filter=list()):
         result['children'] = children
     return result
 
+def getDBNode(table, id, type):
+    result = dict()
+    entity = table.get(eid=id)
+    result['name'] = entity['title']
+    result['url'] = url_for(type, number=id)
+    Main = Query()
+    Related = Query()
+    child_schemes = table.search(Main.relatedEntities.any( (Related.role == 'parent scheme') & (Related.id == 'msc:m{}'.format(id)) ))
+    if len(child_schemes) > 0:
+        children = list()
+        for child_scheme in child_schemes:
+            children.append( getDBNode(table, child_scheme.eid, type) )
+        children.sort(key=lambda k: k['name'])
+        result['children'] = children
+    return result
+
 ### Front page
 
 @app.route('/')
@@ -351,6 +367,21 @@ def subject(subject):
         results.sort(key=lambda k: k['title'])
     return render_template('search-results.html', query=query_string, message=message,\
         results=results)
+
+### List of standards
+
+@app.route('/scheme-index')
+def scheme_index():
+    schemes = db.table('metadata-schemes')
+    Scheme = Query()
+    Entity = Query()
+    parent_schemes = schemes.search(Scheme.relatedEntities.all(Entity.role != 'parent scheme'))
+    scheme_tree = list()
+    for scheme in parent_schemes:
+        scheme_tree.append( getDBNode(schemes, scheme.eid, 'scheme') )
+    scheme_tree.sort(key=lambda k: k['name'])
+    return render_template('contents.html', title='List of metadata standards',\
+        tree=scheme_tree)
 
 ### Subject index
 
