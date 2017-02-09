@@ -2,6 +2,9 @@
 {% block title %}{{ query }} – {% endblock %}
 {% block main %}
   <h1>{{ query }}</h1>
+  {% if error %}
+  <p class="error">{{ error|safe }}</p>
+  {% endif %}
   {% if message %}
   <p class="message">{{ message|safe }}</p>
   {% endif %}

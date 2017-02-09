@@ -73,7 +73,7 @@ def getTermURI(term):
             priority = 1
     return concept_id
 
-def getTreeNode(uri, filter=list()):
+def getTermNode(uri, filter=list()):
     result = dict()
     term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
     result['name'] = term
@@ -84,10 +84,10 @@ def getTreeNode(uri, filter=list()):
     if len(filter) > 0:
         for narrower_id in narrower_ids:
             if narrower_id in filter:
-                children.append( getTreeNode(narrower_id, filter=filter) )
+                children.append( getTermNode(narrower_id, filter=filter) )
     else:
         for narrower_id in narrower_ids:
-            children.append( getTreeNode(narrower_id, filter=filter) )
+            children.append( getTermNode(narrower_id, filter=filter) )
     if len(children) > 0:
         children.sort(key=lambda k: k['name'])
         result['children'] = children
@@ -335,8 +335,10 @@ def tool(number):
 
 @app.route('/subject/<subject>')
 def subject(subject):
+    # If people start using geographical keywords, the following will need more sophistication
     query_string = '{}{}'.format(subject[0:1].upper(), subject[1:]).replace('+', ' ')
-    message = ''
+    message = None
+    error = None
     results = list()
 
     # Interpret subject
@@ -347,8 +349,8 @@ def subject(subject):
         # - Translate term into concept ID
         concept_id = getTermURI(query_string)
         if not concept_id:
-            message += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
-            return render_template('search-results.html', query=query_string, message=message)
+            error = 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
+            return render_template('search-results.html', query=query_string, error=error)
         # - Find list of broader and narrower terms
         term_uri_list = getTermList(concept_id)
         for term_uri in term_uri_list:
@@ -361,13 +363,15 @@ def subject(subject):
     Scheme = Query()
     results = schemes.search(Scheme.keywords.any(term_list))
     no_of_hits = len(results)
-    if no_of_hits == 1:
+    if no_of_hits == 0:
+        error = 'Found 0 schemes.'
+    elif no_of_hits == 1:
         message = 'Found 1 scheme.'
     else:
         message = 'Found {} schemes.'.format(no_of_hits)
         results.sort(key=lambda k: k['title'])
     return render_template('search-results.html', query=query_string, message=message,\
-        results=results)
+        error=error, results=results)
 
 ### List of standards
 
@@ -429,7 +433,7 @@ def subject_index():
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
     for domain in domains:
         if domain in full_keyword_uris:
-            subject_tree.append( getTreeNode(domain, filter=full_keyword_uris) )
+            subject_tree.append( getTermNode(domain, filter=full_keyword_uris) )
     subject_tree.sort(key=lambda k: k['name'])
     subject_tree.insert(0, { 'name': 'Multidisciplinary',\
         'url': url_for('subject', subject='multidisciplinary')})
