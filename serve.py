@@ -154,7 +154,11 @@ def scheme(number):
                 this_version['date'] = v['available']
                 this_version['status'] = 'proposed'
             versions.append(this_version)
-        versions.sort(key=lambda k: k['date'], reverse=True)
+        try:
+            versions.sort(key=lambda k: k['date'], reverse=True)
+        except KeyError:
+            print('WARNING: Scheme msc:m{} has missing version date.'.format(number))
+            versions.sort(key=lambda k: k['number'], reverse=True)
         for version in versions:
             if version['status'] == 'current':
                 break
