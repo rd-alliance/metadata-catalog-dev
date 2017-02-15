@@ -12,7 +12,7 @@ import os, sys
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo pip3 install flask
-from flask import Flask, request, url_for, render_template, abort
+from flask import Flask, request, url_for, render_template, redirect
 
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo pip3 install tinydb
@@ -92,6 +92,30 @@ def getTermNode(uri, filter=list()):
         children.sort(key=lambda k: k['name'])
         result['children'] = children
     return result
+
+def getAllTermURIs():
+    # Get a list of all the keywords used in the database
+    schemes = db.table('metadata-schemes')
+    Scheme = Query()
+    classified_schemes = schemes.search(Scheme.keywords.exists())
+    keyword_set = set()
+    for classified_scheme in classified_schemes:
+        for keyword in classified_scheme['keywords']:
+            keyword_set.add(keyword)
+    # Transform to URIs
+    keyword_uris = set()
+    for keyword in keyword_set:
+        uri = getTermURI(keyword)
+        if uri:
+            keyword_uris.add( uri )
+    # Get ancestor terms of all these
+    full_keyword_uris = set()
+    for keyword_uri in keyword_uris:
+        if keyword_uri in full_keyword_uris:
+            continue
+        keyword_uri_list = getTermList(keyword_uri, narrower=False)
+        full_keyword_uris.update(keyword_uri_list)
+    return full_keyword_uris
 
 def getDBNode(table, id, type):
     result = dict()
@@ -354,7 +378,7 @@ def subject(subject):
         concept_id = getTermURI(query_string)
         if not concept_id:
             error = 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
-            return render_template('search-results.html', query=query_string, error=error)
+            return render_template('search-results.html', title=query_string, error=error)
         # - Find list of broader and narrower terms
         term_uri_list = getTermList(concept_id)
         for term_uri in term_uri_list:
@@ -373,8 +397,8 @@ def subject(subject):
         message = 'Found 1 scheme.'
     else:
         message = 'Found {} schemes.'.format(no_of_hits)
-        results.sort(key=lambda k: k['title'])
-    return render_template('search-results.html', query=query_string, message=message,\
+        results.sort(key=lambda k: k['title'].lower())
+    return render_template('search-results.html', title=query_string, message=message,\
         error=error, results=results)
 
 ### List of standards
@@ -388,7 +412,7 @@ def scheme_index():
     scheme_tree = list()
     for scheme in parent_schemes:
         scheme_tree.append( getDBNode(schemes, scheme.eid, 'scheme') )
-    scheme_tree.sort(key=lambda k: k['name'])
+    scheme_tree.sort(key=lambda k: k['name'].lower())
     return render_template('contents.html', title='List of metadata standards',\
         tree=scheme_tree)
 
@@ -403,7 +427,7 @@ def tool_index():
     tool_tree = list()
     for tool in all_tools:
         tool_tree.append( getDBNode(tools, tool.eid, 'tool') )
-    tool_tree.sort(key=lambda k: k['name'])
+    tool_tree.sort(key=lambda k: k['name'].lower())
     return render_template('contents.html', title='List of metadata tools',\
         tree=tool_tree)
 
@@ -411,34 +435,13 @@ def tool_index():
 
 @app.route('/subject-index')
 def subject_index():
-    # Get a list of all the keywords used in the database
-    schemes = db.table('metadata-schemes')
-    Scheme = Query()
-    classified_schemes = schemes.search(Scheme.keywords.exists())
-    keyword_set = set()
-    for classified_scheme in classified_schemes:
-        for keyword in classified_scheme['keywords']:
-            keyword_set.add(keyword)
-    # Transform to URIs
-    keyword_uris = set()
-    for keyword in keyword_set:
-        uri = getTermURI(keyword)
-        if uri:
-            keyword_uris.add( uri )
-    # Get ancestor terms of all these
-    full_keyword_uris = set()
-    for keyword_uri in keyword_uris:
-        if keyword_uri in full_keyword_uris:
-            continue
-        keyword_uri_list = getTermList(keyword_uri, narrower=False)
-        full_keyword_uris.update(keyword_uri_list)
-    # Populate subject tree top-down, filtering out unused terms
+    full_keyword_uris = getAllTermURIs()
     subject_tree = list()
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
     for domain in domains:
         if domain in full_keyword_uris:
             subject_tree.append( getTermNode(domain, filter=full_keyword_uris) )
-    subject_tree.sort(key=lambda k: k['name'])
+    subject_tree.sort(key=lambda k: k['name'].lower())
     subject_tree.insert(0, { 'name': 'Multidisciplinary',\
         'url': url_for('subject', subject='multidisciplinary')})
     return render_template('contents.html', title='Index of subjects',\
@@ -448,10 +451,94 @@ def subject_index():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
+    schemes = db.table('metadata-schemes')
     if request.method == 'POST':
-        pass
+        title = 'Search results'
+        message = ''
+        error = ''
+        results = list()
+        Scheme = Query()
+
+        if request.form['title'] != '':
+            title_search = schemes.search(Scheme.title.search(request.form['title']))
+            no_of_hits = len(title_search)
+            if no_of_hits > 0:
+                message += 'Found {} scheme(s) with title "{}". '.format(\
+                    no_of_hits, request.form['title'])
+                results.extend(title_search)
+            else:
+                error += 'No schemes found with title "{}". '.format(request.form['title'])
+
+        if request.form['subject'] != '' :
+            # Interpret subject
+            term_list = list()
+            if request.form['subject'] == 'Multidisciplinary':
+                term_list.append('Multidisciplinary')
+            else:
+                # - Translate term into concept ID
+                concept_id = getTermURI(request.form['subject'])
+                if not concept_id:
+                    error += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(request.form['subject'])
+                # - Find list of broader and narrower terms
+                term_uri_list = getTermList(concept_id)
+                for term_uri in term_uri_list:
+                    term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
+                    if not term in term_list:
+                        term_list.append(term)
+
+            # Search for matching schemes
+            subject_search = schemes.search(Scheme.keywords.any(term_list))
+            no_of_hits = len(subject_search)
+            if no_of_hits > 0:
+                message += 'Found {} scheme(s) related to {}. '.format(\
+                    no_of_hits, request.form['subject'])
+                results.extend(subject_search)
+            else:
+                error += 'No schemes found related to {}. '.format(request.form['subject'])
+
+        if request.form['id'] != '':
+            Identifier = Query()
+            id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
+            no_of_hits = len(id_search)
+            if no_of_hits > 0:
+                message += 'Found {} scheme(s) with identifier "{}". '.format(\
+                    no_of_hits, request.form['id'])
+                results.extend(id_search)
+            else:
+                error += 'No schemes found with identifier "{}". '.format(request.form['id'])
+
+        no_of_hits = len(results)
+        if no_of_hits == 1:
+            # Go direct to that page
+            result = results[0]
+            return redirect(url_for('scheme', number=result.eid))
+        else:
+            if no_of_hits > 1:
+                results.sort(key=lambda k: k['title'].lower())
+            # Show results list
+            return render_template('search-results.html', title=title, message=message,\
+                error=error, results=results)
+
     else:
-        pass
+        # Title and identifier help
+        all_schemes = schemes.all()
+        title_list = list()
+        id_list = list()
+        for scheme in all_schemes:
+            title_list.append(scheme['title'])
+            for identifier in scheme['identifiers']:
+                id_list.append(identifier['id'])
+        title_list.sort()
+        id_list.sort()
+        # Subject help
+        full_keyword_uris = getAllTermURIs()
+        subject_set = set()
+        for uri in full_keyword_uris:
+            subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
+        subject_list = list(subject_set)
+        subject_list.sort()
+        return render_template('search-form.html', titles=title_list,\
+            subjects=subject_list, ids=id_list)
 
 ### Executing
 

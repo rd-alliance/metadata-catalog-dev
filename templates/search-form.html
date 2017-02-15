@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Search – {% endblock %}
+{% block main %}
+  <h1>Search the Catalog</h1>
+  {% if error %}
+  <p class="error">{{ error|safe }}</p>
+  {% endif %}
+  {% if message %}
+  <p class="message">{{ message|safe }}</p>
+  {% endif %}
+  <div id="search_form">
+    <form action="{{ url_for('search') }}" method="post"  accept-charset="utf-8">
+      <!--
+      <fieldset>
+        <p>
+          <label><input type="radio" name="boolean" value="all"> All of these</label>
+          &emsp;
+          <label><input type="radio" name="boolean" value="any" checked> Any of these</label>
+        </p>
+      </fieldset>
+      -->
+      <div class="grid">
+        <p>
+          <label>
+            <span>Name of scheme</span>
+            <input name="title" list="titles">
+            <datalist id="titles">
+              {% for item in titles %}
+              <option>{{ item }}</option>
+              {% endfor %}
+            </datalist>
+          </label>
+        </p>
+        <p>
+          <label>
+            <span>Subject area</span>
+            <input name="subject" list="subjects">
+          </label>
+          <datalist id="subjects">
+            <label>
+              <span>or select from the list</span>
+              <select name="subject">
+                <option value=""></option>
+                {% for item in subjects %}
+                <option>{{ item }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </datalist>
+        </p>
+        <p>
+          <label>
+            <span>Identifier</span>
+            <input name="id" list="ids">
+            <datalist id="ids">
+              {% for item in ids %}
+              <option>{{ item }}</option>
+              {% endfor %}
+            </datalist>
+          </label>
+        </p>
+      </div>
+      <p><button>Submit</button></p>
+    </form>
+  </div>
+{% endblock %}

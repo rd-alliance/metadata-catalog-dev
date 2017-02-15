@@ -121,3 +121,34 @@ div.result p.name {
 	padding: 1rem;
 	margin: -2pt -1rem 0rem;
 }
+
+#search_form fieldset {
+	border: 1px solid #999999;
+	border-radius: 1em;
+}
+div.grid {
+	display: table;
+	border-collapse: separate;
+	border-spacing: 0px 1em;
+}
+div.grid p {
+	display: table-row-group;
+}
+div.grid p label {
+	display: table-row;
+}
+div.grid p label span, div.grid p label input, div.grid p label select {
+	display: table-cell;
+}
+div.grid p label span:after {
+	content: ':';
+}
+div.grid p label input, div.grid p label select {
+	margin-left: 0.667em;
+	padding: 0.333em;
+	border-radius: 0.333em;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 20rem;
+}
