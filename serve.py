@@ -43,6 +43,16 @@ UNO = Namespace('http://vocabularies.unesco.org/ontology#')
 ### Utility functions
 
 def getTermList(uri, broader=True, narrower=True):
+    """Recursively finds broader or narrower (or both) terms in the thesaurus.
+
+    Arguments:
+        uri (str): URI of term in thesaurus
+        broader (Boolean): Whether to search for broader terms (default: True)
+        narrower (Boolean): Whether to search for narrower terms (default: True)
+
+    Returns:
+        list: Given URI plus those of broader/narrower terms
+    """
     terms = list()
     terms.append(uri)
     if broader:
@@ -58,6 +68,16 @@ def getTermList(uri, broader=True, narrower=True):
     return terms
 
 def getTermURI(term):
+    """Translates a string into the URI of the broadest term in the thesaurus
+    that has that string as its preferred label in English.
+
+    Arguments:
+        term (str): string to look up
+
+    Returns:
+        str: URI of a thesarus term, if one is found
+        None: if no matching term is found
+    """
     concept_id = None
     concept_ids = thesaurus.subjects(SKOS.prefLabel, Literal(term, lang="en"))
     priority = 0
@@ -75,6 +95,24 @@ def getTermURI(term):
     return concept_id
 
 def getTermNode(uri, filter=list()):
+    """Recursively transforms the URI of a term in the thesaurus to a dictionary
+    providing the preferred label of the term in English, its corresponding URL
+    in the Catalog, and (if applicable) a list of dictionaries corresponding to
+    immediately narrower terms in the thesaurus.
+
+    The list of narrower terms can optionally be filtered with a whitelist.
+
+    Arguments:
+        uri (str): URI of term in thesaurus
+        filter (list): URIs of terms that can be listed as narrower than the
+            given one
+
+    Returns:
+        dict: Dictionary of two or three items: 'name' (the preferred label of
+            the term in English), 'url' (the URL of the corresponding Catalog
+            page), 'children' (list of dictionaries, only present if narrower
+            terms exist)
+    """
     result = dict()
     term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
     result['name'] = term
@@ -95,6 +133,9 @@ def getTermNode(uri, filter=list()):
     return result
 
 def getAllTermURIs():
+    """Returns a deduplicated list of URIs corresponding to the subject keywords
+    in use in the database, plus the URIs of all their broader terms.
+    """
     # Get a list of all the keywords used in the database
     schemes = db.table('metadata-schemes')
     Scheme = Query()
@@ -119,6 +160,21 @@ def getAllTermURIs():
     return full_keyword_uris
 
 def getDBNode(table, id, type):
+    """Recursively transforms the internal ID of a record in the database to a
+    dictionary providing the entity's title, its corresponding URL in the
+    Catalog, and (if applicable) a list of dictionaries corresponding to
+    records that are 'children' of the current record.
+
+    Arguments:
+        table (database): TinyDB database
+        id (str): Internal ID of a Catalog record
+        type (str): Type of record ('scheme' or 'tool')
+
+    Returns:
+        dict: Dictionary of two or three items: 'name' (the title of the scheme
+        or tool), 'url' (the URL of the corresponding Catalog page), 'children'
+        (list of child schemes, only present if there are any)
+    """
     result = dict()
     entity = table.get(eid=id)
     result['name'] = entity['title']
@@ -136,7 +192,14 @@ def getDBNode(table, id, type):
     return result
 
 class Pluralizer:
-    """Class for pluralizing nouns. From http://stackoverflow.com/a/27642538"""
+    """Class for pluralizing nouns. Example uses:
+
+        '{:N corp/us/era}'.format(Pluralizer(0))
+        '{:N scheme/s}'.format(Pluralizer(1))
+        '{:N sheep}'.format(Pluralizer(2))
+
+    From http://stackoverflow.com/a/27642538
+    """
     def __init__(self, value):
         self.value = value
 
