@@ -12,7 +12,7 @@ import os, sys
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo pip3 install flask
-from flask import Flask, request, url_for, render_template, flash, redirect
+from flask import Flask, request, url_for, render_template, flash, redirect, jsonify
 
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo pip3 install tinydb
@@ -41,6 +41,17 @@ thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
 UNO = Namespace('http://vocabularies.unesco.org/ontology#')
 
 ### Utility functions
+
+def request_wants_json():
+    """Returns True if request is for JSON instead of HTML, False otherwise.
+
+    From http://flask.pocoo.org/snippets/45/
+    """
+    best = request.accept_mimetypes \
+        .best_match(['application/json', 'text/html'])
+    return best == 'application/json' and \
+        request.accept_mimetypes[best] > \
+        request.accept_mimetypes['text/html']
 
 def getTermList(uri, broader=True, narrower=True):
     """Recursively finds broader or narrower (or both) terms in the thesaurus.
@@ -223,6 +234,9 @@ def scheme(number):
     schemes = db.table('metadata-schemes')
     element = schemes.get(eid=number)
 
+    if request_wants_json():
+        return jsonify(element)
+
     # Here we interpret the meaning of the versions
     versions = None
     if 'versions' in element:
@@ -389,6 +403,9 @@ def tool(number):
     tools = db.table('tools')
     element = tools.get(eid=number)
 
+    if request_wants_json():
+        return jsonify(element)
+
     # Here we sanity-check and sort the versions
     versions = None
     if 'versions' in element:
@@ -434,6 +451,45 @@ def tool(number):
 
     return render_template('tool.html', record=element, versions=versions,\
         relations=relations)
+
+### Display organization
+
+@app.route('/msc/g<int:number>')
+def organization(number):
+    organizations = db.table('organizations')
+    element = organizations.get(eid=number)
+
+    if request_wants_json():
+        return jsonify(element)
+    else:
+        flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
+        return redirect(url_for('hello'))
+
+### Display mapping
+
+@app.route('/msc/c<int:number>')
+def mapping(number):
+    mappings = db.table('mappings')
+    element = mappings.get(eid=number)
+
+    if request_wants_json():
+        return jsonify(element)
+    else:
+        flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
+        return redirect(url_for('hello'))
+
+### Display endorsement
+
+@app.route('/msc/e<int:number>')
+def endorsement(number):
+    endorsements = db.table('endorsements')
+    element = endorsements.get(eid=number)
+
+    if request_wants_json():
+        return jsonify(element)
+    else:
+        flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
+        return redirect(url_for('hello'))
 
 ### Per-subject lists of standards
 

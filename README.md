@@ -113,3 +113,14 @@ as long as the script is running) and run the [Python 3] script `serve.py`:
 
 You should then be able to access the Catalog in your Web browser using the URL
 the script shows you, e.g. <http://127.0.0.1:5000/>.
+
+## Testing the API
+
+To test retrieval of a record in JSON, use something like the following:
+
+~~~{.bash}
+curl -Haccept:application/json http://127.0.0.1:5000/msc/m13
+~~~
+
+The convention for dereferencing the MSC internal IDs is to replace the initial
+`msc:` with the URL of the Catalog followed by `/msc/`.
