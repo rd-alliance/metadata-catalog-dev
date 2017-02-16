@@ -637,17 +637,17 @@ def search():
             else:
                 error += 'No schemes found with title "{}". '.format(request.form['title'])
 
-        if request.form['subject'] != '' :
+        if request.form['keyword'] != '' :
             no_of_queries += 1
             # Interpret subject
             term_list = list()
-            if request.form['subject'] == 'Multidisciplinary':
+            if request.form['keyword'] == 'Multidisciplinary':
                 term_list.append('Multidisciplinary')
             else:
                 # - Translate term into concept ID
-                concept_id = getTermURI(request.form['subject'])
+                concept_id = getTermURI(request.form['keyword'])
                 if not concept_id:
-                    error += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(request.form['subject'])
+                    error += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(request.form['keyword'])
                 # - Find list of broader and narrower terms
                 term_uri_list = getTermList(concept_id)
                 for term_uri in term_uri_list:
@@ -660,10 +660,10 @@ def search():
             no_of_hits = len(subject_search)
             if no_of_hits > 0:
                 message += 'Found {:N scheme/s} related to {}. '.format(\
-                    Pluralizer(no_of_hits), request.form['subject'])
+                    Pluralizer(no_of_hits), request.form['keyword'])
                 results.extend(subject_search)
             else:
-                error += 'No schemes found related to {}. '.format(request.form['subject'])
+                error += 'No schemes found related to {}. '.format(request.form['keyword'])
 
         if request.form['id'] != '':
             no_of_queries += 1
@@ -691,7 +691,9 @@ def search():
                 Relation = Query()
                 with_funder = list()
                 for funder_id in matching_funders:
-                    with_funder.extend(schemes.search(Scheme.relatedEntities.any(( (Relation.role == 'funder') & (Relation.id == funder_id) ))))
+                    with_funder.extend(schemes.search(\
+                        Scheme.relatedEntities.any(\
+                            (Relation.role == 'funder') & (Relation.id == funder_id) )))
                 no_of_hits = len(with_funder)
                 if no_of_hits > 0:
                     message += 'Found {:N scheme/s} with funder "{}". '.format(\
@@ -774,6 +776,127 @@ def search():
         return render_template('search-form.html', titles=title_list,\
             subjects=subject_list, ids=id_list, funders=funder_list,\
             dataTypes=type_list)
+
+### Corresponding query interface
+
+@app.route('/query/schemes', methods=['POST'])
+def scheme_query():
+    if not request_wants_json():
+        flash('The URL you requested is part of the Catalog API. ' + \
+            'Please use this search form instead.', 'error')
+        return redirect(url_for('search'))
+
+    schemes = db.table('metadata-schemes')
+    organizations = db.table('organizations')
+    results = list()
+    Scheme = Query()
+
+    if 'title' in request.form and request.form['title'] != '':
+        title_search = schemes.search(Scheme.title.search(request.form['title']))
+        no_of_hits = len(title_search)
+        if no_of_hits > 0:
+            results.extend(title_search)
+
+    if 'keyword' in request.form and request.form['keyword'] != '' :
+        # Interpret subject
+        term_list = list()
+        if request.form['keyword'] == 'Multidisciplinary':
+            term_list.append('Multidisciplinary')
+        else:
+            # - Translate term into concept ID
+            concept_id = getTermURI(request.form['keyword'])
+            # - Find list of broader and narrower terms
+            term_uri_list = getTermList(concept_id)
+            for term_uri in term_uri_list:
+                term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
+                if not term in term_list:
+                    term_list.append(term)
+
+        # Search for matching schemes
+        subject_search = schemes.search(Scheme.keywords.any(term_list))
+        no_of_hits = len(subject_search)
+        if no_of_hits > 0:
+            results.extend(subject_search)
+
+    if 'keyword-id' in request.form and request.form['keyword-id'] != '' :
+        term_list = list()
+        # Find list of broader and narrower terms
+        term_uri_list = getTermList(request.form['keyword-id'])
+        # Translate into keywords
+        for term_uri in term_uri_list:
+            label_pairs = thesaurus.preferredLabel(term_uri, lang='en')
+            if len(label_pairs) > 0:
+                term = str(label_pairs[0][1])
+                if not term in term_list:
+                    term_list.append(term)
+
+        # Search for matching schemes
+        subject_search = schemes.search(Scheme.keywords.any(term_list))
+        no_of_hits = len(subject_search)
+        if no_of_hits > 0:
+            results.extend(subject_search)
+
+    if 'id' in request.form and request.form['id'] != '':
+        Identifier = Query()
+        id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
+        no_of_hits = len(id_search)
+        if no_of_hits > 0:
+            results.extend(id_search)
+
+    if 'funder' in request.form and request.form['funder'] != '':
+        # Interpret search
+        Funder = Query()
+        matching_funders = list()
+        funder_search = organizations.search(Funder.name.search(request.form['funder']))
+        for funder in funder_search:
+            matching_funders.append('msc:g{}'.format(funder.eid))
+        if len(matching_funders) > 0:
+            Relation = Query()
+            with_funder = list()
+            for funder_id in matching_funders:
+                with_funder.extend(\
+                    schemes.search(Scheme.relatedEntities.any(\
+                        (Relation.role == 'funder') & (Relation.id == funder_id) )))
+            no_of_hits = len(with_funder)
+            if no_of_hits > 0:
+                results.extend(with_funder)
+
+    if 'funder-id' in request.form and request.form['funder-id'] != '':
+        # Interpret search
+        Funder = Query()
+        Identifier = Query()
+        matching_funders = list()
+        funder_search = organizations.search(\
+            Funder.identifiers.any(Identifier.id == request.form['funder-id']))
+        for funder in funder_search:
+            matching_funders.append('msc:g{}'.format(funder.eid))
+        if len(matching_funders) > 0:
+            Relation = Query()
+            with_funder = list()
+            for funder_id in matching_funders:
+                with_funder.extend(schemes.search(\
+                    Scheme.relatedEntities.any(\
+                        (Relation.role == 'funder') & (Relation.id == funder_id) )))
+            no_of_hits = len(with_funder)
+            if no_of_hits > 0:
+                results.extend(with_funder)
+
+    if 'dataType' in request.form and request.form['dataType'] != '':
+        type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
+        no_of_hits = len(type_search)
+        if no_of_hits > 0:
+            results.extend(type_search)
+
+    # We just want the IDs
+    result_eids = list()
+    result_list = list()
+    for result in results:
+        if not result.eid in result_eids:
+            result_list.append('msc:m{}'.format(result.eid))
+            result_eids.append(result.eid)
+    result_list.sort()
+    # Show results list
+    return jsonify({ 'ids': result_list })
 
 ### Executing
 

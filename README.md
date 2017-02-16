@@ -119,8 +119,43 @@ the script shows you, e.g. <http://127.0.0.1:5000/>.
 To test retrieval of a record in JSON, use something like the following:
 
 ~~~{.bash}
-curl -Haccept:application/json http://127.0.0.1:5000/msc/m13
+curl -H 'Accept: application/json' http://127.0.0.1:5000/msc/m13
 ~~~
 
 The convention for dereferencing the MSC internal IDs is to replace the initial
 `msc:` with the URL of the Catalog followed by `/msc/`.
+
+To test the retrieval of internal IDs in response to a query, use something
+like the following:
+
+~~~{.bash}
+curl -X POST -F 'title=ABCD' -H 'Accept: application/json' http://127.0.0.1:5000/query/schemes
+~~~
+
+Supported queries when retrieving a list of scheme IDs:
+
+  * `title`: searches within the title using regular expression syntax.
+
+  * `keyword`: searches for an exact match within the list of keywords.
+
+  * `keyword-id`: accepts a URI from the UNESCO Vocabulary, which is translated
+    into a keyword and used as for `keyword` above.
+
+  * `id`: searches for an exact match within the list of identifiers.
+    The primary use of this is to search for schemes by external identifier,
+    though it can also be used to test if an internal ID is in use.
+
+  * `funder`: searches, using regular expression syntax, within the names of
+    organizations listed as funders of the scheme.
+
+  * `funder-id`: searches for an exact match within the list of identifiers of
+    organizations listed as funders of the scheme.
+
+  * `dataType`: searches for an exact match within the list of data types.
+
+The response will be a JSON object, consisting of the key `ids` with an array
+as its value:
+
+~~~{.json}
+{ "ids": [ "msc:m1", "msc:m2" ] }
+~~~

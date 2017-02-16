@@ -28,12 +28,12 @@
         <p>
           <label>
             <span>Subject area</span>
-            <input name="subject" list="subjects">
+            <input name="keyword" list="keywords">
           </label>
-          <datalist id="subjects">
+          <datalist id="keywords">
             <label>
               <span>or select from the list</span>
-              <select name="subject">
+              <select name="keyword">
                 <option value=""></option>
                 {% for item in subjects %}
                 <option>{{ item }}</option>
