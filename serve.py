@@ -230,12 +230,19 @@ def hello():
 ### Display metadata scheme
 
 @app.route('/msc/m<int:number>')
-def scheme(number):
+@app.route('/msc/m<int:number>/<field>')
+def scheme(number, field=None):
     schemes = db.table('metadata-schemes')
     element = schemes.get(eid=number)
 
     if request_wants_json():
-        return jsonify(element)
+        if field:
+            if field in element:
+                return jsonify({ field: element[field] })
+            else:
+                return jsonify()
+        else:
+            return jsonify(element)
 
     # Here we interpret the meaning of the versions
     versions = None
@@ -399,12 +406,19 @@ def scheme(number):
 ### Display tool
 
 @app.route('/msc/t<int:number>')
-def tool(number):
+@app.route('/msc/t<int:number>/<field>')
+def tool(number, field=None):
     tools = db.table('tools')
     element = tools.get(eid=number)
 
     if request_wants_json():
-        return jsonify(element)
+        if field:
+            if field in element:
+                return jsonify({ field: element[field] })
+            else:
+                return jsonify()
+        else:
+            return jsonify(element)
 
     # Here we sanity-check and sort the versions
     versions = None
@@ -455,12 +469,19 @@ def tool(number):
 ### Display organization
 
 @app.route('/msc/g<int:number>')
-def organization(number):
+@app.route('/msc/g<int:number>/<field>')
+def organization(number, field=None):
     organizations = db.table('organizations')
     element = organizations.get(eid=number)
 
     if request_wants_json():
-        return jsonify(element)
+        if field:
+            if field in element:
+                return jsonify({ field: element[field] })
+            else:
+                return jsonify()
+        else:
+            return jsonify(element)
     else:
         flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
         return redirect(url_for('hello'))
@@ -468,12 +489,19 @@ def organization(number):
 ### Display mapping
 
 @app.route('/msc/c<int:number>')
-def mapping(number):
+@app.route('/msc/c<int:number>/<field>')
+def mapping(number, field=None):
     mappings = db.table('mappings')
     element = mappings.get(eid=number)
 
     if request_wants_json():
-        return jsonify(element)
+        if field:
+            if field in element:
+                return jsonify({ field: element[field] })
+            else:
+                return jsonify()
+        else:
+            return jsonify(element)
     else:
         flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
         return redirect(url_for('hello'))
@@ -481,12 +509,19 @@ def mapping(number):
 ### Display endorsement
 
 @app.route('/msc/e<int:number>')
-def endorsement(number):
+@app.route('/msc/e<int:number>/<field>')
+def endorsement(number, field=None):
     endorsements = db.table('endorsements')
     element = endorsements.get(eid=number)
 
     if request_wants_json():
-        return jsonify(element)
+        if field:
+            if field in element:
+                return jsonify({ field: element[field] })
+            else:
+                return jsonify()
+        else:
+            return jsonify(element)
     else:
         flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
         return redirect(url_for('hello'))
