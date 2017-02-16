@@ -135,6 +135,18 @@ def getDBNode(table, id, type):
             result['children'] = children
     return result
 
+class Pluralizer:
+    """Class for pluralizing nouns. From http://stackoverflow.com/a/27642538"""
+    def __init__(self, value):
+        self.value = value
+
+    def __format__(self, formatter):
+        formatter = formatter.replace("N", str(self.value))
+        start, _, suffixes = formatter.partition("/")
+        singular, _, plural = suffixes.rpartition("/")
+
+        return "{}{}".format(start, singular if self.value == 1 else plural)
+
 ### Front page
 
 @app.route('/')
@@ -394,10 +406,8 @@ def subject(subject):
     no_of_hits = len(results)
     if no_of_hits == 0:
         error = 'Found 0 schemes.'
-    elif no_of_hits == 1:
-        message = 'Found 1 scheme.'
     else:
-        message = 'Found {} schemes.'.format(no_of_hits)
+        message = 'Found {:N scheme/s}.'.format(Pluralizer(no_of_hits))
         results.sort(key=lambda k: k['title'].lower())
     return render_template('search-results.html', title=query_string, message=message,\
         error=error, results=results)
@@ -467,8 +477,8 @@ def search():
             title_search = schemes.search(Scheme.title.search(request.form['title']))
             no_of_hits = len(title_search)
             if no_of_hits > 0:
-                message += 'Found {} scheme(s) with title "{}". '.format(\
-                    no_of_hits, request.form['title'])
+                message += 'Found {:N scheme/s} with title "{}". '.format(\
+                    Pluralizer(no_of_hits), request.form['title'])
                 results.extend(title_search)
             else:
                 error += 'No schemes found with title "{}". '.format(request.form['title'])
@@ -495,8 +505,8 @@ def search():
             subject_search = schemes.search(Scheme.keywords.any(term_list))
             no_of_hits = len(subject_search)
             if no_of_hits > 0:
-                message += 'Found {} scheme(s) related to {}. '.format(\
-                    no_of_hits, request.form['subject'])
+                message += 'Found {:N scheme/s} related to {}. '.format(\
+                    Pluralizer(no_of_hits), request.form['subject'])
                 results.extend(subject_search)
             else:
                 error += 'No schemes found related to {}. '.format(request.form['subject'])
@@ -507,8 +517,8 @@ def search():
             id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
             no_of_hits = len(id_search)
             if no_of_hits > 0:
-                message += 'Found {} scheme(s) with identifier "{}". '.format(\
-                    no_of_hits, request.form['id'])
+                message += 'Found {:N scheme/s} with identifier "{}". '.format(\
+                    Pluralizer(no_of_hits), request.form['id'])
                 results.extend(id_search)
             else:
                 error += 'No schemes found with identifier "{}". '.format(request.form['id'])
@@ -530,8 +540,8 @@ def search():
                     with_funder.extend(schemes.search(Scheme.relatedEntities.any(( (Relation.role == 'funder') & (Relation.id == funder_id) ))))
                 no_of_hits = len(with_funder)
                 if no_of_hits > 0:
-                    message += 'Found {} scheme(s) with funder "{}". '.format(\
-                        no_of_hits, request.form['funder'])
+                    message += 'Found {:N scheme/s} with funder "{}". '.format(\
+                        Pluralizer(no_of_hits), request.form['funder'])
                     results.extend(with_funder)
                 else:
                     error += 'No schemes found with funder "{}". '.format(request.form['funder'])
@@ -541,8 +551,8 @@ def search():
             type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
             no_of_hits = len(type_search)
             if no_of_hits > 0:
-                message += 'Found {} scheme(s) associated with {}. '.format(\
-                    no_of_hits, request.form['dataType'])
+                message += 'Found {:N scheme/s} associated with {}. '.format(\
+                    Pluralizer(no_of_hits), request.form['dataType'])
                 results.extend(type_search)
             else:
                 error += 'No schemes found associated with {}. '.format(request.form['dataType'])
@@ -556,7 +566,7 @@ def search():
                 result_eids.append(result.eid)
         no_of_hits = len(result_list)
         if no_of_queries > 1:
-            message += 'Found {} scheme(s) in total. '.format(no_of_hits)
+            message += 'Found {:N scheme/s} in total. '.format(Pluralizer(no_of_hits))
         if no_of_hits == 1:
             # Go direct to that page
             result = result_list[0]
