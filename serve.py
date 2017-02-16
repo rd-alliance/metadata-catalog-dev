@@ -591,6 +591,7 @@ def search():
         subject_set = set()
         for uri in full_keyword_uris:
             subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
+        subject_set.add('Multidisciplinary')
         subject_list = list(subject_set)
         subject_list.sort()
         return render_template('search-form.html', titles=title_list,\
