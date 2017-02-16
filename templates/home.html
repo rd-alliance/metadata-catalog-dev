@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block main %}
-  <h1>Metadata Standards Catalog</h1>
   <p>The RDA Metadata Standards Catalog is a collaborative, open directory of
     metadata standards applicable to research data. It is offered to the
     international academic community to help address infrastructure challenges.</p>
@@ -8,6 +7,7 @@
   <ul>
     <li><a href="{{ url_for('scheme_index') }}">Browse by scheme name</a></li>
     <li><a href="{{ url_for('subject_index') }}">Browse by subject</a></li>
+    <li><a href="{{ url_for('search') }}">Search</a></li>
   </ul>
   <h2>Metadata-related tools</h2>
   <ul>

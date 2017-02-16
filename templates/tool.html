@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{{ record['title'] }} – {% endblock %}
+{% block title %}{{ record['title'] }}{% endblock %}
 {% block main %}
-  <h1>{{ record['title'] }}</h1>
   {% if 'description' in record %}
   <div class="description">{{ record['description']|safe }}</div>
   {% endif %}

@@ -1,13 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{{ title }} – {% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block main %}
-  <h1>{{ title }}</h1>
-  {% if error %}
-  <p class="error">{{ error|safe }}</p>
-  {% endif %}
-  {% if message %}
-  <p class="message">{{ message|safe }}</p>
-  {% endif %}
   {% for result in results %}
   <div class="result">
     <p class="name"><a href="{{ url_for('scheme', number=result.eid) }}">{{ result['title'] }}</a></p>

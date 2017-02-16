@@ -12,7 +12,7 @@ import os, sys
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo pip3 install flask
-from flask import Flask, request, url_for, render_template, redirect
+from flask import Flask, request, url_for, render_template, flash, redirect
 
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo pip3 install tinydb
@@ -31,6 +31,7 @@ from rdflib.namespace import SKOS, RDF
 app = Flask (__name__)
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
+app.secret_key = os.urandom(24)
 
 script_dir = os.path.dirname(sys.argv[0])
 db = TinyDB(os.path.realpath(os.path.join(script_dir, 'db.json')))
@@ -459,8 +460,10 @@ def search():
         error = ''
         results = list()
         Scheme = Query()
+        no_of_queries = 0
 
         if request.form['title'] != '':
+            no_of_queries += 1
             title_search = schemes.search(Scheme.title.search(request.form['title']))
             no_of_hits = len(title_search)
             if no_of_hits > 0:
@@ -471,6 +474,7 @@ def search():
                 error += 'No schemes found with title "{}". '.format(request.form['title'])
 
         if request.form['subject'] != '' :
+            no_of_queries += 1
             # Interpret subject
             term_list = list()
             if request.form['subject'] == 'Multidisciplinary':
@@ -498,6 +502,7 @@ def search():
                 error += 'No schemes found related to {}. '.format(request.form['subject'])
 
         if request.form['id'] != '':
+            no_of_queries += 1
             Identifier = Query()
             id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
             no_of_hits = len(id_search)
@@ -509,6 +514,7 @@ def search():
                 error += 'No schemes found with identifier "{}". '.format(request.form['id'])
 
         if request.form['funder'] != '':
+            no_of_queries += 1
             # Interpret search
             Funder = Query()
             matching_funders = list()
@@ -531,6 +537,7 @@ def search():
                     error += 'No schemes found with funder "{}". '.format(request.form['funder'])
 
         if 'dataType' in request.form and request.form['dataType'] != '':
+            no_of_queries += 1
             type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
             no_of_hits = len(type_search)
             if no_of_hits > 0:
@@ -548,9 +555,15 @@ def search():
                 result_list.append(result)
                 result_eids.append(result.eid)
         no_of_hits = len(result_list)
+        if no_of_queries > 1:
+            message += 'Found {} scheme(s) in total. '.format(no_of_hits)
         if no_of_hits == 1:
             # Go direct to that page
             result = result_list[0]
+            if error:
+                flash(error, 'error')
+            if message:
+                flash(message)
             return redirect(url_for('scheme', number=result.eid))
         else:
             if no_of_hits > 1:
