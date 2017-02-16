@@ -540,17 +540,24 @@ def search():
             else:
                 error += 'No schemes found associated with {}. '.format(request.form['dataType'])
 
-        no_of_hits = len(results)
+        # Are there any duplicates?
+        result_eids = list()
+        result_list = list()
+        for result in results:
+            if not result.eid in result_eids:
+                result_list.append(result)
+                result_eids.append(result.eid)
+        no_of_hits = len(result_list)
         if no_of_hits == 1:
             # Go direct to that page
-            result = results[0]
+            result = result_list[0]
             return redirect(url_for('scheme', number=result.eid))
         else:
             if no_of_hits > 1:
-                results.sort(key=lambda k: k['title'].lower())
+                result_list.sort(key=lambda k: k['title'].lower())
             # Show results list
             return render_template('search-results.html', title=title, message=message,\
-                error=error, results=results)
+                error=error, results=result_list)
 
     else:
         # Title, identifier, funder, dataType help
