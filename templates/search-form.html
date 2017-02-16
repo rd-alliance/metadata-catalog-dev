@@ -59,6 +59,32 @@
             </datalist>
           </label>
         </p>
+        {% if funders %}
+        <p>
+          <label>
+            <span>Funder</span>
+            <input name="funder" list="funders">
+            <datalist id="funders">
+              {% for item in funders %}
+              <option>{{ item }}</option>
+              {% endfor %}
+            </datalist>
+          </label>
+        </p>
+        {% endif %}
+        {% if dataTypes %}
+        <p>
+          <label>
+            <span>Data type</span>
+            <input name="dataType" list="dataTypes">
+            <datalist id="dataTypes">
+              {% for item in dataTypes %}
+              <option>{{ item }}</option>
+              {% endfor %}
+            </datalist>
+          </label>
+        </p>
+        {% endif %}
       </div>
       <p><button>Submit</button></p>
     </form>

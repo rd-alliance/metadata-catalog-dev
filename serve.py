@@ -452,6 +452,7 @@ def subject_index():
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     schemes = db.table('metadata-schemes')
+    organizations = db.table('organizations')
     if request.method == 'POST':
         title = 'Search results'
         message = ''
@@ -507,6 +508,38 @@ def search():
             else:
                 error += 'No schemes found with identifier "{}". '.format(request.form['id'])
 
+        if request.form['funder'] != '':
+            # Interpret search
+            Funder = Query()
+            matching_funders = list()
+            funder_search = organizations.search(Funder.name.search(request.form['funder']))
+            for funder in funder_search:
+                matching_funders.append('msc:g{}'.format(funder.eid))
+            if len(matching_funders) == 0:
+                error += 'No funders found called "{}" .'.format(request.form['funder'])
+            else:
+                Relation = Query()
+                with_funder = list()
+                for funder_id in matching_funders:
+                    with_funder.extend(schemes.search(Scheme.relatedEntities.any(( (Relation.role == 'funder') & (Relation.id == funder_id) ))))
+                no_of_hits = len(with_funder)
+                if no_of_hits > 0:
+                    message += 'Found {} scheme(s) with funder "{}". '.format(\
+                        no_of_hits, request.form['funder'])
+                    results.extend(with_funder)
+                else:
+                    error += 'No schemes found with funder "{}". '.format(request.form['funder'])
+
+        if 'dataType' in request.form and request.form['dataType'] != '':
+            type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
+            no_of_hits = len(type_search)
+            if no_of_hits > 0:
+                message += 'Found {} scheme(s) associated with {}. '.format(\
+                    no_of_hits, request.form['dataType'])
+                results.extend(type_search)
+            else:
+                error += 'No schemes found associated with {}. '.format(request.form['dataType'])
+
         no_of_hits = len(results)
         if no_of_hits == 1:
             # Go direct to that page
@@ -520,16 +553,32 @@ def search():
                 error=error, results=results)
 
     else:
-        # Title and identifier help
+        # Title, identifier, funder, dataType help
         all_schemes = schemes.all()
         title_list = list()
         id_list = list()
+        funder_list = list()
+        type_list = list()
         for scheme in all_schemes:
             title_list.append(scheme['title'])
             for identifier in scheme['identifiers']:
                 id_list.append(identifier['id'])
+            if 'dataTypes' in scheme:
+                for type in scheme['dataTypes']:
+                    type_list.append(type)
+            if 'relatedEntities' in scheme:
+                for entity in scheme['relatedEntities']:
+                    if entity['role'] == 'funder':
+                        org_id = entity['id']
+                        funder = organizations.get(eid=int(org_id[5:]))
+                        if funder:
+                            funder_list.append(funder['name'])
+                        else:
+                            print('Could not look up organization with eid {}. '.format(org_id[5:]))
         title_list.sort()
         id_list.sort()
+        funder_list.sort()
+        type_list.sort()
         # Subject help
         full_keyword_uris = getAllTermURIs()
         subject_set = set()
@@ -538,7 +587,8 @@ def search():
         subject_list = list(subject_set)
         subject_list.sort()
         return render_template('search-form.html', titles=title_list,\
-            subjects=subject_list, ids=id_list)
+            subjects=subject_list, ids=id_list, funders=funder_list,\
+            dataTypes=type_list)
 
 ### Executing
 
