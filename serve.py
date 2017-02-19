@@ -8,20 +8,20 @@ import os, sys
 
 ## Non-standard
 
-# See http://flask.pocoo.org/docs/0.12/
+# See http://flask.pocoo.org/docs/0.10/
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
-#   - latest version: sudo pip3 install flask
+#   - latest version: sudo -H pip3 install flask
 from flask import Flask, request, url_for, render_template, flash, redirect, jsonify
 
 # See http://tinydb.readthedocs.io/
-# Install from PyPi: sudo pip3 install tinydb
+# Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query, where
 
 # See http://rdflib.readthedocs.io/
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-rdflib
-#   - latest version: sudo pip3 install rdflib
+#   - latest version: sudo -H pip3 install rdflib
 import rdflib
 from rdflib import Literal, Namespace
 from rdflib.namespace import SKOS, RDF
@@ -127,7 +127,7 @@ def getTermNode(uri, filter=list()):
     result = dict()
     term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
     result['name'] = term
-    slug = term.lower().replace(' ', '+',)
+    slug = toSlug(term)
     result['url'] = url_for('subject', subject=slug)
     narrower_ids = thesaurus.objects(uri, SKOS.narrower)
     children = list()
@@ -220,6 +220,16 @@ class Pluralizer:
         singular, _, plural = suffixes.rpartition("/")
 
         return "{}{}".format(start, singular if self.value == 1 else plural)
+
+def toSlug(string):
+    """Transform string into URL-safe slug."""
+    slug = string.replace(' ', '+')
+    return slug
+
+def fromSlug(slug):
+    """Transform URL-safe slug back into regular string."""
+    string = slug.replace('+', ' ')
+    return string
 
 ### Front page
 
@@ -531,7 +541,7 @@ def endorsement(number, field=None):
 @app.route('/subject/<subject>')
 def subject(subject):
     # If people start using geographical keywords, the following will need more sophistication
-    query_string = '{}{}'.format(subject[0:1].upper(), subject[1:]).replace('+', ' ')
+    query_string = fromSlug(subject)
     message = None
     error = None
     results = list()
@@ -563,6 +573,65 @@ def subject(subject):
     else:
         message = 'Found {:N scheme/s}.'.format(Pluralizer(no_of_hits))
         results.sort(key=lambda k: k['title'].lower())
+    return render_template('search-results.html', title=query_string, message=message,\
+        error=error, results=results)
+
+### Per-funder/maintainer lists of standards
+
+@app.route('/funder/g<int:funder>')
+@app.route('/maintainer/g<int:maintainer>')
+@app.route('/user/g<int:user>')
+def group(funder=None, maintainer=None, user=None):
+    id = 0
+    role = ''
+    verb = ''
+    message = None
+    error = None
+    if funder:
+        id = funder
+        role = 'funder'
+        verb = 'funded'
+    elif maintainer:
+        id = maintainer
+        role = 'maintainer'
+        verb = 'maintained'
+    elif user:
+        id = user
+        role = 'user'
+        verb = 'used'
+    # Do the search
+    organizations = db.table('organizations')
+    element = organizations.get(eid=id)
+    title = element['name']
+    schemes = db.table('metadata-schemes')
+    Scheme = Query()
+    Relation = Query()
+    results = schemes.search(Scheme.relatedEntities.any(\
+        (Relation.role == role) & (Relation.id == 'msc:g{}'.format(id)) ))
+    no_of_hits = len(results)
+    if no_of_hits > 0:
+        message = 'Found {:N scheme/s} {} by this organization.'.format(\
+            Pluralizer(no_of_hits), verb)
+    else:
+        error = 'No schemes found {} by this organization.'.format(verb)
+    return render_template('search-results.html', title=title, message=message,\
+        error=error, results=results)
+
+### Per-datatype lists of standards
+@app.route('/datatype/<dataType>')
+def dataType(dataType):
+    query_string = fromSlug(dataType)
+    message = None
+    error = None
+    schemes = db.table('metadata-schemes')
+    Scheme = Query()
+    results = schemes.search(Scheme.dataTypes.any([ query_string ]))
+    no_of_hits = len(results)
+    if no_of_hits > 0:
+        message = 'Found {:N scheme/s} used for this type of data.'.format(\
+            Pluralizer(no_of_hits))
+    else:
+        error = 'No schemes have been reported to be used for this type of data.'
     return render_template('search-results.html', title=query_string, message=message,\
         error=error, results=results)
 
