@@ -9,7 +9,7 @@
     <p>Used in</p>
     <ul>
     {% for keyword in record['keywords'] %}
-      <li>{{ keyword }}</li>
+      <li><a href="{{ url_for('subject', subject=toSlug(keyword)) }}">{{ keyword }}</a></li>
     {% endfor %}
     </ul>
   </div>
@@ -19,7 +19,7 @@
     <p>Used for</p>
     <ul>
     {% for type in record['dataTypes'] %}
-      <li>{{ type }}</li>
+      <li><a href="{{ url_for('dataType', dataType=toSlug(type)) }}">{{ type }}</a></li>
     {% endfor %}
     </ul>
   </div>
@@ -46,7 +46,7 @@
     <ul>
     {% for org in relations['maintainers'] %}
       <li>
-        <p>Maintainer: {{ org['name'] }}</p>
+        <p>Maintainer: <a href="{{ url_for('group', maintainer=org.eid) }}">{{ org['name'] }}</a></p>
       {% if 'locations' in org %}
         <ul class="locations">
         {% for location in org['locations'] %}
@@ -58,7 +58,7 @@
     {% endfor %}
     {% for org in relations['funders'] %}
       <li>
-        <p>Funder: {{ org['name'] }}</p>
+        <p>Funder: <a href="{{ url_for('group', funder=org.eid) }}">{{ org['name'] }}</a></p>
       {% if 'locations' in org %}
         <ul class="locations">
         {% for location in org['locations'] %}
@@ -167,10 +167,17 @@
     <ul>
     {% for user in relations['users'] %}
       <li>
-        <p><a href="{{ user['locations'][0]['url'] }}">{{ user['name'] }}</a></p>
+        <p><a href="{{ url_for('group', user=user.eid) }}">{{ user['name'] }}</a></p>
         {% if 'description' in user %}
         <div class="description">{{ user['description']|safe }}</div>
         {% endif %}
+        {% if 'locations' in user %}
+        <ul class="locations">
+        {% for location in user['locations'] %}
+          <li><a href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
       </li>
     {% endfor %}
     </ul>

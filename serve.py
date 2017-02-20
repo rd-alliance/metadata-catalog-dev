@@ -12,7 +12,7 @@ import os, sys
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo -H pip3 install flask
-from flask import Flask, request, url_for, render_template, flash, redirect, jsonify
+from flask import Flask, request, url_for, render_template, flash, redirect, jsonify, g
 
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install tinydb
@@ -230,6 +230,10 @@ def fromSlug(slug):
     """Transform URL-safe slug back into regular string."""
     string = slug.replace('+', ' ')
     return string
+
+@app.context_processor
+def utility_processor():
+    return { 'toSlug': toSlug, 'fromSlug': fromSlug }
 
 ### Front page
 
