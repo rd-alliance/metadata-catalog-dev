@@ -65,6 +65,8 @@ c = 0
 e = 0
 
 # Log file contents
+if args.dest:
+    log_file = os.path.realpath(os.path.join(args.dest, 'migration-log.txt'))
 log = ''
 isNewLog = False
 
@@ -102,9 +104,19 @@ def translateKeyword(kw):
     return output
 
 def createSlug(string):
+    # Put to lower case, turn spaces to hyphens
     output = string.strip().lower().replace(' ', '-')
-    output = re.sub(r'-+', '-', output)
+    # Fixes for problem entries
+    output = output.replace('é', 'e')
+    output = output.replace('access-to', 'access')
+    output = output.replace('content-standard-for', 'content-standard')
+    output = output.replace('for-interchange-of', 'interchange')
+    # Strip out non-alphanumeric ASCII characters
     output = re.sub(r'[^-A-Za-z0-9_]+', '', output)
+    # Remove duplicate hyphens
+    output = re.sub(r'-+', '-', output)
+    # Truncate
+    output = output[:71]
     return output
 
 ### Processing
