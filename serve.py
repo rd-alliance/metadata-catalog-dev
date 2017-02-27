@@ -4,7 +4,7 @@
 
 ## Standard
 
-import os, sys
+import os, sys, re
 
 ## Non-standard
 
@@ -222,18 +222,25 @@ class Pluralizer:
         return "{}{}".format(start, singular if self.value == 1 else plural)
 
 def toSlug(string):
-    """Transform string into URL-safe slug."""
+    """Transforms string into URL-safe slug."""
     slug = string.replace(' ', '+')
     return slug
 
 def fromSlug(slug):
-    """Transform URL-safe slug back into regular string."""
+    """Transforms URL-safe slug back into regular string."""
     string = slug.replace('+', ' ')
     return string
 
 @app.context_processor
 def utility_processor():
     return { 'toSlug': toSlug, 'fromSlug': fromSlug }
+
+def wild2regex(string):
+    """Transforms wildcard searches to regular expressions."""
+    regex = re.escape(string)
+    regex = regex.replace('\*','.*')
+    regex = regex.replace('\?','.?')
+    return regex
 
 ### Front page
 
@@ -701,7 +708,8 @@ def search():
 
         if request.form['title'] != '':
             no_of_queries += 1
-            title_search = schemes.search(Scheme.title.search(request.form['title']))
+            title_query = wild2regex(request.form['title'])
+            title_search = schemes.search(Scheme.title.search(title_query))
             no_of_hits = len(title_search)
             if no_of_hits > 0:
                 message += 'Found {:N scheme/s} with title "{}". '.format(\
@@ -750,12 +758,13 @@ def search():
             else:
                 error += 'No schemes found with identifier "{}". '.format(request.form['id'])
 
-        if request.form['funder'] != '':
+        if 'funder' in request.form and request.form['funder'] != '':
             no_of_queries += 1
             # Interpret search
             Funder = Query()
             matching_funders = list()
-            funder_search = organizations.search(Funder.name.search(request.form['funder']))
+            funder_query = wild2regex(request.form['funder'])
+            funder_search = organizations.search(Funder.name.search(funder_query))
             for funder in funder_search:
                 matching_funders.append('msc:g{}'.format(funder.eid))
             if len(matching_funders) == 0:
