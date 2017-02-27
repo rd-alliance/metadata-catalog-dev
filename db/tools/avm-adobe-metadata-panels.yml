@@ -1,0 +1,12 @@
+description: <p>A set of metadata panels that can be added to Adobe Creative Suite
+  4 applications to allow AVM-compliant metadata to be entered directly into images.</p>
+identifiers:
+- id: msc:t4
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.virtualastronomy.org/avm_metadata.php#6
+relatedEntities:
+- id: msc:m3
+  role: supported scheme
+title: AVM Adobe Metadata Panels

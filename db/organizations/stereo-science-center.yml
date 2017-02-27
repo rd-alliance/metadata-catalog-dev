@@ -1,0 +1,9 @@
+description: <p>Archive for STEREO telemetry, mission support data, and higher level
+  instrument data and analysis software.</p>
+identifiers:
+- id: msc:g89
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://stereo-ssc.nascom.nasa.gov/
+name: STEREO Science Center

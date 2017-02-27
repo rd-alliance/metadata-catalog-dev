@@ -1,0 +1,19 @@
+description: <p>Developed by the Cooperative Ocean-Atmosphere Research Data Service
+  (COARDS), these conventions constitute a standard set of metadata to include in
+  netCDF files, allowing them to be shared and interchanged.</p><p>The COARDS Conventions
+  are generalized and extended by the CF (Climate and Forecast) Metadata Conventions.</p>
+identifiers:
+- id: msc:m51
+  scheme: RDA-MSCWG
+keywords:
+- Oceanography
+- Meteorology
+- Climatology
+- Oceanography
+locations:
+- type: website
+  url: http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html
+relatedEntities:
+- id: msc:m5
+  role: parent scheme
+title: COARDS Conventions

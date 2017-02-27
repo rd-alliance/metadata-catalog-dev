@@ -1,0 +1,9 @@
+description: <p>A gateway providing a discovery service for climate data held at repositories
+  across the globe. It supports use of the Metafor CIM.</p>
+identifiers:
+- id: msc:g34
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.earthsystemgrid.org/
+name: Earth System Grid

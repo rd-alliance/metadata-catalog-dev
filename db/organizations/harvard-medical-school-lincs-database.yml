@@ -1,0 +1,10 @@
+description: <p>One of two research centers in the US creating libraries of signatures
+  that describe how cells respond to perturbation, it uses the ISA-TAB standard to
+  describe its data.</p>
+identifiers:
+- id: msc:g50
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://lincs.hms.harvard.edu/data/isa-tab/
+name: Harvard Medical School LINCS Database

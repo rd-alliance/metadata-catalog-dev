@@ -1,0 +1,24 @@
+description: <p>A set of common technical and statistical standards and guidelines
+  to be used for the efficient exchange and sharing of statistical data and metadata.</p><p>Sponsoring
+  institutions include BIS, ECB, EUROSTAT, IMF, OECD, UN, and the World Bank. Technical
+  Specification 2.1 was amended in May 2012.</p>
+identifiers:
+- id: msc:m38
+  scheme: RDA-MSCWG
+keywords:
+- Statistics
+- Social policy
+- Economics
+- Demography
+- Human geography
+locations:
+- type: document
+  url: http://sdmx.org/?page_id=5008
+- type: website
+  url: http://sdmx.org
+relatedEntities:
+- id: msc:g42
+  role: user
+- id: msc:g86
+  role: user
+title: SDMX (Statistical Data and Metadata Exchange)

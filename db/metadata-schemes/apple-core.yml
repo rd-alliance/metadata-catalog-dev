@@ -1,0 +1,13 @@
+description: <p>Darwin Core documentation and recommendations for herbaria.</p>
+identifiers:
+- id: msc:m47
+  scheme: RDA-MSCWG
+keywords:
+- Botany
+locations:
+- type: website
+  url: http://code.google.com/p/applecore/wiki/Introduction
+relatedEntities:
+- id: msc:m9
+  role: parent scheme
+title: Apple Core

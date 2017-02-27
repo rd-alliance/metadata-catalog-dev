@@ -1,0 +1,13 @@
+identifiers:
+- id: msc:m68
+  scheme: RDA-MSCWG
+keywords:
+- Toxicology
+- Genetics
+locations:
+- type: website
+  url: https://bitbucket.org/kanterae/isaconfig-dixa
+relatedEntities:
+- id: msc:m21
+  role: parent scheme
+title: isaconfig-diXa

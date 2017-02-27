@@ -1,0 +1,28 @@
+description: <p>The Standard for Documentation of Astronomical Catalogues is a set
+  of conventions for archiving astronomical data. As well as path, filename and data
+  format conventions, it also specifies how to construct a plain text description
+  file for documenting the data files. It was developed as an alternative to FITS
+  that would be more suited to archives, permit human inspection, and allow manipulation
+  via standard Unix command-line tools.</p> <p>SDAC was developed by CDS (Centre de
+  Données astronomiques de Strasbourg). Version 2.0 is the most recent; it was released
+  in February 2000.</p>
+identifiers:
+- id: msc:m37
+  scheme: RDA-MSCWG
+keywords:
+- Astronomy
+- Astrophysics
+locations:
+- type: document
+  url: http://cds.u-strasbg.fr/doc/catstd.pdf
+- type: website
+  url: http://cds.u-strasbg.fr/doc/catstd.htx
+relatedEntities:
+- id: msc:g16
+  role: user
+- id: msc:g16
+  role: maintainer
+title: SDAC (Standard for Documentation of Astronomical Catalogues)
+versions:
+- issued: 2000-02
+  number: 2.0

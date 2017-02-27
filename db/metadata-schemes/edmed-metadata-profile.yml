@@ -1,0 +1,22 @@
+description: <p>The European Directory of Marine Environmental Datasets metadata scheme,
+  which is a profile of ISO 19115.</p>
+identifiers:
+- id: msc:m58
+  scheme: RDA-MSCWG
+keywords:
+- Meteorology
+- Ecology
+- Climatology
+- Glaciology
+- Oceanography
+- Soil sciences
+- Hydrogeology
+- Hydrology
+- Environmental sciences
+locations:
+- type: website
+  url: https://www.bodc.ac.uk/data/information_and_inventories/edmed/
+relatedEntities:
+- id: msc:m22
+  role: parent scheme
+title: EDMED Metadata Profile

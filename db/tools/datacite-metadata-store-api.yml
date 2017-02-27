@@ -1,0 +1,12 @@
+description: <p>RESTFUL API for registering datasets with the DataCite organization.
+  The interface uses the DataCite Metadata Schema.</p>
+identifiers:
+- id: msc:t20
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://mds.datacite.org/static/apidoc
+relatedEntities:
+- id: msc:m11
+  role: supported scheme
+title: DataCite Metadata Store API

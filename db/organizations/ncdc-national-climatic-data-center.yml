@@ -1,0 +1,10 @@
+description: <p>The world's largest climate data archive, providing climatological
+  services and data worldwide. It currently promotes the FGDC/CSDGM metadata standard
+  for its datasets.</p>
+identifiers:
+- id: msc:g75
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ncdc.noaa.gov/oa/metadata/metadataresources.html
+name: NCDC (National Climatic Data Center)

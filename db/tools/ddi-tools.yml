@@ -1,0 +1,12 @@
+description: <p>The Data Documentaion Initiative website's list of tools to implement
+  the DDI standard.</p>
+identifiers:
+- id: msc:t22
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ddialliance.org/resources/tools
+relatedEntities:
+- id: msc:m13
+  role: supported scheme
+title: DDI Tools

@@ -1,0 +1,50 @@
+description: '<p>An internationally-adopted schema for describing geographic information
+  and services. It provides information about the identification, the extent, the
+  quality, the spatial and temporal schema, spatial reference, and distribution of
+  digital geographic data.</p><p>Sponsored by the International Standards Organisation,
+  the first edition of ISO 19115 was published in 2003. It has since been split into
+  parts: ISO 19115-1:2014 contains the fundamentals of the standard; ISO 19115-2:2009
+  contains extensions for imagery and gridded data; and ISO/TS 19115-3:2016 provides
+  an XML schema implementation for the fundamental concepts compatible with ISO/TS
+  19138:2007 (Geographic Metadata XML, or GMD).</p>'
+identifiers:
+- id: msc:m22
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Oceanography
+- Meteorology
+- Climatology
+- Topography
+- Hydrology
+- Glaciology
+- Oceanography
+- Hydrogeology
+- Earth sciences
+- Geography
+- Geology
+locations:
+- type: document
+  url: http://standards.iso.org/iso/19115/-3/
+- type: website
+  url: http://www.iso.org/iso/catalogue_detail.htm?csnumber=53798
+relatedEntities:
+- id: msc:g6
+  role: user
+- id: msc:g8
+  role: user
+- id: msc:g10
+  role: user
+- id: msc:g26
+  role: user
+- id: msc:g33
+  role: user
+- id: msc:g37
+  role: user
+- id: msc:g48
+  role: user
+- id: msc:g49
+  role: user
+- id: msc:g56
+  role: user
+title: ISO 19115

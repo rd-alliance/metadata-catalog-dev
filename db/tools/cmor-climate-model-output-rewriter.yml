@@ -1,0 +1,12 @@
+description: <p>A set of C-based functions, with bindings to both Python and FORTRAN
+  90, that can be used to produce CF-compliant netCDF files.</p>
+identifiers:
+- id: msc:t13
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www2-pcmdi.llnl.gov/cmor
+relatedEntities:
+- id: msc:m5
+  role: supported scheme
+title: CMOR (Climate Model Output Rewriter)

@@ -1,0 +1,10 @@
+description: <p>KOMFOR provides access to data in the earth and environmental sciences
+  with special emphasis on geological disciplines The minimum set of metadata elements
+  in KomFor is determined by the DataCite metadata schema.</p>
+identifiers:
+- id: msc:g64
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.komfor.net/
+name: KomFor Data Portal

@@ -1,0 +1,9 @@
+description: <p>The SDMX website's list of current and planned practical implimentations
+  from national and international organisations.</p>
+identifiers:
+- id: msc:g86
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://sdmx.org/?page_id=14
+name: SDMX Implementations

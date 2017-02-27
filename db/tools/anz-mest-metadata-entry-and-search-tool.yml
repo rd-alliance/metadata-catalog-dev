@@ -1,0 +1,13 @@
+description: '<p>A GeoNetwork web application for metadata management and searching,
+  with profiles available for two extensions of ISO 19115: ANZLIC and the Marine Community
+  Profile.</p>'
+identifiers:
+- id: msc:t2
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://bluenetdev.its.utas.edu.au/download/bluenetmest.html
+relatedEntities:
+- id: msc:m22
+  role: supported scheme
+title: ANZ-MEST (Metadata Entry and Search Tool)

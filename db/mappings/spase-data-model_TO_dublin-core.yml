@@ -1,0 +1,12 @@
+description: A mapping from SPASE Data Model to Dublin Core.
+identifiers:
+- id: msc:c26
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.spase-group.org/tools/stylesheet/oai/
+relatedEntities:
+- id: msc:m39
+  role: input scheme
+- id: msc:m15
+  role: output scheme

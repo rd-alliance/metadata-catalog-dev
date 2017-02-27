@@ -1,0 +1,12 @@
+identifiers:
+- id: msc:m81
+  scheme: RDA-MSCWG
+keywords:
+- Earth sciences
+locations:
+- type: website
+  url: http://repository.stategeothermaldata.org/repository/resource/98ddf901b9782a25982e01af3b0bda50/
+relatedEntities:
+- id: msc:m22
+  role: parent scheme
+title: USGIN ISO profile

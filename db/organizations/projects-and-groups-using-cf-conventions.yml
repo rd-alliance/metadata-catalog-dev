@@ -1,0 +1,9 @@
+description: <p>The CF Metadata Website's list of projects and groups adopting or
+  encouraging the CF-Conventions as a standard.</p>
+identifiers:
+- id: msc:g83
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://web.archive.org/web/20130213230013/http://cf-pcmdi.llnl.gov/projects-and-groups-adopting-the-cf-conventions-as-their-standard
+name: Projects and Groups Using the CF-Conventions

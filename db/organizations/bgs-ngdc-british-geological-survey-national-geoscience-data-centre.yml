@@ -1,0 +1,10 @@
+description: <p>The world's oldest national geological survey and the United Kingdom's
+  premier centre for earth science information and expertise, with information access
+  via an ISO 19115-compliant discovery metadata database.</p>
+identifiers:
+- id: msc:g10
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.bgs.ac.uk/discoverymetadata/
+name: BGS NGDC - British Geological Survey National Geoscience Data Centre

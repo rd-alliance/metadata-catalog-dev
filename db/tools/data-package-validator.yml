@@ -1,0 +1,12 @@
+description: <p>The Data Package Validator takes the URL of a Data Package and checks
+  whether it conforms to the Data Package specification.</p>
+identifiers:
+- id: msc:t17
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://data.okfn.org/tools/validate
+relatedEntities:
+- id: msc:m10
+  role: supported scheme
+title: Data Package Validator

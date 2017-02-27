@@ -1,0 +1,16 @@
+description: <p>A profile of ISO 19115 designed to support the documentation and discovery
+  of spatial datasets, dataset series and geo services within Higher and Further Education.</p>
+identifiers:
+- id: msc:m79
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Topography
+- Geography
+locations:
+- type: website
+  url: http://www.gogeo.ac.uk/gogeo/metadata/agmap.htm
+relatedEntities:
+- id: msc:m22
+  role: parent scheme
+title: UK AGMAP (Academic Geospatial Metadata Application Profile)

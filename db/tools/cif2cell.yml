@@ -1,0 +1,12 @@
+description: <p>A tool to generate the geometrical setup for various electronic structure
+  codes from a CIF file.</p>
+identifiers:
+- id: msc:t8
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://sourceforge.net/projects/cif2cell/
+relatedEntities:
+- id: msc:m6
+  role: supported scheme
+title: CIF2Cell

@@ -1,0 +1,12 @@
+identifiers:
+- id: msc:m82
+  scheme: RDA-MSCWG
+keywords:
+- Genetics
+locations:
+- type: website
+  url: http://www.ncbi.nlm.nih.gov/pubmed/23031277
+relatedEntities:
+- id: msc:m27
+  role: parent scheme
+title: VarioML

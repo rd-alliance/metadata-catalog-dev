@@ -1,0 +1,12 @@
+description: <p>A tool used to check the integrity and cosistency of crystal structure
+  encodings in CIF&#160;format.</p>
+identifiers:
+- id: msc:t38
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://checkcif.iucr.org
+relatedEntities:
+- id: msc:m6
+  role: supported scheme
+title: IUCr checkCIF

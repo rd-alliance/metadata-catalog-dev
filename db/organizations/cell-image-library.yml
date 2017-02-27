@@ -1,0 +1,10 @@
+description: <p>A resource database of images, videos, and animations of cells, capturing
+  a wide diversity of organisms, cell types, and cellular processes. Its native metadata
+  format for images is OME-XML.</p>
+identifiers:
+- id: msc:g17
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.cellimagelibrary.org/
+name: 'The Cell: An Image Library'

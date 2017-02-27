@@ -1,0 +1,13 @@
+description: <p>Metacat is a repository for data and metadata that helps scientists
+  find, understand, and effectively use the data sets they manage or that have been
+  created by others.</p>
+identifiers:
+- id: msc:t41
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://knb.ecoinformatics.org/knb/docs/
+relatedEntities:
+- id: msc:m16
+  role: supported scheme
+title: Metacat

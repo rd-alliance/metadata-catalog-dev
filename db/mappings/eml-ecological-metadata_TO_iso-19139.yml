@@ -1,0 +1,12 @@
+description: A mapping from EML (Ecological Metadata Language) to ISO 19139.
+identifiers:
+- id: msc:c18
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://rs.gbif.org/schema/eml-gbif-profile/dev/eml-gbif-profile.xsd
+relatedEntities:
+- id: msc:m16
+  role: input scheme
+- id: msc:m90
+  role: output scheme

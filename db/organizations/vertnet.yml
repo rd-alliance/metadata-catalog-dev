@@ -1,0 +1,10 @@
+description: <p>Four distributed database networks (MaNIS, HerpNET, ORNIS and FishNet)
+  using a Darwin Core engine to make bioinformatics specimen data interoperable, mappable
+  and publicly available.</p>
+identifiers:
+- id: msc:g94
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.vertnet.org/index.html
+name: VertNet

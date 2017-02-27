@@ -1,0 +1,10 @@
+description: <p>Used by researchers at C4DM to share their research data with their
+  colleagues and others in the digital music research community, this repository uses
+  the DataCite metadata schema to describe its holdings.</p>
+identifiers:
+- id: msc:g18
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://rdm.c4dm.eecs.qmul.ac.uk/content/dspace-metadata-schemas-and-data-submission
+name: The Centre for Digital Music Research Data Repository

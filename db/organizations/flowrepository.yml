@@ -1,0 +1,9 @@
+description: <p>A database of flow cytometry experiments where you can query and download
+  data collected and annotated according to the MIBBI-registered MIFlowCyt standard.</p>
+identifiers:
+- id: msc:g43
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://flowrepository.org
+name: FlowRepository

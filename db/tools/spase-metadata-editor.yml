@@ -1,0 +1,11 @@
+description: <p>A web-based editor for generating SPASE descriptions.</p>
+identifiers:
+- id: msc:t59
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.spase-group.org/tools/editor/
+relatedEntities:
+- id: msc:m39
+  role: supported scheme
+title: SPASE Metadata Editor

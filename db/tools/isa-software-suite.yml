@@ -1,0 +1,13 @@
+description: <p>The open source ISA metadata tracking tools facilitate ISA-TAB-compliant
+  collection, curation, local management and reuse of datasets in an increasingly
+  diverse set of life science domains.</p>
+identifiers:
+- id: msc:t36
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://isatab.sourceforge.net/tools.html
+relatedEntities:
+- id: msc:m21
+  role: supported scheme
+title: ISA Software Suite

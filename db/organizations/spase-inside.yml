@@ -1,0 +1,9 @@
+description: <p>The SPASE website's list of systems that use SPASE compliant metadata
+  to enable search services.</p>
+identifiers:
+- id: msc:g87
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.spase-group.org/spase-inside.jsp
+name: SPASE Inside

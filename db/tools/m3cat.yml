@@ -1,0 +1,14 @@
+description: <p>A tool for the creation and cataloguing of geospatial metadata, including
+  CSDGM and ISO 19115.</p>
+identifiers:
+- id: msc:t40
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.intelec.ca/html/en/technologies/m3cat.html
+relatedEntities:
+- id: msc:m17
+  role: supported scheme
+- id: msc:m22
+  role: supported scheme
+title: M3Cat

@@ -1,0 +1,9 @@
+description: <p>An EML developer, this US-based centre of cross-disciplinary research
+  uses existing data to address major fundamental issues in ecology and allied fields.</p>
+identifiers:
+- id: msc:g72
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.nceas.ucsb.edu/ecoinfo/approach
+name: National Center for Ecolocial Analysis and Synthesis

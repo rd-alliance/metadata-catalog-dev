@@ -1,0 +1,11 @@
+description: <p>A tool to validate XML metadata against the Darwin Core Text Guidelines.</p>
+identifiers:
+- id: msc:t15
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://tools.gbif.org/dwca-validator/
+relatedEntities:
+- id: msc:m9
+  role: supported scheme
+title: Darwin Core Archive Validator

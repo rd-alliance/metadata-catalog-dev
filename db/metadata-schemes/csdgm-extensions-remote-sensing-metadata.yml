@@ -1,0 +1,18 @@
+description: <p>An extension to the FGDC/CSDGM metadata standard providing a common
+  terminology and set of definitions for documenting geospatial data obtained by remote
+  sensing.</p>
+identifiers:
+- id: msc:m53
+  scheme: RDA-MSCWG
+keywords:
+- Meteorology
+- Climatology
+- Hydrology
+- Oceanography
+locations:
+- type: website
+  url: http://www.fgdc.gov/standards/projects/FGDC-standards-projects/csdgm_rs_ex/MetadataRemoteSensingExtens.pdf
+relatedEntities:
+- id: msc:m17
+  role: parent scheme
+title: CSDGM Extensions for Remote Sensing Metadata

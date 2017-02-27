@@ -1,0 +1,10 @@
+description: <p>A network providing the scientific expertise, research platforms,
+  and long-term datasets necessary to document and analyze environmental change, it
+  uses the Ecological Metadata Language in describing its data.</p>
+identifiers:
+- id: msc:g66
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://im.lternet.edu/taxonomy/term/62
+name: Long Term Ecological Research Network

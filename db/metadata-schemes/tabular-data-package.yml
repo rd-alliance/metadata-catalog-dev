@@ -1,0 +1,14 @@
+description: <p>A profile of the Data Package specification, intended for exchanging
+  tabular data in CSV (comma-separated values) format.</p>
+identifiers:
+- id: msc:m77
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: website
+  url: http://frictionlessdata.io/guides/tabular-data-package/
+relatedEntities:
+- id: msc:m10
+  role: parent scheme
+title: Tabular Data Package

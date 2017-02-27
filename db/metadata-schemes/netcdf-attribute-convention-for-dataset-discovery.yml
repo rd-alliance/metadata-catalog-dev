@@ -1,0 +1,4 @@
+identifiers:
+- id: msc:m92
+  scheme: RDA-MSCWG
+title: NetCDF Attribute Convention for Dataset Discovery

@@ -1,0 +1,11 @@
+description: <p>A list of software tools supporting the SDMX standard.</p>
+identifiers:
+- id: msc:t55
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.sdmxtools.org/index.php
+relatedEntities:
+- id: msc:m38
+  role: supported scheme
+title: SDMX Tool Repository

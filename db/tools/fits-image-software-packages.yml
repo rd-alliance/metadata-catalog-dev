@@ -1,0 +1,10 @@
+identifiers:
+- id: msc:t29
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://fits.gsfc.nasa.gov/fits_viewer.html
+relatedEntities:
+- id: msc:m18
+  role: supported scheme
+title: FITS Image Software Packages

@@ -1,0 +1,9 @@
+description: <p>The National Space Science Data Center's registry of <a href="http://www.dcc.ac.uk/resources/implementations/spase-metadata-editor">SPASE</a>-described
+  space science mission data.</p>
+identifiers:
+- id: msc:g77
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://nssdc.gsfc.nasa.gov/spase/
+name: NSSDC SPASE Registry

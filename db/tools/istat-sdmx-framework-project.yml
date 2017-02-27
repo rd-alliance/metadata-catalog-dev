@@ -1,0 +1,11 @@
+description: <p>A suite of tools for managing data and metadata in SDMX.</p>
+identifiers:
+- id: msc:t37
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://bms.istat.it/sodidownload/Download.aspx
+relatedEntities:
+- id: msc:m38
+  role: supported scheme
+title: Istat SDMX Framework Project

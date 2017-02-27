@@ -1,0 +1,9 @@
+description: <p>A web portal using Darwin Core to describe biodiversity data collected
+  in Madagascar.</p>
+identifiers:
+- id: msc:g85
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.rebioma.net/index.php?option=com_docman&task=doc_details&gid=57&Itemid=17&lang=en
+name: Rebioma

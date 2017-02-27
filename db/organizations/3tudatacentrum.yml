@@ -1,0 +1,10 @@
+description: <p>A multidisciplinary data repository for a consortium of universities
+  in the Netherlands, using a metadata structure based on the Dublin Core Metadata
+  Initiative.</p>
+identifiers:
+- id: msc:g1
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://datacentrum.3tu.nl/en/access-to-data/metadata/
+name: 3TU.Datacentrum

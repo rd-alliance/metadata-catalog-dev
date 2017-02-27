@@ -1,0 +1,33 @@
+description: <p>The <a href="http://www.tdwg.org/standards/115/">Access to Biological
+  Collections Data (ABCD) Schema</a> is an evolving comprehensive standard for the
+  access to and exchange of data about specimens and observations (a.k.a. primary
+  biodiversity data). The ABCD Schema attempts to be comprehensive and highly structured,
+  supporting data from a wide variety of databases. It is compatible with several
+  existing data standards. Parallel structures exist so that either (or both) atomised
+  data and free-text can be accommodated.</p><p>Sponsored by Biodiversity Information
+  Standards TDWG - the Taxonomic Databases Working Group, the current specification
+  was last modified in 2007.</p>
+identifiers:
+- id: msc:m1
+  scheme: RDA-MSCWG
+keywords:
+- Palaeontology
+- Geology
+- Biological diversity
+- Botany
+- Genetics
+- Earth sciences
+- Zoology
+locations:
+- type: document
+  url: http://www.tdwg.org/standards/115/
+- type: website
+  url: http://wiki.tdwg.org/ABCD
+relatedEntities:
+- id: msc:g11
+  role: user
+- id: msc:g44
+  role: user
+- id: msc:g45
+  role: user
+title: ABCD (Access to Biological Collection Data)

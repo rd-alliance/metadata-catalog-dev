@@ -1,0 +1,12 @@
+description: <p>A metadata storage service that implements CSMD Version 2.5 to record
+  information about physical science experiments.</p>
+identifiers:
+- id: msc:t33
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.icatproject.org
+relatedEntities:
+- id: msc:m8
+  role: supported scheme
+title: ICAT

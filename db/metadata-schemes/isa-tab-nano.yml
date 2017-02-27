@@ -1,0 +1,16 @@
+description: <p>An extension of ISA-TAB specifying the format for representing and
+  sharing information about nanomaterials, small molecules and biological specimens
+  along with their assay characterization data.</p>
+identifiers:
+- id: msc:m67
+  scheme: RDA-MSCWG
+keywords:
+- Biochemicals
+- Biotechnology
+locations:
+- type: website
+  url: https://wiki.nci.nih.gov/display/ICR/ISA-TAB-Nano#ISA-TAB-Nano-title
+relatedEntities:
+- id: msc:m21
+  role: parent scheme
+title: ISA-TAB Nano

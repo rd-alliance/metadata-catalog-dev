@@ -1,0 +1,9 @@
+description: <p>A centralized, MIBBI standards compliant, public data repository for
+  proteomics data, post-translational modifications and supporting spectral evidence.</p>
+identifiers:
+- id: msc:g82
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ebi.ac.uk/pride/
+name: PRIDE (Proteomics Identifications Database)

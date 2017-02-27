@@ -1,0 +1,40 @@
+description: <p>A common portal to a group of nearly 40 checklists of Minimum Information
+  for various biological disciplines. The MIBBI Foundry is developing a cross-analysis
+  of these guidelines to create an intercompatible, extensible community of standards.</p><p>The
+  concept was realized initially through the joint efforts of the Proteomics Standards
+  Initiative, the Genomic Standards Consortium and the MGED RSBI Working Groups. The
+  latest project to register with MIBBI is the MIABie guidelines for reporting biofilm
+  research, as of January 2012.</p>
+identifiers:
+- id: msc:m23
+  scheme: RDA-MSCWG
+keywords:
+- Genetics
+- Biochemistry
+- Computer applications
+- Biology
+- Proteins
+- Genetics
+- Cell biology
+- Environmental sciences
+- Metabolism
+- Biotechnology
+locations:
+- type: document
+  url: http://mibbi.sourceforge.net/foundry.shtml
+- type: website
+  url: http://mibbi.sourceforge.net/portal.shtml
+relatedEntities:
+- id: msc:g12
+  role: user
+- id: msc:g15
+  role: user
+- id: msc:g43
+  role: user
+- id: msc:g58
+  role: user
+- id: msc:g76
+  role: user
+- id: msc:g82
+  role: user
+title: MIBBI (Minimum Information for Biological and Biomedical Investigations)

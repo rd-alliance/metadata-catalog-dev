@@ -1,0 +1,16 @@
+description: <p>Providing the format and content for describing data sets related
+  to shoreline and other coastal data sets, this profile complies with the FGDC/CSDGM
+  standard.</p>
+identifiers:
+- id: msc:m75
+  scheme: RDA-MSCWG
+keywords:
+- Oceanography
+- Hydrology
+locations:
+- type: website
+  url: http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/shoreline-metadata/
+relatedEntities:
+- id: msc:m17
+  role: parent scheme
+title: Shoreline Metadata Profile

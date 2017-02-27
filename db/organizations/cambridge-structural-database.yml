@@ -1,0 +1,9 @@
+description: <p>A repository of small molecule crystal structures, many with accompanying
+  CIF files.</p>
+identifiers:
+- id: msc:g14
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ccdc.cam.ac.uk/products/csd/
+name: Cambridge Structural Database

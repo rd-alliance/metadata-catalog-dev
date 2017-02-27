@@ -1,0 +1,15 @@
+description: <p>An extension of SDMX used to exchange statistical data and metadata.</p>
+identifiers:
+- id: msc:m62
+  scheme: RDA-MSCWG
+keywords:
+- Statistics
+- Social policy
+- Economics
+locations:
+- type: website
+  url: http://www.ecb.int/stats/services/sdmx/html/index.en.html
+relatedEntities:
+- id: msc:m38
+  role: parent scheme
+title: GESMES/TS (Generic Statistical Message for Time Series)

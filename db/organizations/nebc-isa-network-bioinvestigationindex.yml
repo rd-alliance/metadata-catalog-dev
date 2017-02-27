@@ -1,0 +1,9 @@
+description: <p>The NERC Environmental Bioinformatics Centre ISA Network's index of
+  ISA-Tab and MIBBI-compliant environmental 'omics data.</p>
+identifiers:
+- id: msc:g76
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://nebc.nerc.ac.uk/data/bii
+name: NEBC ISA Network BioInvestigationIndex

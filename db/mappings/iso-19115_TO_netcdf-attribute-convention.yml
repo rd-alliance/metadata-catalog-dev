@@ -1,0 +1,12 @@
+description: A mapping from ISO 19115 to NetCDF Attribute Convention for Dataset Discovery.
+identifiers:
+- id: msc:c24
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_(ACDD)_ISO_TranslationNotes
+relatedEntities:
+- id: msc:m22
+  role: input scheme
+- id: msc:m92
+  role: output scheme

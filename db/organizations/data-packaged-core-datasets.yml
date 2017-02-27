@@ -1,0 +1,9 @@
+description: <p>A collection of commonly used and example data sets packaged using
+  the Data Package specification.</p>
+identifiers:
+- id: msc:g29
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://github.com/datasets
+name: Data Packaged Core Datasets

@@ -1,0 +1,10 @@
+description: <p>A geospatial data network requiring that metadata for datasets, data
+  series and online services are published to the UK Gemini v2.1 metadata standard,
+  itself an extension of ISO 19115.</p>
+identifiers:
+- id: msc:g33
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://location.defra.gov.uk/resources/discovery-metadata-service/
+name: Discovery Metadata Service

@@ -1,0 +1,10 @@
+description: <p>The GoGeo Portal enables users to discover geospatial information
+  and services for education and research. It uses <a href="http://www.gogeo.ac.uk/gogeo/metadata/agmap.htm">UK
+  Agmap</a>, a profile based on ISO 19115, for its metadata records.</p>
+identifiers:
+- id: msc:g48
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.gogeo.ac.uk/gogeo/metadata/intro.htm
+name: GoGeo Portal

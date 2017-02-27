@@ -1,0 +1,12 @@
+identifiers:
+- id: msc:m83
+  scheme: RDA-MSCWG
+keywords:
+- Hydrology
+locations:
+- type: website
+  url: http://www.opengeospatial.org/standards/waterml
+relatedEntities:
+- id: msc:m28
+  role: parent scheme
+title: WaterML

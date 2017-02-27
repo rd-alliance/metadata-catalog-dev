@@ -1,0 +1,9 @@
+description: A Web-based service for searching for and visualizing chemical structures.
+  It uses data from the Protein Data Bank that has been transformed to RDF.
+identifiers:
+- id: msc:g22
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://xpdb.nist.gov/chemblast/pdb.pl
+name: Chem-BLAST

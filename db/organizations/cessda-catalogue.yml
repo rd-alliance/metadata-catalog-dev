@@ -1,0 +1,9 @@
+description: <p>Provides a seamless interface to datasets from social science data
+  archives across Europe using the CESSDA MLI profile of DDI.</p>
+identifiers:
+- id: msc:g20
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.cessda.org/accessing/catalogue/
+name: CESSDA Catalogue

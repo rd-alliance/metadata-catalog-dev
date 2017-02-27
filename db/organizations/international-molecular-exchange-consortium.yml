@@ -1,0 +1,10 @@
+description: <p>An international collaboration to provide access to a non-redundant
+  set of protein-protein interaction data from a broad taxonomic range of organisms.
+  IMEx partner databases require data to be MIMIx (a MIBBI-registered standard) compatible.</p>
+identifiers:
+- id: msc:g58
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.imexconsortium.org/submit-your-data
+name: International Molecular Exchange Consortium

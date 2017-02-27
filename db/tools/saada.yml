@@ -1,0 +1,12 @@
+description: <p>A tool for publishing astronomical data files as online databases
+  suitable for integration into the international Virtual Observatory.</p>
+identifiers:
+- id: msc:t51
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://saada.unistra.fr/saada/
+relatedEntities:
+- id: msc:m20
+  role: supported scheme
+title: Saada

@@ -1,0 +1,9 @@
+description: <p>The Data Documentation Initiative website's list of projects adopting
+  or encouraging DDI as a standard.</p>
+identifiers:
+- id: msc:g31
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ddialliance.org/ddi-at-work/projects
+name: DDI Projects

@@ -1,0 +1,26 @@
+description: <p>Some repositories have decided that current standards do not fit their
+  metadata needs, and so have created their own requirements.</p>
+identifiers:
+- id: msc:m36
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Genetics
+- Biochemistry
+- Molecular biology
+- Ecology
+- Topography
+- Genetics
+- Soil sciences
+- Hydrogeology
+- Hydrology
+- Environmental sciences
+- Multidisciplinary
+relatedEntities:
+- id: msc:g30
+  role: user
+- id: msc:g37
+  role: user
+- id: msc:g67
+  role: user
+title: Repository-Developed Metadata Schemas

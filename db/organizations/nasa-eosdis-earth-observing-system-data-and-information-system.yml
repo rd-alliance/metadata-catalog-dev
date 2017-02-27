@@ -1,0 +1,9 @@
+description: <p>EOSDIS provides online FTP access to thousands of Earth system science
+  data products described with DIF metadata.</p>
+identifiers:
+- id: msc:g71
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://earthdata.nasa.gov/data/references/metadata-standards
+name: NASA EOSDIS - The Earth Observing System Data and Information System

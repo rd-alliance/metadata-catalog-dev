@@ -1,0 +1,24 @@
+description: <p>An extension of ISO 19115 defining the schema required for describing
+  imagery and gridded data.</p>
+identifiers:
+- id: msc:m69
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Land use
+- Oceanography
+- Meteorology
+- Climatology
+- Topography
+- Hydrology
+- Glaciology
+- Oceanography
+- Earth sciences
+- Geography
+locations:
+- type: website
+  url: http://www.iso.org/iso/catalogue_detail.htm?csnumber=39229
+relatedEntities:
+- id: msc:m22
+  role: parent scheme
+title: ISO 19115-2 - Imagery and gridded data

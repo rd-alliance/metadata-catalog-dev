@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g110
+  scheme: RDA-MSCWG
+locations:
+- type: email
+  url: nexus-committee@nexusformat.org
+name: NeXus International Advisory Committee

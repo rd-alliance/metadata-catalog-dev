@@ -1,0 +1,14 @@
+description: <p>A suite of tools designed by SeaDataNet to facilitate the creation,
+  editing, and conversion of ocean and marine data and metadata. Particular tools
+  are available for preparing ISO 19115-conformant XML metadata files for the SeaDataNet
+  directories.</p>
+identifiers:
+- id: msc:t56
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.seadatanet.org/Standards-Software/Software
+relatedEntities:
+- id: msc:m22
+  role: supported scheme
+title: SeaDataNet Software

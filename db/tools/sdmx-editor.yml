@@ -1,0 +1,12 @@
+description: <p>A simple tool for managing and accessing statistical metadata, using
+  the SDMX framework.</p>
+identifiers:
+- id: msc:t53
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.sdmx.ch
+relatedEntities:
+- id: msc:m38
+  role: supported scheme
+title: SDMX Editor

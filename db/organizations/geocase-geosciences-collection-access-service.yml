@@ -1,0 +1,11 @@
+description: <p>The GeoCASe Network provides access to a transnational network of
+  palaeontological, mineralogical, and geological data; providers are required to
+  use <a href="http://www.dcc.ac.uk/resources/implementations/abcdefg-access-biological-collection-databases-extended-geosciences">ABCDEFG</a>,
+  an extention of ABCD, in their configuration files.</p>
+identifiers:
+- id: msc:g45
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.geocase.eu
+name: GeoCASe (Geosciences Collection Access Service)

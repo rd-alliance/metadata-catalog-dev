@@ -1,0 +1,23 @@
+description: <p>The Common European Research Information Format is the standard that
+  the EU recommends to its member states for recording information about research
+  activity. Since version 1.6 it has included specific support for recording metadata
+  for datasets.</p>
+identifiers:
+- id: msc:m4
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: document
+  url: http://www.eurocris.org/Uploads/Web%20pages/CERIF-1.6/documentation/MInfo.html
+- type: website
+  url: http://www.eurocris.org/cerif/main-features-cerif
+relatedEntities:
+- id: msc:g99
+  role: maintainer
+- id: msc:g100
+  role: maintainer
+title: CERIF (Common European Research Information Format)
+versions:
+- issued: 2013-07-25
+  number: 1.6

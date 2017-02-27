@@ -1,0 +1,19 @@
+description: <p>An application profile of the MIDAS Heritage standard intended for
+  delivering metadata to the CARARE service environment about an organisation&#8217;s
+  online collections, monument inventory database and digital objects.</p>
+identifiers:
+- id: msc:m49
+  scheme: RDA-MSCWG
+keywords:
+- Cultural heritage
+- Cultural property preservation
+- History
+- Architecture
+- Archaeology
+locations:
+- type: website
+  url: http://carare.eu/dut/Resources/CARARE-Documentation/CARARE-metadata-schema
+relatedEntities:
+- id: msc:m24
+  role: parent scheme
+title: CARARE metadata schema

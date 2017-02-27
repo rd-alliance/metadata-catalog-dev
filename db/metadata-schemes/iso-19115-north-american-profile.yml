@@ -1,0 +1,17 @@
+description: <p>A common profile of ISO19115:2003 between the United States and Canada,
+  designed to enhance interoperability of geographic information metadata in North
+  America.</p>
+identifiers:
+- id: msc:m70
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Topography
+- Geography
+locations:
+- type: website
+  url: http://www.fgdc.gov/standards/projects/incits-l1-standards-projects/NAP-Metadata
+relatedEntities:
+- id: msc:m22
+  role: parent scheme
+title: ISO 19115 North American Profile

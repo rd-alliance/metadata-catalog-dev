@@ -1,0 +1,21 @@
+description: <p>Established by a global network of countries and organizations, GBIF
+  is a web portal promoting and facilitating the mobilization, access, discovery and
+  use of biodiversity data. The portal uses a profile of EML; a <a href="http://links.gbif.org/gbif_metadata_profile_how-to_en_v1">How-to
+  Guide</a> and <a href="http://www.gbif.org/resource/80640">Reference Guide</a> for
+  using the profile are available.</p>
+identifiers:
+- id: msc:m61
+  scheme: RDA-MSCWG
+keywords:
+- Biological diversity
+- Botany
+- Ecology
+- Biogeography
+- Zoology
+locations:
+- type: website
+  url: http://rs.gbif.org/schema/eml-gbif-profile/
+relatedEntities:
+- id: msc:m16
+  role: parent scheme
+title: GBIF Metadata Profile

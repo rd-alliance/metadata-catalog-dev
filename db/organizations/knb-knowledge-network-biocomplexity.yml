@@ -1,0 +1,10 @@
+description: <p>A network of federated institutions that have agreed to share data
+  and metadata using a common framework, principally revolving around the use of the
+  Ecological Metadata Language as a common language for describing ecological data.</p>
+identifiers:
+- id: msc:g63
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://knb.ecoinformatics.org/#about
+name: KNB (The Knowledge Network for Biocomplexity)

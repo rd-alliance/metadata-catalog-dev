@@ -1,0 +1,13 @@
+description: A mapping from ISO 19115 to UK AGMAP (Academic Geospatial Metadata Application
+  Profile).
+identifiers:
+- id: msc:c25
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.gogeo.ac.uk/files/GoGeo%20to%20DC%20to%20ISO%20mapping.pdf
+relatedEntities:
+- id: msc:m22
+  role: input scheme
+- id: msc:m79
+  role: output scheme

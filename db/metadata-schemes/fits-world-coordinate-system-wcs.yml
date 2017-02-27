@@ -1,0 +1,17 @@
+description: <p>An extension of FITS that enables data to be defined to specify physical,
+  or world coordinates within each pixel in an image. The conventions were orignally
+  proposed in 2002 then incorporated into the 3.0 release of the FITS standard.</p>
+identifiers:
+- id: msc:m60
+  scheme: RDA-MSCWG
+keywords:
+- Astrophysics
+- Astronomy
+- Sun
+locations:
+- type: website
+  url: http://fits.gsfc.nasa.gov/fits_wcs.html
+relatedEntities:
+- id: msc:m18
+  role: parent scheme
+title: FITS World Coordinate System (WCS)

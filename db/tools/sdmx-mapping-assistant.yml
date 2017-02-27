@@ -1,0 +1,13 @@
+description: <p>A tool to facilitate the mapping between the structural metadata provided
+  by an SDMX-ML Data Structure Definition and those that reside in a database of a
+  dissemination environment.</p>
+identifiers:
+- id: msc:t54
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://webgate.ec.europa.eu/fpfis/mwikis/sdmx/index.php/Mapping_Assistant
+relatedEntities:
+- id: msc:m38
+  role: supported scheme
+title: SDMX Mapping Assistant

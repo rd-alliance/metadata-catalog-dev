@@ -1,0 +1,32 @@
+description: <p>A metadata standard for describing environmental monitoring activities,
+  programmes, networks and facilities published by the UK Environmental Observation
+  Framework (UKEOF).</p>
+identifiers:
+- id: msc:m40
+  scheme: RDA-MSCWG
+keywords:
+- Geology
+- Hydrology
+- Climatology
+- Meteorology
+- Soil sciences
+- Biogeography
+- Remote sensing
+- Ecology
+- Biological diversity
+locations:
+- type: document
+  url: http://schema.ukeof.org.uk/
+- type: website
+  url: http://www.ukeof.org.uk/
+relatedEntities:
+- id: msc:g37
+  role: user
+- id: msc:g108
+  role: maintainer
+- id: msc:g109
+  role: maintainer
+title: UKEOF
+versions:
+- issued: 2014-03-31
+  number: 1.0

@@ -1,0 +1,12 @@
+description: <p>The International Union of Crystallography's list of programs and
+  libraries available for use with CIF files.</p>
+identifiers:
+- id: msc:t57
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.iucr.org/resources/cif/software
+relatedEntities:
+- id: msc:m6
+  role: supported scheme
+title: Software for CIF

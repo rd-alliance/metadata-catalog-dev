@@ -1,0 +1,13 @@
+description: <p>A web application that offers data publishers wishing to serve to
+  the GBIF network an easy interface for describing data elements as basic text files,
+  composing an appropriate XML Darwin Core descriptor file to accompany them.</p>
+identifiers:
+- id: msc:t14
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://tools.gbif.org/dwca-assistant/
+relatedEntities:
+- id: msc:m9
+  role: supported scheme
+title: Darwin Core Archive Assistant

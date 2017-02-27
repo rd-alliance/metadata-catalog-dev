@@ -1,0 +1,12 @@
+description: <p>A package of tools that facilitates the generation of ISO 19115-2
+  metadata from NetCDF data sources.</p>
+identifiers:
+- id: msc:t44
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://geo-ide.noaa.gov/wiki/index.php?title=NcISO
+relatedEntities:
+- id: msc:m22
+  role: supported scheme
+title: ncISO

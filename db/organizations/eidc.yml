@@ -1,0 +1,11 @@
+description: <p>The Environmental Information Data Centre (EIDC) is a Natural Environment
+  Research Council Data Centre hosted by the Centre for Ecology &amp; Hydrology (CEH).
+  It manages nationally-important datasets concerned with the terrestrial and freshwater
+  sciences.</p>
+identifiers:
+- id: msc:g37
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://eidc.ceh.ac.uk/
+name: Environmental Information Data Centre (EIDC)

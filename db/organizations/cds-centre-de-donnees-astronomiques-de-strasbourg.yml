@@ -1,0 +1,11 @@
+description: <p>CDS (Centre de Données astronomiques de Strasbourg/Strasbourg astronomical
+  Data Centre) is a member of the ICSU World Data System, specializing in astronomical
+  data and related information. Its VizieR catalogue system uses SDAC to organize
+  data and metadata holdings.</p>
+identifiers:
+- id: msc:g16
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://cds.u-strasbg.fr/
+name: CDS (Centre de Données astronomiques de Strasbourg)

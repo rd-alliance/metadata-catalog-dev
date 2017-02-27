@@ -1,0 +1,10 @@
+description: <p>The Natural Environment Research Council's (NERC) Designated Data
+  Centre for the Atmospheric Sciences. It uses the CF-Compliant NetCDF format for
+  its datasets.</p>
+identifiers:
+- id: msc:g7
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://badc.nerc.ac.uk/help/formats/netcdf/index_cf.html
+name: BADC (British Atmospheric Data Centre)

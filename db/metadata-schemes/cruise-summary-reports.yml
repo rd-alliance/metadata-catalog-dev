@@ -1,0 +1,21 @@
+description: <p>The National Oceanographic Data Centre's required format for reporting
+  on cruises or field experiments at sea, formulated using tags from the ISO19115
+  metadata standard.</p>
+identifiers:
+- id: msc:m52
+  scheme: RDA-MSCWG
+keywords:
+- Oceanography
+- Meteorology
+- Climatology
+- Hydrology
+- Glaciology
+- Oceanography
+- Earth sciences
+locations:
+- type: website
+  url: http://www.seadatanet.org/Metadata/CSR
+relatedEntities:
+- id: msc:m22
+  role: parent scheme
+title: Cruise Summary Reports

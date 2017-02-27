@@ -1,0 +1,15 @@
+description: <p>An application profile based on the Dublin Core Metadata Initiative
+  Abstract Model, used to describe multi-disciplinary data underlying peer-reviewed
+  scientific and medical literature.</p>
+identifiers:
+- id: msc:m55
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: website
+  url: http://wiki.datadryad.org/Metadata_Profile
+relatedEntities:
+- id: msc:m15
+  role: parent scheme
+title: Dryad Metadata Application Profile

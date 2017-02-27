@@ -1,0 +1,12 @@
+description: A mapping from DataCite Metadata Schema to OECD Dataset Metadata.
+identifiers:
+- id: msc:c9
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://schema.datacite.org/meta/kernel-2.1/doc/DataCite-MetadataKernel_v2.1.pdf
+relatedEntities:
+- id: msc:m11
+  role: input scheme
+- id: msc:m88
+  role: output scheme

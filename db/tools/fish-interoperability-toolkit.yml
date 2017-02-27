@@ -1,0 +1,13 @@
+description: <p>A suite of tools using the MIDAS Heritage metadata standard to facilitate
+  the process of moving information between the wide variety of information systems
+  used to record the historic environment.</p>
+identifiers:
+- id: msc:t28
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.heritage-standards.org.uk
+relatedEntities:
+- id: msc:m24
+  role: supported scheme
+title: FISH Interoperability Toolkit

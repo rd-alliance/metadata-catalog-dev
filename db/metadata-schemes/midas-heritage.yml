@@ -1,0 +1,23 @@
+description: <p>A British cultural heritage standard for recording information on
+  buildings, archaeological sites, shipwrecks, parks and gardens, battlefields, areas
+  of interest and artefacts.</p><p>Sponsored by the Forum on Information Standards
+  in Heritage, MIDAS Version 1.1 was released in October 2012.</p>
+identifiers:
+- id: msc:m24
+  scheme: RDA-MSCWG
+keywords:
+- History
+- Cultural heritage
+- Cultural property preservation
+- History
+- Architecture
+- Archaeology
+locations:
+- type: document
+  url: http://www.english-heritage.org.uk/content/publications/publicationsNew/guidelines-standards/midas-heritage/midas-heritage-2012-v1_1.pdf
+- type: website
+  url: http://www.english-heritage.org.uk/publications/midas-heritage/
+relatedEntities:
+- id: msc:g38
+  role: user
+title: MIDAS-Heritage

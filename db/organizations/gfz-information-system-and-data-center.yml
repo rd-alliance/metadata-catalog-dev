@@ -1,0 +1,9 @@
+description: <p>A case study describing DIF metadata use in the German Research Center
+  for Geoscience.</p>
+identifiers:
+- id: msc:g46
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://gsa.confex.com/gsa/2008GE/finalprogram/abstract_142100.htm
+name: GFZ Information System and Data Center

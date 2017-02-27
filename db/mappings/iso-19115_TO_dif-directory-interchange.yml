@@ -1,0 +1,12 @@
+description: A mapping from ISO 19115 to DIF (Directory Interchange Format).
+identifiers:
+- id: msc:c22
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://gcmd.nasa.gov/Aboutus/standards/difiso.html
+relatedEntities:
+- id: msc:m22
+  role: input scheme
+- id: msc:m14
+  role: output scheme

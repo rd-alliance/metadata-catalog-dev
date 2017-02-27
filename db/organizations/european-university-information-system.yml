@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g99
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.eunis.org/
+name: European University Information System

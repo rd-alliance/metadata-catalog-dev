@@ -1,0 +1,10 @@
+description: <p>The BioCASE Biological Unit Network provides access to a transnational
+  network of biological collections; its protocol requires providers to use the ABCD
+  schema in their configuration files.</p>
+identifiers:
+- id: msc:g11
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.biocase.org/products/protocols/index.shtml
+name: BioCASE (Biological Collection Access Service for Europe)

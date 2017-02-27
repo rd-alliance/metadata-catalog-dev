@@ -1,0 +1,9 @@
+description: <p>The CIM Portal enables users to discover information and services
+  about Earth and climate systems.</p>
+identifiers:
+- id: msc:g24
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://search.es-doc.org/
+name: CIM Search Portal

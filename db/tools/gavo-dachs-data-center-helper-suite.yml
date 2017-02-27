@@ -1,0 +1,13 @@
+description: <p>The software that underlies the German Astrophysical Virtual Observatory
+  (GAVO), packaged so that it can be used to set up other Virtual Observatory-compliant
+  data centres.</p>
+identifiers:
+- id: msc:t30
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://soft.g-vo.org/dachs
+relatedEntities:
+- id: msc:m20
+  role: supported scheme
+title: GAVO DaCHS - Data Center Helper Suite

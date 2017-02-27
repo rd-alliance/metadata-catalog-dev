@@ -1,0 +1,13 @@
+description: <p>An extension of the ABCD standard for DNA data.</p>
+identifiers:
+- id: msc:m42
+  scheme: RDA-MSCWG
+keywords:
+- Genetics
+locations:
+- type: website
+  url: http://www.tdwg.org/standards/640/
+relatedEntities:
+- id: msc:m1
+  role: parent scheme
+title: ABCDDNA

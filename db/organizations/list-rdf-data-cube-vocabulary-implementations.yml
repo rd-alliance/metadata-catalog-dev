@@ -1,0 +1,9 @@
+description: <p>W3C Government Linked Data list of implementations of the RDF Data
+  Cube Vocabulary.</p>
+identifiers:
+- id: msc:g65
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.w3.org/2011/gld/wiki/Data_Cube_Implementations
+name: List of RDF Data Cube Vocabulary Implementations

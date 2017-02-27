@@ -1,0 +1,12 @@
+description: <p>A web-based tool for assembling an AVM-compliant <a href="http://www.adobe.com/products/xmp/">XMP</a>
+  packet for insertion into an image file.</p>
+identifiers:
+- id: msc:t5
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.virtualastronomy.org/avmwebtool/index.php5
+relatedEntities:
+- id: msc:m3
+  role: supported scheme
+title: AVM Web Tool

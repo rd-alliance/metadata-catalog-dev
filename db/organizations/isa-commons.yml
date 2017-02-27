@@ -1,0 +1,9 @@
+description: <p>A network of systems and projects that use the ISA-Tab file format,
+  and/or are powered by components of the ISA software suite.</p>
+identifiers:
+- id: msc:g59
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://isacommons.org
+name: ISA Commons

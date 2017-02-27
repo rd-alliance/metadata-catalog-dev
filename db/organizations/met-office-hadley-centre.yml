@@ -1,0 +1,11 @@
+description: <p>A number of projects at the Hadley Center require CF-Compliant NetCDF
+  files, including&#160;<a href="http://www.metoffice.gov.uk/hadobs/hadat/full_audit.html">HadAT</a>&#160;and
+  <a href="http://www.metoffice.gov.uk/hadobs/tamip/data_req_submit.html">Transpose
+  AMIP</a>.</p>
+identifiers:
+- id: msc:g68
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.metoffice.gov.uk/hadobs/
+name: Met Office Hadley Centre

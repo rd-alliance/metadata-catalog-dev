@@ -1,0 +1,11 @@
+description: <p>A utility that checks netCDF files for CF-compliance.</p>
+identifiers:
+- id: msc:t7
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://cf-pcmdi.llnl.gov/conformance/compliance-checker/
+relatedEntities:
+- id: msc:m5
+  role: supported scheme
+title: CF Compliance Checker

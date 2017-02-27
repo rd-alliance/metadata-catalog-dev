@@ -1,0 +1,29 @@
+description: '<p>The PREMIS (Preservation Metadata: Implementation Strategies) Data
+  Dictionary defines a set of metadata that most repositories of digital objects would
+  need to record and use in order to preserve those objects over the long term. It
+  has its roots in the Open Archival Information System Reference Model but has been
+  strongly influenced by the practical experience of such repositories. While the
+  Data Dictionary can be used with other standards to influence the creation of local
+  application profiles, an XML Schema is provided to allow the metadata to be serialized
+  independently.</p> <p>PREMIS was initially developed by the Preservation Metadata:
+  Implementation Strategies Working Group, convened by OCLC and RLG, and is currently
+  maintained by the PREMIS Maintenance Activity, lead by the Library of Congress.</p>'
+identifiers:
+- id: msc:m31
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: document
+  url: http://www.loc.gov/standards/premis/v3/premis-3-0-final.pdf
+- type: website
+  url: http://www.loc.gov/standards/premis/
+relatedEntities:
+- id: msc:g104
+  role: maintainer
+- id: msc:g111
+  role: maintainer
+title: PREMIS
+versions:
+- issued: 2015-06-10
+  number: 3.0

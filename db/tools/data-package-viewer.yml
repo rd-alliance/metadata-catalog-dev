@@ -1,0 +1,12 @@
+description: <p>The Data Package Viewer takes the URL of a Data Package and provides
+  a human-friendly view of it.</p>
+identifiers:
+- id: msc:t18
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://data.okfn.org/tools/view
+relatedEntities:
+- id: msc:m10
+  role: supported scheme
+title: Data Package Viewer

@@ -1,0 +1,21 @@
+description: <p>The Geodoc metadata editor tool allows users to create, validate,
+  edit and export geospatial metadata records. It also supports the creation and export
+  of metadata records as XML output files compliant with a number of standards, including
+  <a href="http://www.gogeo.ac.uk/gogeo/metadata/agmap.htm">UK AGMAP 2.1</a>, ISO
+  19115, FGDC, DDI, and Dublin Core.</p>
+identifiers:
+- id: msc:t31
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.gogeo.ac.uk/gogeo/metadata/geodoc.htm
+relatedEntities:
+- id: msc:m13
+  role: supported scheme
+- id: msc:m15
+  role: supported scheme
+- id: msc:m17
+  role: supported scheme
+- id: msc:m22
+  role: supported scheme
+title: Geodoc Metadata Editor

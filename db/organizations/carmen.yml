@@ -1,0 +1,10 @@
+description: <p>A a virtual laboratory for neurophysiology, enabling sharing and collaborative
+  exploitation of data, analysis, code and expertise. Metadata must include the MIBBI-registered
+  MINI recommendations.</p>
+identifiers:
+- id: msc:g15
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.carmen.org.uk/standards
+name: CARMEN

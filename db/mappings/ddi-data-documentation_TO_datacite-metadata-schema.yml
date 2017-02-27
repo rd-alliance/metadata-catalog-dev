@@ -1,0 +1,13 @@
+description: A mapping from DDI (Data Documentation Initiative) to DataCite Metadata
+  Schema.
+identifiers:
+- id: msc:c10
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://schema.datacite.org/meta/kernel-2.1/doc/DataCite-MetadataKernel_v2.1.pdf
+relatedEntities:
+- id: msc:m13
+  role: input scheme
+- id: msc:m11
+  role: output scheme

@@ -1,0 +1,34 @@
+description: <p>A basic, domain-agnostic standard which can be easily understood and
+  implemented, and as such is one of the best known and most widely used metadata
+  standards.</p><p>Sponsored by the Dublin Core Metadata Initiative, Dublin Core was
+  published as ISO Standard 15836 in February 2009.</p>
+identifiers:
+- id: msc:m15
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: document
+  url: http://dublincore.org/specifications/
+- type: website
+  url: http://dublincore.org
+relatedEntities:
+- id: msc:g1
+  role: user
+- id: msc:g13
+  role: user
+- id: msc:g35
+  role: user
+- id: msc:g36
+  role: user
+- id: msc:g37
+  role: user
+- id: msc:g39
+  role: user
+- id: msc:g55
+  role: user
+- id: msc:g73
+  role: user
+- id: msc:g90
+  role: user
+title: Dublin Core

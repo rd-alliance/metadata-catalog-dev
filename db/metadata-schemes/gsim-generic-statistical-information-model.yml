@@ -1,0 +1,14 @@
+description: <p>A reference framework that provides a common terminology acroos and
+  between statistical organisations; aligns with DDI and SDMX.</p>
+identifiers:
+- id: msc:m63
+  scheme: RDA-MSCWG
+keywords:
+- Statistics
+locations:
+- type: website
+  url: http://www1.unece.org/stat/platform/display/metis/Generic+Statistical+Information+Model
+relatedEntities:
+- id: msc:m13
+  role: parent scheme
+title: GSIM (Generic Statistical Information Model)

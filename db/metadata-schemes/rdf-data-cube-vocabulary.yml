@@ -1,0 +1,22 @@
+description: <p>The standard provides a means to publish multi-dimensional data, such
+  as statistics, on the web in such a way that it can be linked to related data sets
+  and concepts using the W3C RDF (Resource Description Framework) standard. The model
+  underpinning the Data Cube vocabulary is compatible with the cube model that underlies
+  SDMX (Statistical Data and Metadata eXchange), an ISO standard for exchanging and
+  sharing statistical data and metadata among organizations.</p>
+identifiers:
+- id: msc:m35
+  scheme: RDA-MSCWG
+keywords:
+- Statistics
+locations:
+- type: website
+  url: http://www.w3.org/TR/vocab-data-cube/
+relatedEntities:
+- id: msc:g65
+  role: user
+- id: msc:g107
+  role: maintainer
+- id: msc:g106
+  role: maintainer
+title: RDF Data Cube Vocabulary

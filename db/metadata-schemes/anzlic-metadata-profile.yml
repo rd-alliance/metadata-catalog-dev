@@ -1,0 +1,19 @@
+description: <p>A profile of ISO 19115, also mapping to the AGLS profile of Dublin
+  Core, designed to facilitate efficient access to descriptions of information resources,
+  particularly geographic or spatial data.</p>
+identifiers:
+- id: msc:m46
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Topography
+- Geography
+locations:
+- type: website
+  url: http://spatial.gov.au/resources/home
+relatedEntities:
+- id: msc:m15
+  role: parent scheme
+- id: msc:m22
+  role: parent scheme
+title: ANZLIC Metadata Profile

@@ -1,0 +1,20 @@
+description: <p>A metadata standard drawing on Dublin Core&#160;and&#160;AgMES&#160;created
+  specifically to enhance the description, exchange and subsequent retrieval of agricultural
+  Document-Like Information Objects.</p>
+identifiers:
+- id: msc:m45
+  scheme: RDA-MSCWG
+keywords:
+- Agricultural economics
+- Agriculture
+- Livestock
+- Aquaculture
+locations:
+- type: website
+  url: http://www.fao.org/docrep/008/ae909e/ae909e00.htm
+relatedEntities:
+- id: msc:m2
+  role: parent scheme
+- id: msc:m15
+  role: parent scheme
+title: AGRIS Application Profile

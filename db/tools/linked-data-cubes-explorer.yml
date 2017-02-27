@@ -1,0 +1,12 @@
+description: <p>The Linked Data Cubes Explorer allows for the analysis of statistical
+  datasets using the RDF Cube Vocabulary.</p>
+identifiers:
+- id: msc:t39
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ldcx.linked-data-cubes.org:8000/ldcx-trunk/ldcx/ld-cubes-explorer.html
+relatedEntities:
+- id: msc:m35
+  role: supported scheme
+title: Linked Data Cubes Explorer

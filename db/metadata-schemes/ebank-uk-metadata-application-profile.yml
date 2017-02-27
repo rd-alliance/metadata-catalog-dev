@@ -1,0 +1,15 @@
+description: <p>A Dublin Core Metadata Application Profile created for the eBank UK
+  project, which provides access to the detailed results of scientific experiments
+  in crystallography.</p>
+identifiers:
+- id: msc:m57
+  scheme: RDA-MSCWG
+keywords:
+- Crystallography
+locations:
+- type: website
+  url: http://ecrystals.chem.soton.ac.uk
+relatedEntities:
+- id: msc:m15
+  role: parent scheme
+title: eBank UK Metadata Application Profile

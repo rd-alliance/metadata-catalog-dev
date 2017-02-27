@@ -1,0 +1,9 @@
+description: <p>The <a href="http://www.vaticanlibrary.va">Vatican Library</a> uses
+  FITS as the digital image format for the digitization of its manuscript collection.</p>
+identifiers:
+- id: msc:g9
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.vaticanlibrary.va/home.php?pag=newsletter_art_00086&ling=eng&BC=11
+name: BAV (Biblioteca Apoltolica Vaticana)

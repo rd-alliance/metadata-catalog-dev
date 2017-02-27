@@ -1,0 +1,19 @@
+description: <p>The Wisconsin Land INformation Clearinghouse review of metadata tools
+  used for documenting geospatial data and serving geospatial metadata. It includes
+  tools for CSDGM, ISO 19115, Dublin Core, and DIF.</p>
+identifiers:
+- id: msc:t63
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.sco.wisc.edu/wisclinc/metatools.php
+relatedEntities:
+- id: msc:m14
+  role: supported scheme
+- id: msc:m15
+  role: supported scheme
+- id: msc:m17
+  role: supported scheme
+- id: msc:m22
+  role: supported scheme
+title: WiscLINC Metadata Tools Review

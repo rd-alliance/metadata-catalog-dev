@@ -1,0 +1,9 @@
+description: <p>A data repository for marine species datasets from all of the world's
+  oceans; it uses an extension of Darwin Core 2 as its data standard.</p>
+identifiers:
+- id: msc:g78
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://iobis.org/node/304
+name: OBIS (Ocean Biogeographic Information System)

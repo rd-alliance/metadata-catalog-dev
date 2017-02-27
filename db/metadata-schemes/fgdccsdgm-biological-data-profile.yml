@@ -1,0 +1,14 @@
+description: <p>A profile of the FGDC/CSDGM metadata standard, intended to support
+  the collection and processing of biological data.</p>
+identifiers:
+- id: msc:m59
+  scheme: RDA-MSCWG
+keywords:
+- Biogeography
+locations:
+- type: website
+  url: http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/biometadata/biodatap.pdf
+relatedEntities:
+- id: msc:m17
+  role: parent scheme
+title: FGDC/CSDGM Biological Data Profile

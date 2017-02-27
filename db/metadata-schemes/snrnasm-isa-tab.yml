@@ -1,0 +1,15 @@
+description: <p>An ISA-Tab-based standard for reporting the results of single nucleotide
+  resolution nucleic acid structure mapping experiments.</p>
+identifiers:
+- id: msc:m76
+  scheme: RDA-MSCWG
+keywords:
+- Biochemistry
+- Cell biology
+locations:
+- type: website
+  url: http://snrnasm.bio.unc.edu
+relatedEntities:
+- id: msc:m21
+  role: parent scheme
+title: SNRNASM ISA-Tab

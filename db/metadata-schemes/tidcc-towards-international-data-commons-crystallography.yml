@@ -1,0 +1,13 @@
+description: <p>A profile of the CSMD model for Australian crystallographic data.</p>
+identifiers:
+- id: msc:m78
+  scheme: RDA-MSCWG
+keywords:
+- Crystallography
+locations:
+- type: website
+  url: http://wiki.ecrystals.chem.soton.ac.uk/images/9/9d/ECrystals-WP4-PM-Final.pdf
+relatedEntities:
+- id: msc:m8
+  role: parent scheme
+title: TIDCC (Towards an International Data Commons for Crystallography)

@@ -1,0 +1,13 @@
+description: A mapping from FGDC/CSDGM (Federal Geographic Data Committee Content
+  Standard for Digital Geospatial Metadata) to ISO 19115.
+identifiers:
+- id: msc:c20
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.ncddc.noaa.gov/metadata-standards/metadata-xml/
+relatedEntities:
+- id: msc:m17
+  role: input scheme
+- id: msc:m22
+  role: output scheme

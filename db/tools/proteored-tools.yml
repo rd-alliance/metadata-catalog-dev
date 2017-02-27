@@ -1,0 +1,12 @@
+description: <p>Bioinformatics tools to create and extract metadata compliant with
+  the MIBBI-registered MIAPE minimum requirements.</p>
+identifiers:
+- id: msc:t50
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.proteored.org/Tools.asp
+relatedEntities:
+- id: msc:m23
+  role: supported scheme
+title: ProteoRed Tools

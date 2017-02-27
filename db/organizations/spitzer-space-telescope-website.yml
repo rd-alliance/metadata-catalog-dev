@@ -1,0 +1,10 @@
+description: <p>The image gallery for the Spitzer Space Telescope employs AVM within
+  its content management system, and all the images have AVM tags embedded within
+  them.</p>
+identifiers:
+- id: msc:g88
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.spitzer.caltech.edu/
+name: Spitzer Space Telescope Website

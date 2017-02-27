@@ -1,0 +1,15 @@
+description: <p>A simulation extention to the SPASE data model.</p>
+identifiers:
+- id: msc:m65
+  scheme: RDA-MSCWG
+keywords:
+- Astronomical systems
+- Astronomy
+- Sun
+locations:
+- type: website
+  url: http://meetingorganizer.copernicus.org/EPSC2012/EPSC2012-360.pdf
+relatedEntities:
+- id: msc:m39
+  role: parent scheme
+title: IMPEx Data Model

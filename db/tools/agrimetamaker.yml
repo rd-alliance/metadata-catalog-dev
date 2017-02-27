@@ -1,0 +1,14 @@
+description: <p>A service to facilitate the publication of metadata in the AGRIS Repository;
+  it conforms to the the AGRIS Application Profile, which draws from the Dublin Core&#160;and&#160;AgMES&#160;standards.</p>
+identifiers:
+- id: msc:t1
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://aims.fao.org/agrimetamaker
+relatedEntities:
+- id: msc:m2
+  role: supported scheme
+- id: msc:m15
+  role: supported scheme
+title: AgriMetamaker

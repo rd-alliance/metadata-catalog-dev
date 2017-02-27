@@ -1,0 +1,45 @@
+description: <p>A widely used, international standard for describing data from the
+  social, behavioral, and economic sciences. Two versions of the standard are currently
+  maintained in parallel:</p><ul><li>DDI Codebook (or DDI version 2) is the simpler
+  of the two, and intended for documenting simple survey data for exchange or archiving.
+  Version 2.5 was released in January 2014.</li><li>DDI Lifecycle (or DDI version
+  3) is richer and may be used to document datasets at each stage of their lifecycle
+  from conceptualization through to publication and reuse. It is modular and extensible.
+  Version 3.2 was published in March 2014.</li></ul><p>Both versions are XML-based
+  and defined using XML Schemas. They were developed and are maintained by the DDI
+  Alliance.</p>
+identifiers:
+- id: msc:m13
+  scheme: RDA-MSCWG
+keywords:
+- Land use
+- Sociology
+- History
+- Statistics
+- Law
+- Social policy
+- Economics
+- History
+- Health policy
+- Demography
+- Human geography
+- Politics
+locations:
+- type: document
+  url: http://www.ddialliance.org/Specification/
+- type: website
+  url: http://www.ddialliance.org/
+relatedEntities:
+- id: msc:g20
+  role: user
+- id: msc:g31
+  role: user
+- id: msc:g32
+  role: user
+- id: msc:g53
+  role: user
+- id: msc:g55
+  role: user
+- id: msc:g91
+  role: user
+title: DDI (Data Documentation Initiative)

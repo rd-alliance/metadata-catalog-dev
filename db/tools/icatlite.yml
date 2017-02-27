@@ -1,0 +1,13 @@
+description: <p>A sister project of ICAT, consisting of a suite of CSMD-based software
+  tools designed to&#160;support derived data management&#160;in the scientific research
+  process.</p>
+identifiers:
+- id: msc:t34
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://sourceforge.net/apps/mediawiki/icatlite
+relatedEntities:
+- id: msc:m8
+  role: supported scheme
+title: ICATLite

@@ -1,0 +1,18 @@
+description: <p>Geoportal Server is a standards-based, open source product that enables
+  discovery and use of geospatial resources including data and services.</p>
+identifiers:
+- id: msc:t32
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://esri.github.io/geoportal-server/
+relatedEntities:
+- id: msc:m12
+  role: supported scheme
+- id: msc:m15
+  role: supported scheme
+- id: msc:m17
+  role: supported scheme
+- id: msc:m22
+  role: supported scheme
+title: Esri Geoportal Server

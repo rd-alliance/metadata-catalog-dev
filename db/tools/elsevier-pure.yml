@@ -1,0 +1,12 @@
+description: <p>Current research information system developed by Elsevier that implements
+  the CERIF standard.</p>
+identifiers:
+- id: msc:t25
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.elsevier.com/online-tools/research-intelligence/products-and-services/pure
+relatedEntities:
+- id: msc:m4
+  role: supported scheme
+title: Pure

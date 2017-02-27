@@ -1,0 +1,14 @@
+description: '<p>Genome metadata on PATRIC consists of 61 different metadata fields,
+  called attributes, which are organized into the following seven broad categories:
+  Organism Info, Isolate Info, Host Info, Sequence Info, Phenotype Info, Project Info,
+  and Others.</p>'
+identifiers:
+- id: msc:m19
+  scheme: RDA-MSCWG
+keywords:
+- Genetics
+- Genetics
+locations:
+- type: website
+  url: http://enews.patricbrc.org/faqs/genome-metadata-faqs/
+title: Genome Metadata

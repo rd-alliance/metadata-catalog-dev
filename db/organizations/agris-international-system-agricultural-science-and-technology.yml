@@ -1,0 +1,9 @@
+description: <p>A global public domain database using the AgMES standard to describe
+  structured bibliographical records on agricultural science and technology.</p>
+identifiers:
+- id: msc:g2
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://agris.fao.org
+name: AGRIS  - International System for Agricultural Science and Technology

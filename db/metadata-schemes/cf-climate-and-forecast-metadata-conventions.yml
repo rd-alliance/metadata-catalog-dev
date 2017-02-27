@@ -1,0 +1,36 @@
+description: <p>The CF standard was originally framed as a standard for data written
+  in netCDF format, with model-generated climate forecast data particularly in mind.
+  However, it is equally applicable to observational datasets, and can be used to
+  describe other formats. It is a standard for &#8220;use metadata&#8221; that aims
+  both to distinguish quantities (such as physical description, units, and prior processing)
+  and to locate the data in space&#8211;time.</p><p>Sponsored by the NetCDF Climate
+  and Forecast Metadata Convention, the current version dates from December 2011.</p>
+identifiers:
+- id: msc:m5
+  scheme: RDA-MSCWG
+keywords:
+- Oceanography
+- Meteorology
+- Climatology
+- Oceanography
+locations:
+- type: document
+  url: http://cfconventions.org/documents.html
+- type: website
+  url: http://cfconventions.org/
+relatedEntities:
+- id: msc:g7
+  role: user
+- id: msc:g13
+  role: user
+- id: msc:g68
+  role: user
+- id: msc:g74
+  role: user
+- id: msc:g80
+  role: user
+- id: msc:g83
+  role: user
+- id: msc:g92
+  role: user
+title: CF (Climate and Forecast) Metadata Conventions

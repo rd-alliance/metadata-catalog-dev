@@ -1,0 +1,12 @@
+description: <p>The CIM Viewer is a light-weight JavaScript platform independent API
+  that other software stacks can use to display CIM metadata.</p>
+identifiers:
+- id: msc:t11
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://earthsystemcog.org/projects/es-doc-models/viewer_motivation
+relatedEntities:
+- id: msc:m7
+  role: supported scheme
+title: CIM Viewer Tool

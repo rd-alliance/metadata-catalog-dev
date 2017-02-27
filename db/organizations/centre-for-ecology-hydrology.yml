@@ -1,0 +1,9 @@
+identifiers:
+- id: msc:g108
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ceh.ac.uk/
+- type: email
+  url: enquiries@ceh.ac.uk
+name: Centre for Ecology & Hydrology

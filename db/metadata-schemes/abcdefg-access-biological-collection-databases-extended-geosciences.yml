@@ -1,0 +1,15 @@
+description: <p>An extension of the ABCD standard for Geosciences data.</p>
+identifiers:
+- id: msc:m43
+  scheme: RDA-MSCWG
+keywords:
+- Palaeontology
+- Mineralogy
+- Earth sciences
+locations:
+- type: website
+  url: http://www.geocase.eu/efg
+relatedEntities:
+- id: msc:m1
+  role: parent scheme
+title: ABCDEFG (Access to Biological Collection Databases Extended for Geosciences)

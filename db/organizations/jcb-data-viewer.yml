@@ -1,0 +1,10 @@
+description: <p>A repository for viewing and analysing multi-dimensional image data
+  associated with articles published in The Journal of Cell Biology. Its native metadata
+  format is OME-XML.</p>
+identifiers:
+- id: msc:g62
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://jcb-dataviewer.rupress.org/
+name: JCB Data Viewer

@@ -1,0 +1,10 @@
+description: <p>ESA is an international organisation with 20 Member States that coordinates
+  the financial and intellectual resources of it's members to facilitate space related
+  programmes and activities. Image data is released using FITS for many missions.</p>
+identifiers:
+- id: msc:g40
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.esa.int/ESA
+name: ESA (European Space Agency)

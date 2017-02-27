@@ -1,0 +1,26 @@
+description: <p>A profile of ISO 19115:2003, adopted in 2007 as the common metadata
+  standard for the Infrastructure for Spatial Information in the European Community
+  (INSPIRE). The other profiles of ISO 19115 in use in European Member States have
+  been made compliant with INSPIRE.</p>
+identifiers:
+- id: msc:m66
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Climatology
+- Geography
+- Earth sciences
+- Glaciology
+- Hydrogeology
+- Hydrology
+- Oceanography
+- Meteorology
+- Oceanography
+- Topography
+locations:
+- type: website
+  url: http://inspire.ec.europa.eu/
+relatedEntities:
+- id: msc:m22
+  role: parent scheme
+title: INSPIRE Metadata Regulation

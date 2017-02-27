@@ -1,0 +1,12 @@
+description: <p>A methodology and toolset for documenting climatology simulation experiments
+  using the Metafor CIM.</p>
+identifiers:
+- id: msc:t49
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ceda.ac.uk/projects/pimms/
+relatedEntities:
+- id: msc:m7
+  role: supported scheme
+title: PIMMS (Portable Infrastructure for the Metafor Metadata System)

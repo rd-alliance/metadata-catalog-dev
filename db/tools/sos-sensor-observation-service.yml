@@ -1,0 +1,13 @@
+description: <p>This tool uses the Observations and Measurements standard to define
+  a Web service interface which allows querying observations, sensor metadata, as
+  well as representations of observed features.</p>
+identifiers:
+- id: msc:t58
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.opengeospatial.org/standards/sos
+relatedEntities:
+- id: msc:m28
+  role: supported scheme
+title: SOS (Sensor Observation Service)

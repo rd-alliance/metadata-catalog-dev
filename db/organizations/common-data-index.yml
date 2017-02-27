@@ -1,0 +1,10 @@
+description: <p>A web service allowing users to access the availability and geographical
+  spreading of marine data sets managed by the SeaDataNet data centres, using metadata
+  based on the ISO 19115 content model.</p>
+identifiers:
+- id: msc:g26
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.seadatanet.org/Data-Access/Common-Data-Index-CDI
+name: Common Data Index

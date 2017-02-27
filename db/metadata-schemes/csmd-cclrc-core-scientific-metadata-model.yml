@@ -1,0 +1,23 @@
+description: <p>A study-data oriented model, primarily in support of the ICAT data
+  managment infrastructure software. The CSMD is designed to support data collected
+  within a large-scale facility&#8217;s scientific workflow; however the model is
+  also designed to be generic across scientific disciplines.</p><p>Sponsored by the
+  Science and Technologies Facilities Council, the latest full specification available
+  is v 4.0, from 2013.</p>
+identifiers:
+- id: msc:m8
+  scheme: RDA-MSCWG
+keywords:
+- Materials engineering
+- Biochemistry
+- Chemistry
+- Crystallography
+locations:
+- type: website
+  url: http://icatproject-contrib.github.io/CSMD/
+relatedEntities:
+- id: msc:g28
+  role: user
+- id: msc:g52
+  role: user
+title: CSMD (Core Scientific Metadata Model)

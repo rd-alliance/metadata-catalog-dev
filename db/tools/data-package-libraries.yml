@@ -1,0 +1,12 @@
+description: <p>A collection of libraries for working with Data Packages in various
+  programming languages, and scripts for importing them into databases.</p>
+identifiers:
+- id: msc:t16
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://frictionlessdata.io/tools/
+relatedEntities:
+- id: msc:m10
+  role: supported scheme
+title: Data Package libraries

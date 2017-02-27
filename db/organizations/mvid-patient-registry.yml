@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g70
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.mvid-central.org/
+name: MVID Patient Registry

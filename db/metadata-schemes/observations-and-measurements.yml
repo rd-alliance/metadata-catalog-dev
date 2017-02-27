@@ -1,0 +1,27 @@
+description: <p>This encoding is an essential dependency for the OGC Sensor Observation
+  Service (SOS) Interface Standard. More specifically, this standard defines XML schemas
+  for observations, and for features involved in sampling when making observations.
+  These provide document models for the exchange of information describing observation
+  acts and their results, both within and between different scientific and technical
+  communities.</p>
+identifiers:
+- id: msc:m28
+  scheme: RDA-MSCWG
+keywords:
+- Chemistry
+- Geology
+- Meteorology
+- Remote sensing
+locations:
+- type: document
+  url: http://portal.opengeospatial.org/files/?artifact_id=41579
+- type: website
+  url: http://www.opengeospatial.org/standards/om
+relatedEntities:
+- id: msc:g54
+  role: user
+- id: msc:g79
+  role: user
+- id: msc:g103
+  role: maintainer
+title: Observations and Measurements

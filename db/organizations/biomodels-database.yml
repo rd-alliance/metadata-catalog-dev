@@ -1,0 +1,9 @@
+description: <p>A repository hosting computational models of biological systems, using
+  the MIBBI-registered MIRIAM and MIASE minimal metadata requirements.</p>
+identifiers:
+- id: msc:g12
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.biomodels.net/
+name: BioModels Database

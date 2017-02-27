@@ -1,0 +1,9 @@
+description: <p>A database for metabolomics experiments and derived information in
+  ISA-Tab format.</p>
+identifiers:
+- id: msc:g69
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ebi.ac.uk/metabolights/about
+name: MetaboLights

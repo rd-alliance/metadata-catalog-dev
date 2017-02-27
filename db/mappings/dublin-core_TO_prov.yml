@@ -1,0 +1,12 @@
+description: A mapping from Dublin Core to PROV.
+identifiers:
+- id: msc:c16
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.w3.org/TR/2012/WD-prov-dc-20121211/
+relatedEntities:
+- id: msc:m15
+  role: input scheme
+- id: msc:m33
+  role: output scheme

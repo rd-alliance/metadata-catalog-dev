@@ -1,0 +1,12 @@
+description: <p>A software generator to rapidly build web databases and a suite of
+  web databases for genotype, phenotype, QTL and analysis pipelines.</p>
+identifiers:
+- id: msc:t42
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.molgenis.org/wiki/WikiStart
+relatedEntities:
+- id: msc:m27
+  role: supported scheme
+title: MOLGENIS

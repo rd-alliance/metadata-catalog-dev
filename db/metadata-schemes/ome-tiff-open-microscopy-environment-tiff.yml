@@ -1,0 +1,19 @@
+description: <p>A specification of how to embed OME-XML metadata within a <a href="http://partners.adobe.com/public/developer/tiff/">TIFF</a>
+  or <a href="http://bigtiff.org/">BigTIFF</a> image file.</p>
+identifiers:
+- id: msc:m73
+  scheme: RDA-MSCWG
+keywords:
+- Animal diseases
+- Physiology
+- Zoology
+- Plant physiology
+- Plant diseases
+- Cell biology
+locations:
+- type: website
+  url: http://www.openmicroscopy.org/site/support/file-formats/ome-tiff
+relatedEntities:
+- id: msc:m29
+  role: parent scheme
+title: OME-TIFF (Open Microscopy Environment TIFF)

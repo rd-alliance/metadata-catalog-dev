@@ -1,0 +1,12 @@
+description: <p>Established by a global network of countries and organizations, GBIF
+  is a web portal promoting and facilitating the mobilization, access, discovery and
+  use of biodiversity data. The preferred format for publishing data to the GBIF network
+  is the Darwin Core Archive, and its Integrated Publishing Toolkit uses EML as its
+  data standard.</p>
+identifiers:
+- id: msc:g44
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www-old.gbif.org/informatics/standards-and-tools/publishing-data/data-standards
+name: GBIF (Global Biodiversity Information Facility)

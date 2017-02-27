@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g104
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.loc.gov/
+name: Library of Congress

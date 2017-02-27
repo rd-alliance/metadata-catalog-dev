@@ -1,0 +1,13 @@
+description: A mapping from ABCD (Access to Biological Collection Data) to Darwin
+  Core.
+identifiers:
+- id: msc:c1
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.bgbm.org/tdwg/CODATA/Schema/Mappings/DwCAndExtensions.htm
+relatedEntities:
+- id: msc:m1
+  role: input scheme
+- id: msc:m9
+  role: output scheme

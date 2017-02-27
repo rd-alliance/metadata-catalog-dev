@@ -1,0 +1,11 @@
+description: <p>Tool for downloading data from PATRIC.</p>
+identifiers:
+- id: msc:t47
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://patricbrc.org/portal/portal/patric/Downloads?cType=taxon&cId=
+relatedEntities:
+- id: msc:m19
+  role: supported scheme
+title: PATRIC Download Tool

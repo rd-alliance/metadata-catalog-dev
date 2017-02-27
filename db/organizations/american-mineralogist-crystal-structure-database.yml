@@ -1,0 +1,10 @@
+description: <p>A CIF crystal structure database that includes every structure published
+  in the American Mineralogist, The Canadian Mineralogist, European Journal of Mineralogy
+  and Physics and Chemistry of Minerals, as well as selected datasets from other journals.</p>
+identifiers:
+- id: msc:g3
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://rruff.geo.arizona.edu/AMS/amcsd.php
+name: American Mineralogist Crystal Structure Database

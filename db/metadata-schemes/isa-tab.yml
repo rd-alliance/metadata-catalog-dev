@@ -1,0 +1,34 @@
+description: <p>The Investigation/Study/Assay (ISA) tab-delimited (TAB) format is
+  a general purpose framework with which to collect and communicate complex metadata
+  (i.e. sample characteristics, technologies used, type of measurements made) from
+  'omics-based' experiments employing a combination of technologies.</p><p>Created
+  by core developers from the University of Oxford, ISA-TAB v1.0 was released in November
+  2008.</p>
+identifiers:
+- id: msc:m21
+  scheme: RDA-MSCWG
+keywords:
+- Genetics
+- Biochemistry
+- Biophysics
+- Molecular biology
+- Genetics
+- Cell biology
+- Metabolism
+- Biochemicals
+- Biotechnology
+locations:
+- type: document
+  url: http://isatab.sourceforge.net/docs/ISA-TAB_release-candidate-1_v1.0_24nov08.pdf
+- type: website
+  url: http://isatab.sourceforge.net/format.html
+relatedEntities:
+- id: msc:g50
+  role: user
+- id: msc:g59
+  role: user
+- id: msc:g69
+  role: user
+- id: msc:g76
+  role: user
+title: ISA-Tab

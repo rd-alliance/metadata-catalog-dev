@@ -1,0 +1,11 @@
+description: <p>The tool allows one to associate issues and reports of information
+  with a remote resource. Issues are things that are wrong with the remote resource,
+  or which need looking into, and reports are comments on the consistency of the remote
+  resource with various measures.</p>
+identifiers:
+- id: msc:g23
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://qc.cmip5.ceda.ac.uk/qc/
+name: CIM Quality Control Tool

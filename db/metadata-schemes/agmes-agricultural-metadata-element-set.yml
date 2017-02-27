@@ -1,0 +1,23 @@
+description: <p>A semantic standard developed by the Food and Agriculture Organization
+  (FAO) of the United Nations, AgMES enables description, resource discovery, interoperability
+  and data exchange of different types of information resources in all areas relevant
+  to food production, nutrition and rural development.</p><p>Sponsored by the UN AIMS
+  - Agricultural Information Managment Standards, the current standard was issued
+  in November 2010.</p>
+identifiers:
+- id: msc:m2
+  scheme: RDA-MSCWG
+keywords:
+- Agricultural economics
+- Agriculture
+- Livestock
+- Aquaculture
+locations:
+- type: document
+  url: http://aims.fao.org/es/standards/agmes/namespace-specification
+- type: website
+  url: http://aims.fao.org/standards/agmes
+relatedEntities:
+- id: msc:g2
+  role: user
+title: AgMES (Agricultural Metadata Element Set)

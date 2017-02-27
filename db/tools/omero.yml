@@ -1,0 +1,13 @@
+description: <p>Repository software for organising, viewing, analysing and sharing
+  biological microscopy images. It supports proprietary file formats but normalises
+  to OME-TIFF/OME-XML.</p>
+identifiers:
+- id: msc:t46
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.openmicroscopy.org/site/products/omero
+relatedEntities:
+- id: msc:m29
+  role: supported scheme
+title: OMERO

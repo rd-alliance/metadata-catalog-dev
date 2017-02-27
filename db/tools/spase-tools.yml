@@ -1,0 +1,12 @@
+description: <p>The SPASE website's list of tools for working with SPASE metadata
+  and the SPASE framework.</p>
+identifiers:
+- id: msc:t60
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.spase-group.org/tools/
+relatedEntities:
+- id: msc:m39
+  role: supported scheme
+title: SPASE Tools

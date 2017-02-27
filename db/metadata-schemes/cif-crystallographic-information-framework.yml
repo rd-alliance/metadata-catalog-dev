@@ -1,0 +1,25 @@
+description: <p>A well-established standard file structure for the archiving and distribution
+  of crystallographic information, CIF is in regular use for reporting crystal structure
+  determinations to Acta Crystallographica and other journals.</p><p>Sponsored by
+  the International Union of Crystallography, the current standard dates from 1997.
+  As of July 2011, a new version of the CIF standard is under consideration.</p>
+identifiers:
+- id: msc:m6
+  scheme: RDA-MSCWG
+keywords:
+- Materials engineering
+- Chemistry
+- Crystallography
+locations:
+- type: document
+  url: http://www.iucr.org/resources/cif/spec
+- type: website
+  url: http://www.iucr.org/resources/cif
+relatedEntities:
+- id: msc:g3
+  role: user
+- id: msc:g14
+  role: user
+- id: msc:g27
+  role: user
+title: CIF (Crystallographic Information Framework)

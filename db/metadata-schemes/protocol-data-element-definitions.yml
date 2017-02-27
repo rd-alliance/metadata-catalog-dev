@@ -1,0 +1,17 @@
+description: A draft set of data elements required by the National Institues of Health
+  (U.S.) for the submission of trial information to the <a href="http://clinicaltrials.gov/ct2/home">CLincalTrials.gov</a>
+  registry and results database.
+identifiers:
+- id: msc:m32
+  scheme: RDA-MSCWG
+keywords:
+- Clinical medicine
+locations:
+- type: document
+  url: http://prsinfo.clinicaltrials.gov/definitions.html
+- type: website
+  url: http://clinicaltrials.gov/ct2/manage-recs/resources
+relatedEntities:
+- id: msc:g105
+  role: maintainer
+title: Protocol Data Element Definitions

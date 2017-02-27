@@ -1,0 +1,11 @@
+description: <p>Current research information system implementing the CERIF standard.</p>
+identifiers:
+- id: msc:t62
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://symplectic.co.uk/products/elements/
+relatedEntities:
+- id: msc:m4
+  role: supported scheme
+title: Symplectic Elements

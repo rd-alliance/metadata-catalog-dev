@@ -1,0 +1,12 @@
+description: <p>Bio-Formats reads proprietary microscopy image data and metadata,
+  and converts them to OME-TIFF, a combination of TIFF and OME-XML.</p>
+identifiers:
+- id: msc:t6
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.openmicroscopy.org/site/products/bio-formats
+relatedEntities:
+- id: msc:m29
+  role: supported scheme
+title: Bio-Formats

@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g95
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://sdac.virtualsolar.org/cgi/search
+name: Virtual Solar Observatory

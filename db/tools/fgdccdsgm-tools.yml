@@ -1,0 +1,11 @@
+description: <p>The FGDC website's list of tools to implement the CSDGM standard.</p>
+identifiers:
+- id: msc:t26
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.fgdc.gov/metadata/geospatial-metadata-standards#csdgmresources
+relatedEntities:
+- id: msc:m17
+  role: supported scheme
+title: FGDC/CDSGM Tools

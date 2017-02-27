@@ -1,0 +1,11 @@
+description: <p>This national facility for looking after and distributing data concerning
+  the marine environment requires that data sets use a well-documented format such
+  as CF-compliant NetCDF and be accompanied by a Dublin Core record as well as discovery
+  metadata in a recognised standard such as DIF or FGDC/CDGM.</p>
+identifiers:
+- id: msc:g13
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://www.bodc.ac.uk/data/published_data_library/standards/
+name: BODC (British Oceanographic Data Centre Published Data Library)

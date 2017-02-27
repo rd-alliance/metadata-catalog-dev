@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g56
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://imos.aodn.org.au/imos/
+name: Integrated Marine Observing System Portal

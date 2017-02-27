@@ -1,0 +1,12 @@
+description: <p>The DCMI Tools Community list of tools and software implementing Dublin
+  Core.</p>
+identifiers:
+- id: msc:t21
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://dublincore.org/tools/
+relatedEntities:
+- id: msc:m15
+  role: supported scheme
+title: DCMI Tools and Software

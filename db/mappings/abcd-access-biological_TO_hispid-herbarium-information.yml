@@ -1,0 +1,13 @@
+description: A mapping from ABCD (Access to Biological Collection Data) to HISPID
+  (Herbarium Information Standards and Protocols for Interchange of Data).
+identifiers:
+- id: msc:c3
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.bgbm.org/tdwg/codata/Schema/Mappings/HISPID3.htm
+relatedEntities:
+- id: msc:m1
+  role: input scheme
+- id: msc:m64
+  role: output scheme

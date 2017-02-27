@@ -1,0 +1,9 @@
+identifiers:
+- id: msc:g100
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.eurocris.org/
+- type: email
+  url: eurocris@eurocris.org
+name: euroCRIS

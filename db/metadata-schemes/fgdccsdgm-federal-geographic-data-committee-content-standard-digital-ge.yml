@@ -1,0 +1,32 @@
+description: <p>A widely-used, but no longer current standard defining the information
+  content for a set of digital geospatial data required by the US Federal Government.</p><p>CSDGM
+  was sponsored by the US Federal Geographic Data Committee. &#160;However, in September
+  2010 the FGDC endorsed ISO 19115 and began encouraging federal agencies to transition
+  to ISO metadata.</p>
+identifiers:
+- id: msc:m17
+  scheme: RDA-MSCWG
+keywords:
+- Cartography
+- Biochemistry
+- Land use
+- Oceanography
+- Meteorology
+- Climatology
+- Marine biology
+- Topography
+- Hydrology
+- Oceanography
+- Geography
+locations:
+- type: document
+  url: http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/v2_0698.pdf
+- type: website
+  url: http://www.fgdc.gov/metadata/geospatial-metadata-standards/
+relatedEntities:
+- id: msc:g13
+  role: user
+- id: msc:g75
+  role: user
+title: FGDC/CSDGM (Federal Geographic Data Committee Content Standard for Digital
+  Geospatial Metadata)

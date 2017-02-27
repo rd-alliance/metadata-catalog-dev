@@ -1,0 +1,27 @@
+description: <p>An information model for describing the elements of the heliophysics
+  data environment, and a set of resource types which can be used to describe data
+  along with its scientific context, source, provenance, content and location. It
+  is designed to support a federated data system where data may reside at different
+  locations and may be seperated from the metadata which describes it. The preferred
+  expression form is XML.</p><p>The Space Physics Archive Search and Extract (SPASE)
+  effort is implemented by the SPASE Consortium which is composed of representatives
+  of the international Heliophysics data community. The Current Release of the data
+  model (2.2.2) was updated in October 2012.</p>
+identifiers:
+- id: msc:m39
+  scheme: RDA-MSCWG
+keywords:
+- Astronomical systems
+- Astronomy
+- Sun
+locations:
+- type: document
+  url: http://www.spase-group.org/docs/schema/
+- type: website
+  url: http://www.spase-group.org/data/
+relatedEntities:
+- id: msc:g77
+  role: user
+- id: msc:g87
+  role: user
+title: SPASE Data Model

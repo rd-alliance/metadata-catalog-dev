@@ -1,0 +1,13 @@
+description: <p>A set of software libraries and self-describing, machine-independent
+  data formats that conform to the CF metadata conventions. They support the creation,
+  access, and sharing of array-oriented scientific data.</p>
+identifiers:
+- id: msc:t45
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.unidata.ucar.edu/software/netcdf/index.html
+relatedEntities:
+- id: msc:m5
+  role: supported scheme
+title: NetCDF

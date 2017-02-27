@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g111
+  scheme: RDA-MSCWG
+locations:
+- type: email
+  url: pig@loc.gov
+name: PREMIS Implementors' Group

@@ -1,0 +1,9 @@
+description: <p>An open-access collection of crystal structures of organic, inorganic,
+  metal-organic compounds and minerals, many of which are in CIF form.</p>
+identifiers:
+- id: msc:g27
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.crystallography.net/index.php
+name: Crystallography Open Database

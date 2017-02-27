@@ -1,0 +1,12 @@
+description: <p>The Data Packagist is a Web-based tool for writing a Data Package
+  descriptor file (datapackage.json).</p>
+identifiers:
+- id: msc:t19
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://datapackagist.okfnlabs.org/
+relatedEntities:
+- id: msc:m10
+  role: supported scheme
+title: Data Packagist

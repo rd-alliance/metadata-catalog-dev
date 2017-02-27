@@ -1,0 +1,9 @@
+description: <p>The statistical office of the European Union, which implementats SDMX
+  in a number of projects.</p>
+identifiers:
+- id: msc:g42
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://epp.eurostat.ec.europa.eu/portal/page/portal/statistics/metadata/metadata_structure
+name: Eurostat

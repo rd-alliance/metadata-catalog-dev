@@ -1,0 +1,11 @@
+description: <p>Provides members of the scholarly community with access to files associated
+  with scholarly studies for the purpose of replication, for all studies conducted
+  by ISPS-affiliated researchers. ISPS metadata records conform to DDI requirements
+  and include a minimal set of Dublin Core metadata elements.</p>
+identifiers:
+- id: msc:g55
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://isps.research.yale.edu/login/isps-data-archive/
+name: The Institution for Social and Policy Studies (ISPS) Data Archive

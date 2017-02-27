@@ -1,0 +1,9 @@
+description: <p>An online portal providing access to a number of NSF-supported marine
+  geoscience projects, which has developed its own metadata requirements.</p>
+identifiers:
+- id: msc:g67
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.marine-geo.org/submit/guidelines.php
+name: Marine Geoscience Data System

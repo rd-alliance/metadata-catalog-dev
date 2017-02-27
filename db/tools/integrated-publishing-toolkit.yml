@@ -1,0 +1,14 @@
+description: <p>A software platform using Darwin Core and EML to facilitate the efficient
+  publishing of biodiversity data on the Internet, using the GBIF network.</p>
+identifiers:
+- id: msc:t35
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://code.google.com/p/gbif-providertoolkit/
+relatedEntities:
+- id: msc:m9
+  role: supported scheme
+- id: msc:m16
+  role: supported scheme
+title: Integrated Publishing Toolkit

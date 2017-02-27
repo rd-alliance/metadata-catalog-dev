@@ -1,0 +1,28 @@
+description: '<p>The technical specifications defined by the IVOA (International Virtual
+  Observatory Alliance) enable interoperability between and the integration of astronomical
+  archives across the world into an international virtual observatory. They include
+  several data models that act as metadata schemas for particular data types: for
+  example, photometry data, simulation data, space-time coordinates, spectral lines
+  data, spectral data, observational data, and the physical parameter space of astronomical
+  datasets.</p><p>These data models are under active development by the IVOA Data
+  Modelling Working Group.</p><p>Additional recommendations have been made for metadata
+  concepts and terms necessary for the discovery and the use of astronomical data
+  collections and services.</p>'
+identifiers:
+- id: msc:m20
+  scheme: RDA-MSCWG
+keywords:
+- Astronomy
+locations:
+- type: document
+  url: http://www.ivoa.net/documents/#specs
+- type: website
+  url: http://ivoa.net/documents/
+relatedEntities:
+- id: msc:g5
+  role: user
+- id: msc:g41
+  role: user
+- id: msc:g93
+  role: user
+title: International Virtual Observatory Alliance Technical Specifications

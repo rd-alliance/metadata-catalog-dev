@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g107
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.w3.org/2011/gld/
+name: Government Linked Data Working Group

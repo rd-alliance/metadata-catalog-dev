@@ -1,0 +1,15 @@
+description: <p>A list of nearly 40 Minimum Information standards projects registered
+  with the MIBBI initiative.</p>
+identifiers:
+- id: msc:m72
+  scheme: RDA-MSCWG
+keywords:
+- Genetics
+- Genetics
+locations:
+- type: website
+  url: http://mibbi.sourceforge.net/portal.shtml
+relatedEntities:
+- id: msc:m23
+  role: parent scheme
+title: MIBBI Portal

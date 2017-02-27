@@ -1,0 +1,9 @@
+description: <p>A project to integrate&#160;and enable data analysis techniques over&#160;the
+  astronomical archives of Europe, as part of the international Virtual Observatory.&#160;</p>
+identifiers:
+- id: msc:g41
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.euro-vo.org/
+name: Euro-VO (European Virtual Observatory)

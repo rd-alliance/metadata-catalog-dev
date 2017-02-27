@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g21
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.chd7.org/
+name: CHD7 Database

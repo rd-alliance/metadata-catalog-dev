@@ -1,0 +1,15 @@
+description: <p>An application of Dublin Core designed to improve visibility and availability
+  of online resources, originally adapted from the Australian Government Locator Service
+  metadata standard for use in government agencies.</p>
+identifiers:
+- id: msc:m44
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: website
+  url: http://www.agls.gov.au
+relatedEntities:
+- id: msc:m15
+  role: parent scheme
+title: AGLS Metadata Profile

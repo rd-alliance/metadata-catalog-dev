@@ -1,0 +1,40 @@
+description: <p>An early metadata initiative from the Earth sciences community, intended
+  for the description of scientific data sets. It inlcudes elements focusing on instruments
+  that capture data, temporal and spatial characteristics of the data, and projects
+  with which the dataset is associated. It is defined as a W3C XML Schema.</p><p>Sponsored
+  by the Global Change Master Directory, the DIF Writer's Guide Version 6 is from
+  November 2010.</p>
+identifiers:
+- id: msc:m14
+  scheme: RDA-MSCWG
+keywords:
+- Biochemistry
+- Oceanography
+- Meteorology
+- Ecology
+- Climatology
+- Marine biology
+- Hydrology
+- Glaciology
+- Agriculture
+- Oceanography
+- Hydrology
+locations:
+- type: document
+  url: http://gcmd.nasa.gov/add/difguide/WRITEADIF.pdf
+- type: website
+  url: http://gcmd.nasa.gov/add/difguide/
+relatedEntities:
+- id: msc:g8
+  role: user
+- id: msc:g13
+  role: user
+- id: msc:g19
+  role: user
+- id: msc:g46
+  role: user
+- id: msc:g47
+  role: user
+- id: msc:g71
+  role: user
+title: DIF (Directory Interchange Format)

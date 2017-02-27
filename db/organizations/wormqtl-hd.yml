@@ -1,0 +1,7 @@
+identifiers:
+- id: msc:g96
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.wormqtl-hd.org/
+name: WormQTL-HD

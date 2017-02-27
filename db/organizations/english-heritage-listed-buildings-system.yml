@@ -1,0 +1,10 @@
+description: <p>A case study of the use of the MIDAS XML Monument schema as a vehicle
+  for storing data exported from a major heritage sector information system, the English
+  Heritage Listed Building System (LBS).</p>
+identifiers:
+- id: msc:g38
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://www.jiscmail.ac.uk/cgi-bin/filearea.cgi?LMGT1=FISH&a=get&f=/MIDASXMLCaseStudy_LBS.htm
+name: English Heritage Listed Buildings System

@@ -1,0 +1,10 @@
+description: <p>An online portal for education and research on learning in Science,
+  Technology, Engineering, and Mathematics, using a profile of the Dublin Core Metadata
+  Elements for resource and collections metadata.</p>
+identifiers:
+- id: msc:g73
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://nsdl.org/contribute/metadata-guide
+name: National Science Digital Library Data Repository

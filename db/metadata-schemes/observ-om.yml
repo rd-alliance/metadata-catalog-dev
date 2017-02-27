@@ -1,0 +1,26 @@
+description: '<p>Observ-OM is founded on four basic concepts to represent any kind
+  of observation: Targets, Features, Protocols (and their Applications), and Values.
+  It is intended to lower the barrier for future data sharing and facilitate integrated
+  search across panels and species. All models, formats, documentation, and software
+  are available for free and open source (LGPLv3) at <a href="http://www.observ-om.org"
+  title="http://www.observ-om.org">http://www.observ-om.org</a>.</p>'
+identifiers:
+- id: msc:m27
+  scheme: RDA-MSCWG
+keywords:
+- Biology
+locations:
+- type: website
+  url: http://www.molgenis.org/wiki/ObservStart
+relatedEntities:
+- id: msc:g21
+  role: user
+- id: msc:g57
+  role: user
+- id: msc:g70
+  role: user
+- id: msc:g96
+  role: user
+- id: msc:g97
+  role: user
+title: Observ-OM

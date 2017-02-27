@@ -1,0 +1,25 @@
+description: <p>The Data Package specification is a generic wrapper format for exchanging
+  data. Although it supports arbitrary metadata, the format defines required, recommended,
+  and optional fields for both the package as a whole and the resources contained
+  within it.</p><p>A separate but linked specification provides a way to describe
+  the columns of a data table; descriptions of this form can be included directly
+  in the Data Package metadata.</p>
+identifiers:
+- id: msc:m10
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: document
+  url: http://specs.frictionlessdata.io/data-packages/
+- type: website
+  url: http://frictionlessdata.io/data-packages/
+relatedEntities:
+- id: msc:g29
+  role: user
+- id: msc:g101
+  role: maintainer
+title: Data Package
+versions:
+- issued: 2016-03-23
+  number: 1.0.0-beta.17

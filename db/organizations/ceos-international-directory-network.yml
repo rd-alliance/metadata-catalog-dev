@@ -1,0 +1,10 @@
+description: <p>An international effort headed by the Committee on Earth Observation
+  Satellites developed to assist users in locating Earth science data sets, data services,
+  and visualizations using DIF metadata.</p>
+identifiers:
+- id: msc:g19
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ceos.org/index.php?option=com_content&view=category&layout=blog&id=148&Itemid=213
+name: CEOS International Directory Network

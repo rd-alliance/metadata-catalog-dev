@@ -1,0 +1,12 @@
+description: A mapping from Dublin Core to DDI (Data Documentation Initiative).
+identifiers:
+- id: msc:c13
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.ddialliance.org/resources/tools/dc
+relatedEntities:
+- id: msc:m15
+  role: input scheme
+- id: msc:m13
+  role: output scheme

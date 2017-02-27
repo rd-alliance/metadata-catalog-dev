@@ -1,0 +1,9 @@
+description: '<p>A desk study of CSMD implementation in two facilities: the UK National
+  Crystallography Service and the ISIS Neutron Source.</p>'
+identifiers:
+- id: msc:g28
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://dx.doi.org/10.1016/j.future.2011.08.003
+name: CSMD Pilot Studies

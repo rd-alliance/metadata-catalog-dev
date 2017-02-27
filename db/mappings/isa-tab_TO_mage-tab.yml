@@ -1,0 +1,12 @@
+description: A mapping from ISA-Tab to MAGE-TAB.
+identifiers:
+- id: msc:c21
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: https://github.com/ISA-tools/MAGEtoISAconverter/
+relatedEntities:
+- id: msc:m21
+  role: input scheme
+- id: msc:m91
+  role: output scheme

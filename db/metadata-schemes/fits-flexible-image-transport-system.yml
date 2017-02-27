@@ -1,0 +1,33 @@
+description: <p><a href="http://fits.gsfc.nasa.gov/fits_home.html">FITS</a> is an
+  image data file format for encoding astronomical data. The WCS (World Coordinate
+  System) conventions map elements in data arrays to standard physical coordinates
+  in the sky. FITS has provisions for image metadata encoded in an ASCII header at
+  the beginning of files.</p>
+identifiers:
+- id: msc:m18
+  scheme: RDA-MSCWG
+keywords:
+- Astrophysics
+- Astronomy
+- Sun
+locations:
+- type: document
+  url: http://fits.gsfc.nasa.gov/fits_standard.html
+- type: website
+  url: http://fits.gsfc.nasa.gov/fits_standard.html
+relatedEntities:
+- id: msc:g9
+  role: user
+- id: msc:g40
+  role: user
+- id: msc:g51
+  role: user
+- id: msc:g60
+  role: user
+- id: msc:g61
+  role: user
+- id: msc:g89
+  role: user
+- id: msc:g95
+  role: user
+title: FITS (Flexible Image Transport System)
