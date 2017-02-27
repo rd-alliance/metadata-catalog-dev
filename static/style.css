@@ -50,7 +50,7 @@ main {
 footer {
 	margin-top: 4rem;
 	background-color: #666666;
-	color: #cccccc;
+	color: #CCC;
 	text-align: center;
 }
 
@@ -66,7 +66,7 @@ footer li {
 }
 
 footer a, footer a:link, footer a:active, footer a:visited {
-	color: #cccccc;
+	color: #CCC;
 }
 
 /* Global styles */
@@ -132,55 +132,70 @@ div.keywords ul, div.dataTypes ul, ul.locations {
 }
 
 div.keywords li, div.dataTypes li, ul.locations li {
+	padding: 0px;
+	margin: 0px;
+	list-style: none;
+}
+
+div.keywords li a, div.dataTypes li a, ul.locations li a {
+	display: inline-block;
 	border-radius: 1rem;
-	padding: 0.5rem;
+	padding: 0.5rem 1rem;
 	margin: 0.25rem;
 }
 
-div.keywords li {
-	background-color: #E3F2FD;
+div.keywords li a {
+	border: 1px solid #BCAAA4;
+	background-color: #D7CCC8;
+	color: black;
 }
 
-div.dataTypes li {
-	background-color: #FFF8E1;
+div.dataTypes li a {
+	border: 1px solid #FFE082;
+	background-color: #FFECB3;
+	color: white;
 }
 
-ul.locations li {
-	background-color: #E8F5E9;
+ul.locations li a {
+	border: 1px solid #90CAF9;
+	background-color: #BBDEFB;
+	color: black;
 }
 
 p.error {
-	border-radius: 1em;
+	border-radius: 0.333em;
 	padding: 1em;
 	margin: 1em 0em;
 	background-color: #FFCDD2;
+	color: black;
 }
 
 p.message {
-	border-radius: 1em;
+	border-radius: 0.333em;
 	padding: 1em;
 	margin: 1em 0em;
-	background-color: #DCEDC8;
+	background-color: #C8E6C9;
+	color: black;
 }
 
 div.result {
-	border: 2pt solid #EEEEEE;
+	border: 2px solid #CCC;
 	border-radius: 1rem;
 	padding: 0rem 1rem;
 	margin: 1rem 0rem;
 }
 
 div.result p.name {
-	border: 2pt solid #EEEEEE;
+	border: 2px solid #CCC;
 	border-radius: 1rem 1rem 0rem 0rem;
-	background-color: #EEEEEE;
+	background-color: #DDD;
 	font-size: 1.5em;
 	padding: 1rem;
-	margin: -2pt -1rem 0rem;
+	margin: -2px calc(-1rem - 2px) 0rem;
 }
 
 #search_form fieldset {
-	border: 1px solid #999999;
+	border: 1px solid #999;
 	border-radius: 1em;
 }
 div.grid {
@@ -202,10 +217,19 @@ div.grid p label span:after {
 }
 div.grid p label input, div.grid p label select {
 	margin-left: 0.667em;
-	padding: 0.333em;
+	border: 1px solid #CCC;
+	padding: 0.5em 1em;
 	border-radius: 0.333em;
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 	width: 20rem;
+}
+button {
+	padding: 0.5em 1em;
+	border-radius: 0.333em;
+	border: 1px solid  #1976D2;
+	background-color:  #1E88E5;
+	color: white;
+	font-size: 1em;
 }
