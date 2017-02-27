@@ -656,19 +656,19 @@ print('Writing out new records...')
 for slug, dest_record in db_standards.items():
     new_record = os.path.join(args.dest, 'metadata-schemes', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r, default_flow_style=False)
+        yaml.safe_dump(dest_record, r, default_flow_style=False, allow_unicode=True)
 for slug, dest_record in db_tools.items():
     new_record = os.path.join(args.dest, 'tools', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r, default_flow_style=False)
+        yaml.safe_dump(dest_record, r, default_flow_style=False, allow_unicode=True)
 for slug, dest_record in db_organizations.items():
     new_record = os.path.join(args.dest, 'organizations', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r, default_flow_style=False)
+        yaml.safe_dump(dest_record, r, default_flow_style=False, allow_unicode=True)
 for slug, dest_record in db_mappings.items():
     new_record = os.path.join(args.dest, 'mappings', slug + '.yml')
     with open(new_record, 'w') as r:
-        yaml.safe_dump(dest_record, r, default_flow_style=False)
+        yaml.safe_dump(dest_record, r, default_flow_style=False, allow_unicode=True)
 
 print('There were issues you should look at: see migration log.')
 log = 'Migration log: {}\n\n'.format(datetime.datetime.now(datetime.timezone.utc).isoformat(' ')) + log
