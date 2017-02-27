@@ -462,7 +462,7 @@ for mapping in mappings:
         else:
             to_id_string = getMSCID(os.path.join(args.dest, 'metadata-schemes', slug_to + '.yml'))
             if to_id_string:
-                log += 'In standard {}, found mapping to unknown standard {} but stub already present.\n'.format(slug_from, slug_to)
+                log += 'In standard {}, found mapping to unknown standard {}; reusing stub from previous run.\n'.format(slug_from, slug_to)
                 isNewLog = True
                 relation['id'] = to_id_string
                 m_index[slug_to] = to_id_string
@@ -491,7 +491,7 @@ if isNewLog:
     log += '\n'
     isNewLog = False
 
-# Creating funder records
+# Creating sponsor records
 try:
     sponsors = sorted(sponsors, key=lambda k: k['standard'] + k['name'])
 except KeyError:
@@ -506,31 +506,30 @@ for sponsor in sponsors:
     id_string = None
     slug = None
     if 'name' in sponsor:
+        # See if an organization with this name already exists in the database
         slug = createSlug(sponsor['name'])
         if slug in g_index:
             id_string = g_index[slug]
         else:
+            # See if an organization with this name already exists from a previous migration run
             id_string = getMSCID(os.path.join(args.dest, 'organizations', slug + '.yml'))
             if id_string:
                 g_index[slug] = id_string
                 db_organizations[slug] = loadRecord(os.path.join(args.dest, 'organizations', slug + '.yml'))
-                log += 'In standard {}, found reference to unknown sponsor {} but stub already present.\n'.format(standard, slug)
+                log += 'In standard {}, found reference to unknown sponsor {}; reusing stub from previous run.\n'.format(standard, slug)
                 isNewLog = True
     else:
+        # See if an organization with this URL already exists in the database
         if 'url' in sponsor:
             for org_slug, org in db_organizations:
                 if 'locations' in org:
                     for location in org['locations']:
                         if 'url' in location:
                             if sponsor['url'] == location['url']:
-                                org_ids = org['identifiers']
-                                for org_id in org_ids:
-                                    if 'scheme' in org_id and org_id['scheme'] == 'RDA-MSCWG':
-                                        id_string = org_id['id']
-                                        slug = org_slug
-                                        break
-                                        break
-                                        break
+                                slug = org_slug
+                                id_string = g_index[slug]
+                                break
+                                break
     if (not id_string) and slug:
         # Need to create new record
         log += 'In standard {}, found reference to unknown sponsor {} so created a stub.\n'.format(standard, slug)
@@ -550,7 +549,7 @@ for sponsor in sponsors:
         db_organizations[slug] = dest_record
     if id_string:
         # We can add a cross-reference now
-        relation = { 'id': id_string, 'role': 'funder' }
+        relation = { 'id': id_string, 'role': 'maintainer' }
         if not 'relatedEntities' in db_standards[standard]:
             db_standards[standard]['relatedEntities'] = list()
         db_standards[standard]['relatedEntities'].append(relation)
@@ -576,31 +575,30 @@ for contact in contacts:
     id_string = None
     slug = None
     if 'name' in contact:
+        # See if an organization with this name already exists in the database
         slug = createSlug(contact['name'])
         if slug in g_index:
             id_string = g_index[slug]
         else:
+            # See if an organization with this name already exists from a previous migration run
             id_string = getMSCID(os.path.join(args.dest, 'organizations', slug + '.yml'))
             if id_string:
                 g_index[slug] = id_string
                 db_organizations[slug] = loadRecord(os.path.join(args.dest, 'organizations', slug + '.yml'))
-                log += 'In standard {}, found reference to unknown contact {} but stub already present.\n'.format(standard, slug)
+                log += 'In standard {}, found reference to unknown contact {}; reusing stub from previous run.\n'.format(standard, slug)
                 isNewLog = True
     else:
         if 'email' in contact:
+            # See if an organization with this email address already exists in the database
             for org_slug, org in db_organizations:
                 if 'locations' in org:
                     for location in org['locations']:
                         if 'url' in location:
                             if contact['email'] == location['url']:
-                                org_ids = org['identifiers']
-                                for org_id in org_ids:
-                                    if 'scheme' in org_id and org_id['scheme'] == 'RDA-MSCWG':
-                                        id_string = org_id['id']
-                                        slug = org_slug
-                                        break
-                                        break
-                                        break
+                                slug = org_slug
+                                id_string = g_index[slug]
+                                break
+                                break
     if (not id_string) and slug:
         # Need to create new record
         log += 'In standard {}, found reference to unknown contact {} so created a stub.\n'.format(standard, slug)
@@ -620,22 +618,28 @@ for contact in contacts:
         db_organizations[slug] = dest_record
     if id_string and slug:
         # We can add a cross-reference now
-        relation = { 'id': id_string, 'role': 'funder' }
+        relation = { 'id': id_string, 'role': 'maintainer' }
         if not 'relatedEntities' in db_standards[standard]:
             db_standards[standard]['relatedEntities'] = list()
-        db_standards[standard]['relatedEntities'].append(relation)
+        # ... but only if it is not already there (from sponsors)
+        isNew = True
+        for known_relation in db_standards[standard]['relatedEntities']:
+            if known_relation == relation:
+                isNew = False
+                break
+        if isNew:
+            db_standards[standard]['relatedEntities'].append(relation)
         # Add email address to org record if missing
         if 'email' in contact:
+            isEmailMissing = True
             if 'locations' in db_organizations[slug]:
-                hasEmail = False
                 for location in db_organizations[slug]['locations']:
                     if 'type' in location and location['type'] == 'email':
-                        hasEmail = True
-                if not hasEmail:
-                    location = { 'url': contact['email'], 'type': 'email' }
-                    db_organizations[slug]['locations'].append(location)
+                        isEmailMissing = False
+                        break
             else:
                 db_organizations[slug]['locations'] = list()
+            if isEmailMissing:
                 location = { 'url': contact['email'], 'type': 'email' }
                 db_organizations[slug]['locations'].append(location)
     else:
