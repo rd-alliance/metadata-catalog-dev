@@ -147,6 +147,8 @@ def dbDump(args):
                 i += 1
             else:
                 os.rename(args.folder, args.folder + str(i))
+                os.rename(os.path.join(args.folder + str(i), 'README.md'),\
+                    os.path.join(args.folder, 'README.md'))
         else:
             print('Okay. I will leave it alone.')
             sys.exit(0)
