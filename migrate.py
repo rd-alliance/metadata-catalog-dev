@@ -201,7 +201,7 @@ for record in standards:
         if 'description' in source_record:
             rawDescription = source_record['description']
             # Strip out internal links that will not apply in the Catalog
-            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            rawDescription = re.sub(r'<a href="(?:..)?/standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
             dest_record['description'] = rawDescription
         if 'disciplines' in source_record:
             keywords = list()
@@ -276,7 +276,7 @@ for record in profiles:
         if 'description' in source_record:
             rawDescription = source_record['description']
             # Strip out internal links that will not apply in the Catalog
-            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            rawDescription = re.sub(r'<a href="(?:..)?/standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
             dest_record['description'] = rawDescription
         if 'disciplines' in source_record:
             keywords = list()
@@ -337,7 +337,7 @@ for record in tools:
         if 'description' in source_record:
             rawDescription = source_record['description']
             # Strip out internal links that will not apply in the Catalog
-            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            rawDescription = re.sub(r'<a href="(?:..)?/standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
             dest_record['description'] = rawDescription
         locations = list()
         if 'website' in source_record:
@@ -384,7 +384,7 @@ for record in users:
         if 'description' in source_record:
             rawDescription = source_record['description']
             # Strip out internal links that will not apply in the Catalog
-            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            rawDescription = re.sub(r'<a href="(?:..)?/standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
             dest_record['description'] = rawDescription
         locations = list()
         if 'website' in source_record:
