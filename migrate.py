@@ -199,7 +199,10 @@ for record in standards:
                 version['issued'] = source_record['standard_update_date']
             dest_record['versions'] = [ version ]
         if 'description' in source_record:
-            dest_record['description'] = source_record['description']
+            rawDescription = source_record['description']
+            # Strip out internal links that will not apply in the Catalog
+            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            dest_record['description'] = rawDescription
         if 'disciplines' in source_record:
             keywords = list()
             for discipline in source_record['disciplines']:
@@ -271,7 +274,10 @@ for record in profiles:
         record_id = { 'id': id_string, 'scheme': 'RDA-MSCWG' }
         dest_record['identifiers'] = [ record_id ]
         if 'description' in source_record:
-            dest_record['description'] = source_record['description']
+            rawDescription = source_record['description']
+            # Strip out internal links that will not apply in the Catalog
+            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            dest_record['description'] = rawDescription
         if 'disciplines' in source_record:
             keywords = list()
             for discipline in source_record['disciplines']:
@@ -329,7 +335,10 @@ for record in tools:
         record_id = { 'id': id_string, 'scheme': 'RDA-MSCWG' }
         dest_record['identifiers'] = [ record_id ]
         if 'description' in source_record:
-            dest_record['description'] = source_record['description']
+            rawDescription = source_record['description']
+            # Strip out internal links that will not apply in the Catalog
+            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            dest_record['description'] = rawDescription
         locations = list()
         if 'website' in source_record:
             location = { 'url': source_record['website'], 'type': 'website' }
@@ -373,7 +382,10 @@ for record in users:
         record_id = { 'id': id_string, 'scheme': 'RDA-MSCWG' }
         dest_record['identifiers'] = [ record_id ]
         if 'description' in source_record:
-            dest_record['description'] = source_record['description']
+            rawDescription = source_record['description']
+            # Strip out internal links that will not apply in the Catalog
+            rawDescription = re.sub(r'<a href="../standards[^"]+">([^<]+)</a>', r'\1', rawDescription)
+            dest_record['description'] = rawDescription
         locations = list()
         if 'website' in source_record:
             location = { 'url': source_record['website'], 'type': 'website' }
