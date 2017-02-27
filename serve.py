@@ -14,6 +14,10 @@ import os, sys, re
 #   - latest version: sudo -H pip3 install flask
 from flask import Flask, request, url_for, render_template, flash, redirect, jsonify, g
 
+# See https://pythonhosted.org/Flask-OpenID/
+# Install from PyPi: sudo -H pip3 install Flask-OpenID
+from flask.ext.openid import OpenID
+
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query, where
