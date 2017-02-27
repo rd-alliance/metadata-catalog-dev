@@ -814,30 +814,34 @@ def search():
     else:
         # Title, identifier, funder, dataType help
         all_schemes = schemes.all()
-        title_list = list()
-        id_list = list()
-        funder_list = list()
-        type_list = list()
+        title_set = set()
+        id_set = set()
+        funder_set = set()
+        type_set = set()
         for scheme in all_schemes:
-            title_list.append(scheme['title'])
+            title_set.add(scheme['title'])
             for identifier in scheme['identifiers']:
-                id_list.append(identifier['id'])
+                id_set.add(identifier['id'])
             if 'dataTypes' in scheme:
                 for type in scheme['dataTypes']:
-                    type_list.append(type)
+                    type_set.add(type)
             if 'relatedEntities' in scheme:
                 for entity in scheme['relatedEntities']:
                     if entity['role'] == 'funder':
                         org_id = entity['id']
                         funder = organizations.get(eid=int(org_id[5:]))
                         if funder:
-                            funder_list.append(funder['name'])
+                            funder_set.add(funder['name'])
                         else:
                             print('Could not look up organization with eid {}. '.format(org_id[5:]))
-        title_list.sort()
+        title_list = list(title_set)
+        title_list.sort(key=lambda k: k.lower())
+        id_list = list(id_set)
         id_list.sort()
-        funder_list.sort()
-        type_list.sort()
+        funder_list = list(funder_set)
+        funder_list.sort(key=lambda k: k.lower())
+        type_list = list(type_set)
+        type_list.sort(key=lambda k: k.lower())
         # Subject help
         full_keyword_uris = getAllTermURIs()
         subject_set = set()
