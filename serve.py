@@ -12,7 +12,7 @@ import os, sys, re
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo -H pip3 install flask
-from flask import Flask, request, url_for, render_template, flash, redirect, jsonify, g
+from flask import Flask, request, url_for, render_template, flash, redirect, jsonify, g, session
 
 # See https://pythonhosted.org/Flask-OpenID/
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
@@ -39,10 +39,13 @@ app.secret_key = os.urandom(24)
 
 script_dir = os.path.dirname(sys.argv[0])
 db = TinyDB(os.path.realpath(os.path.join(script_dir, 'db.json')))
+user_db = TinyDB(os.path.realpath(os.path.join(script_dir, 'users.json')))
 
 thesaurus = rdflib.Graph()
 thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
 UNO = Namespace('http://vocabularies.unesco.org/ontology#')
+
+oid = OpenID(app, os.path.join(script_dir, 'open-id'))
 
 ### Utility functions
 
@@ -235,16 +238,28 @@ def fromSlug(slug):
     string = slug.replace('+', ' ')
     return string
 
-@app.context_processor
-def utility_processor():
-    return { 'toSlug': toSlug, 'fromSlug': fromSlug }
-
 def wild2regex(string):
     """Transforms wildcard searches to regular expressions."""
     regex = re.escape(string)
     regex = regex.replace('\*','.*')
     regex = regex.replace('\?','.?')
     return regex
+
+### Functions made available to templates
+
+@app.context_processor
+def utility_processor():
+    return { 'toSlug': toSlug, 'fromSlug': fromSlug }
+
+### User handling
+
+@app.before_request
+def lookup_current_user():
+    g.user = None
+    if 'openid' in session:
+        openid = session['openid']
+        User = Query()
+        g.user = user_db.search(User.openid == openid)
 
 ### Front page
 
@@ -987,6 +1002,56 @@ def scheme_query():
     result_list.sort()
     # Show results list
     return jsonify({ 'ids': result_list })
+
+### User login
+
+@app.route('/login', methods=['GET', 'POST'])
+@oid.loginhandler
+def login():
+    if g.user is not None:
+        return redirect(oid.get_next_url())
+    if request.method == 'POST':
+        openid = request.form.get('openid')
+        if openid:
+            return oid.try_login(openid, ask_for=['email', 'nickname'],\
+                ask_for_optional=['fullname'])
+    return render_template('login.html', next=oid.get_next_url(),
+                           error=oid.fetch_error())
+
+@oid.after_login
+def create_or_login(resp):
+    session['openid'] = resp.identity_url
+    User = Query()
+    user = user_db.search(User.openid == resp.identity_url)
+    if user is not None:
+        flash(u'Successfully signed in')
+        g.user = user
+        return redirect(oid.get_next_url())
+    return redirect(url_for('create_profile', next=oid.get_next_url(),\
+        name=resp.fullname or resp.nickname, email=resp.email))
+
+@app.route('/create-profile', methods=['GET', 'POST'])
+def create_profile():
+    if g.user is not None or 'openid' not in session:
+        return redirect(url_for('hello'))
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        if not name:
+            flash(u'Error: you have to provide a user name')
+        elif '@' not in email:
+            flash(u'Error: you have to enter a valid email address')
+        else:
+            flash(u'Profile successfully created')
+            user_db.insert({'name': name, 'email': email, 'openid': session['openid']})
+            return redirect(oid.get_next_url())
+    return render_template('create_profile.html', next=oid.get_next_url())
+
+@app.route('/logout')
+def logout():
+    session.pop('openid', None)
+    flash(u'You were signed out')
+    return redirect(oid.get_next_url())
 
 ### Executing
 
