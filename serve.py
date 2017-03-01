@@ -35,7 +35,9 @@ from rdflib.namespace import SKOS, RDF
 app = Flask (__name__)
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
-app.secret_key = os.urandom(24)
+
+with open('key', 'r') as f:
+    app.secret_key = f.read()
 
 script_dir = os.path.dirname(sys.argv[0])
 db = TinyDB(os.path.realpath(os.path.join(script_dir, 'db.json')))
@@ -259,7 +261,7 @@ def lookup_current_user():
     if 'openid' in session:
         openid = session['openid']
         User = Query()
-        g.user = user_db.search(User.openid == openid)
+        g.user = user_db.get(User.openid == openid)
 
 ### Front page
 
@@ -1021,10 +1023,13 @@ def login():
 @oid.after_login
 def create_or_login(resp):
     session['openid'] = resp.identity_url
+    flash('Setting session Open ID to {}.'.format(resp.identity_url))
+    if 'openid' in session:
+        flash('Session Open ID is now {}.'.format(session['openid']))
     User = Query()
-    user = user_db.search(User.openid == resp.identity_url)
-    if user is not None:
-        flash(u'Successfully signed in')
+    user = user_db.get(User.openid == resp.identity_url)
+    if user:
+        flash('Successfully signed in.')
         g.user = user
         return redirect(oid.get_next_url())
     return redirect(url_for('create_profile', next=oid.get_next_url(),\
@@ -1033,31 +1038,46 @@ def create_or_login(resp):
 @app.route('/create-profile', methods=['GET', 'POST'])
 def create_profile():
     if g.user is not None or 'openid' not in session:
+        if 'openid' not in session:
+            flash('OpenID sign-in failed, sorry.', 'error')
         return redirect(url_for('hello'))
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
         if not name:
-            flash(u'Error: you have to provide a user name')
+            flash('You must provide a user name.', 'error')
         elif '@' not in email:
-            flash(u'Error: you have to enter a valid email address')
+            flash('You must enter a valid email address.', 'error')
         else:
-            flash(u'Profile successfully created')
             user_db.insert({'name': name, 'email': email, 'openid': session['openid']})
+            flash('Profile successfully created.')
             return redirect(oid.get_next_url())
-    return render_template('create_profile.html', next=oid.get_next_url())
+    return render_template('create-profile.html', next=oid.get_next_url())
 
 @app.route('/logout')
 def logout():
     session.pop('openid', None)
-    flash(u'You were signed out')
+    flash('You were signed out')
     return redirect(oid.get_next_url())
 
 ### Editing screen
 
-@app.route('/edit/m<int:number>')
+@app.route('/edit/m<int:number>', methods=['GET', 'POST'])
 def edit_scheme(number):
-    return render_template('edit_scheme.html', eid=number)
+    if g.user is None:
+        flash('You must sign in before making any changes.', 'error')
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        pass
+    else:
+        schemes = db.table('metadata-schemes')
+        element = schemes.get(eid=number)
+        if element:
+            flash('You can edit this existing record using the form below.')
+        else:
+            flash('You can add a new record using the form below.')
+            element = dict()
+        return render_template('edit-scheme.html', record=element, eid=number)
 
 ### Ajax form snippets
 

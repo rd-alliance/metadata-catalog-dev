@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Edit Record msc:m{{ eid }}{% endblock %}
+{% block main %}
+  <div id="edit_form">
+    <form action="{{ url_for('edit_scheme', number=eid) }}" method="post"  accept-charset="utf-8">
+      <div class="grid">
+        <p>
+          <label>
+            <span>Name of scheme</span>
+            <input name="title" {% if 'title' in record %}value="{{ record['title'] }}"{% endif %}>
+          </label>
+        </p>
+        {% for identifier in record['identifier'] if not identifier['scheme'] == 'RDA-MSCWG' %}
+        <p>
+          <label>
+            <span>Identifier</span>
+            <input name="id{{ loop.index }}">
+            <select name="id{{ loop.index }}-scheme" placeholder="Scheme">
+                <option value=""></option>
+                <option>DOI</option>
+            </select>
+          </label>
+        </p>
+        {% endfor %}
+        <p>
+          <label>
+            <span>Identifier</span>
+            <input name="id">
+            <select name="id-scheme" placeholder="Scheme">
+                <option value=""></option>
+                <option>DOI</option>
+            </select>
+          </label>
+        </p>
+      </div>
+      <p><button>Submit</button></p>
+    </form>
+  </div>
+{% endblock %}

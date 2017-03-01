@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Sign in{% endblock %}
+{% block main %}
+  <form action="{{ url_for('login') }}" method=post>
+    <p>
+      <label>
+        <span>OpenID</span>
+        <input type=text name=openid size=30>
+      </label>
+      <button>Sign in</button>
+      <input type=hidden name=next value="{{ next }}">
+    </p>
+  </form>
+{% endblock %}
