@@ -33,8 +33,19 @@ header nav {
 
 #site-links {
 	display: inline-block;
+	padding: 0px;
 	text-align: right;
 	width: 50%;
+}
+
+#site-links li {
+	display: inline-block;
+	text-align: right;
+	list-style: none;
+}
+
+#site-links li + li:before {
+	content: '\2002|\2002\A0 ';
 }
 
 header a, header a:link, header a:active, header a:visited {

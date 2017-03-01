@@ -1053,6 +1053,15 @@ def logout():
     flash(u'You were signed out')
     return redirect(oid.get_next_url())
 
+### Editing screen
+
+@app.route('/edit/m<int:number>')
+def edit_scheme(number):
+    return render_template('edit_scheme.html', eid=number)
+
+### Ajax form snippets
+
+
 ### Executing
 
 if __name__ == '__main__':

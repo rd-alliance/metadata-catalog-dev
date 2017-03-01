@@ -14,9 +14,14 @@
     <nav>
       <p id="site-title">
         <a href="{{ url_for('hello') }}">Metadata Standards Catalog</a>
-      </p><p id="site-links">
-        <a href="{{ url_for('search') }}">Search the Catalog</a>
-      </p>
+      </p><ul id="site-links">
+        <li><a href="{{ url_for('search') }}">Search</a></li>
+        {% if g.user %}
+        <li><a href="{{ url_for('logout') }}">Sign out</a></li>
+        {% else %}
+        <li><a href="{{ url_for('login') }}">Sign in</a></li>
+        {% endif %}
+      </ul>
     </nav>
   </header>
   <main>
