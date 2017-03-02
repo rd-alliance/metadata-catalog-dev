@@ -1101,15 +1101,20 @@ def edit_scheme(number):
         type_list = list(type_set)
         type_list.sort(key=lambda k: k.lower())
         # Subject help
-        full_keyword_uris = getAllTermURIs()
+        all_keyword_uris = set()
+        for generator in [thesaurus.subjects(RDF.type, UNO.Domain),\
+            thesaurus.subjects(RDF.type, UNO.MicroThesaurus),\
+            thesaurus.subjects(RDF.type, SKOS.Concept)]:
+            for uri in generator:
+                all_keyword_uris.add(uri)
         subject_set = set()
-        for uri in full_keyword_uris:
+        for uri in all_keyword_uris:
             subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
         subject_set.add('Multidisciplinary')
         subject_list = list(subject_set)
         subject_list.sort()
         return render_template('edit-scheme.html', record=element, eid=number,\
-            subjects=subject_list)
+            subjects=subject_list, dataTypes=type_list)
 
 ### Ajax form snippets
 

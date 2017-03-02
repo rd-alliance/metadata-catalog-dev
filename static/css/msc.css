@@ -9,7 +9,7 @@ h1, .h1, h2, .h2, h3, .h3 {
 	margin-bottom: 32px;
 }
 
-/* The description may or may not be wrapped in a <p> */
+/* Descriptions may or may not be wrapped in a <p> */
 
 div.description {
 	margin: 0px 0px 11px;
@@ -64,6 +64,14 @@ ul.locations li a {
 	color: black;
 }
 
+/* Special formats for the editing screens */
+
+@media (min-width: 768px) {
+	.form-control-narrow {
+		display: inline-block;
+		width: 49%;
+	}
+}
 
 /* Special formatting for the footer */
 

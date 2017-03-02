@@ -8,20 +8,18 @@
         <input id="title" name="title" {% if 'title' in record %}value="{{ record['title'] }}"{% endif %} placeholder="Name of scheme" class="form-control">
       </div>
     </div>
-    {% for identifier in record['identifier'] if not identifier['scheme'] == 'RDA-MSCWG' %}
     <div class="form-group">
-      <label for="id{{ loop.index }}" class="col-sm-3 control-label">Identifier</label>
+      <label for="id" class="col-sm-3 control-label">Identifiers</label>
+      {% for identifier in record['identifiers'] if not identifier['scheme'] == 'RDA-MSCWG' %}
       <div class="col-sm-5">
-        <input id="id{{ loop.index }}" name="id{{ loop.index }}" placeholder="e.g. 10.001/1234" class="form-control">
+        <input id="id{{ loop.index }}" name="id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
       </div>
       <label for="id-scheme{{ loop.index }}" class="col-sm-2 control-label">Scheme</label>
       <div class="col-sm-2">
-        <input id="id-scheme{{ loop.index }}" name="id-scheme{{ loop.index }}" list="id-schemes" class="form-control">
+        <input id="id-scheme{{ loop.index }}" name="id-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}"class="form-control">
       </div>
-    </div>
-    {% endfor %}
-    <div class="form-group">
-      <label for="id" class="col-sm-3 control-label">Identifier</label>
+      <div class="col-sm-3"></div>
+      {% endfor %}
       <div class="col-sm-5">
         <input id="id" name="id" placeholder="e.g. 10.001/1234" class="form-control">
       </div>
@@ -43,25 +41,65 @@
       </div>
     </div>
     <div class="form-group">
-      <label for="keyword" class="col-sm-3 control-label">Subject area</label>
+      <label for="keywords" class="col-sm-3 control-label">Subject areas</label>
       <div class="col-sm-9">
-        <input id="keyword" name="keyword" list="keywords" placeholder="Subject area" class="form-control">
-        <datalist id="keywords">
-          <label for="keyword-list" class="col-sm-4">or select from the list</label>
-          <div class="col-sm-5">
-            <select id="keyword-list" name="keyword" class="form-control">
-              <option value=""></option>
-              {% for item in subjects %}
-              <option>{{ item }}</option>
-              {% endfor %}
-            </select>
-          </div>
+        {% for item in record['keywords'] %}
+        <input id="keywords{{ loop.index }}" name="keywords" list="keyword-list" value="{{ item }}" class="form-control form-control-narrow">
+        {% endfor %}
+        <input id="keywords" name="keywords" list="keyword-list" placeholder="Subject area" class="form-control form-control-narrow">
+        <datalist id="keyword-list">
+          {% for item in subjects %}
+          <option>{{ item }}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="dataTypes" class="col-sm-3 control-label">Data types</label>
+      <div class="col-sm-9">
+        {% for item in record['dataTypes'] %}
+        <input id="dataTypes{{ loop.index }}" name="dataTypes" list="dataType-list" value="{{ item }}" class="form-control">
+        {% endfor %}
+        <input id="dataTypes" name="dataTypes" list="dataType-list" placeholder="Type of data described by this scheme" class="form-control">
+        <datalist id="dataType-list">
+          {% for item in dataTypes %}
+          <option>{{ item }}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="location-url" class="col-sm-3 control-label">Locations</label>
+      {% for location in record['locations'] %}
+      <div class="col-sm-5">
+        <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" class="form-control">
+      </div>
+      <label for="location-type{{ loop.index }}" class="col-sm-1 control-label">Type</label>
+      <div class="col-sm-3">
+        <input id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" list="location-types" value="{{ location['type'] }}" class="form-control">
+      </div>
+      <div class="col-sm-3"></div>
+      {% endfor %}
+      <div class="col-sm-5">
+        <input id="location-url" name="location-url" placeholder="URL e.g. https://www..." class="form-control">
+      </div>
+      <label for="location-type" class="col-sm-1 control-label">Type</label>
+      <div class="col-sm-3">
+        <input id="location-type" name="location-type" list="location-types" class="form-control">
+        <datalist id="location-types">
+          <option>website</option>
+          <option>document</option>
+          <option>RDA-MIG</option>
+          <option>DTD</option>
+          <option>XSD</option>
+          <option>RDFS</option>
         </datalist>
       </div>
     </div>
     <div class="form-group">
       <div class="col-sm-offset-3 col-sm-9">
         <button class="btn btn-primary">Save changes</button>
+        <a href="{{ url_for('scheme', number=eid) }}" class="btn btn-default">Cancel &amp; view record</a>
       </div>
     </div>
   </form>
