@@ -1,0 +1,98 @@
+/* Overrides and additions to the Bootstrap theme:
+ * http://getbootstrap.com/customize/?id=f13793d58fd929b229c6672847b3e066
+ */
+
+/* A bit more space around the headings */
+
+h1, .h1, h2, .h2, h3, .h3 {
+	margin-top: 40px;
+	margin-bottom: 32px;
+}
+
+/* The description may or may not be wrapped in a <p> */
+
+div.description {
+	margin: 0px 0px 11px;
+}
+
+div.description p:last-child {
+	margin-bottom: 0px;
+}
+
+/* Fix bad spacing in nested lists */
+
+ul ul,
+ul ol,
+ol ul,
+ol ol {
+	margin-bottom: 11px;
+}
+
+/* Displaying certain lists of links as series of buttons */
+
+div.keywords p,
+div.dataTypes p {
+	padding: 0px 0px 11px;
+}
+
+@media (min-width: 768px) {
+	div.keywords p,
+	div.dataTypes p {
+		padding: 13px 4px;
+		text-align: right;
+	}
+}
+div.keywords li a,
+div.dataTypes li a,
+ul.locations li a {
+	padding: 8px 16px;
+	margin: 4px 0px;
+}
+div.keywords li a {
+	border: 1px solid #BCAAA4;
+	background-color: #D7CCC8;
+	color: black;
+}
+div.dataTypes li a {
+	border: 1px solid #FFE082;
+	background-color: #FFECB3;
+	color: white;
+}
+ul.locations li a {
+	border: 1px solid #90CAF9;
+	background-color: #BBDEFB;
+	color: black;
+}
+
+
+/* Special formatting for the footer */
+
+footer {
+	margin-top: 64px;
+	background-color: #eee;
+	background-image: linear-gradient(#bdbdbd, #eee 17%, #eee 67%, #fff);
+	color: #757575;
+}
+footer.navbar {
+	border-radius: 0px;
+	border: none;
+}
+footer div.container {
+	text-align: center;
+}
+
+footer ul.navbar-nav {
+	float: none;
+	display: inline-block;
+}
+
+footer .nav > li > a {
+	color: #757575;
+}
+
+footer .nav > li > a:hover,
+footer .nav > li > a:focus {
+    text-decoration: none;
+    background-color: #f5f5f5;
+	background-image: linear-gradient(#bdbdbd, #f5f5f5 17%, #f5f5f5 67%, #fff);
+}

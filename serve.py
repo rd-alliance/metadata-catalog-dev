@@ -46,6 +46,7 @@ user_db = TinyDB(os.path.realpath(os.path.join(script_dir, 'users.json')))
 thesaurus = rdflib.Graph()
 thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
 UNO = Namespace('http://vocabularies.unesco.org/ontology#')
+thesaurus_link = '<a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>'
 
 oid = OpenID(app, os.path.join(script_dir, 'open-id'))
 
@@ -95,7 +96,7 @@ def getTermURI(term):
         term (str): string to look up
 
     Returns:
-        str: URI of a thesarus term, if one is found
+        str: URI of a thesaurus term, if one is found
         None: if no matching term is found
     """
     concept_id = None
@@ -574,8 +575,6 @@ def endorsement(number, field=None):
 def subject(subject):
     # If people start using geographical keywords, the following will need more sophistication
     query_string = fromSlug(subject)
-    message = None
-    error = None
     results = list()
 
     # Interpret subject
@@ -586,8 +585,9 @@ def subject(subject):
         # - Translate term into concept ID
         concept_id = getTermURI(query_string)
         if not concept_id:
-            error = 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(query_string)
-            return render_template('search-results.html', title=query_string, error=error)
+            flash('The subject "{}" was not found in the {}.\n'.format(\
+                query_string, thesaurus_link), 'error')
+            return render_template('search-results.html', title=query_string)
         # - Find list of broader and narrower terms
         term_uri_list = getTermList(concept_id)
         for term_uri in term_uri_list:
@@ -601,12 +601,11 @@ def subject(subject):
     results = schemes.search(Scheme.keywords.any(term_list))
     no_of_hits = len(results)
     if no_of_hits == 0:
-        error = 'Found 0 schemes.'
+        flash('Found 0 schemes.', 'error')
     else:
-        message = 'Found {:N scheme/s}.'.format(Pluralizer(no_of_hits))
+        flash('Found {:N scheme/s}.'.format(Pluralizer(no_of_hits)))
         results.sort(key=lambda k: k['title'].lower())
-    return render_template('search-results.html', title=query_string, message=message,\
-        error=error, results=results)
+    return render_template('search-results.html', title=query_string, results=results)
 
 ### Per-funder/maintainer lists of standards
 
@@ -617,8 +616,6 @@ def group(funder=None, maintainer=None, user=None):
     id = 0
     role = ''
     verb = ''
-    message = None
-    error = None
     if funder:
         id = funder
         role = 'funder'
@@ -642,30 +639,26 @@ def group(funder=None, maintainer=None, user=None):
         (Relation.role == role) & (Relation.id == 'msc:g{}'.format(id)) ))
     no_of_hits = len(results)
     if no_of_hits > 0:
-        message = 'Found {:N scheme/s} {} by this organization.'.format(\
-            Pluralizer(no_of_hits), verb)
+        flash('Found {:N scheme/s} {} by this organization.'.format(\
+            Pluralizer(no_of_hits), verb))
     else:
-        error = 'No schemes found {} by this organization.'.format(verb)
-    return render_template('search-results.html', title=title, message=message,\
-        error=error, results=results)
+        flash('No schemes found {} by this organization.'.format(verb), 'error')
+    return render_template('search-results.html', title=title, results=results)
 
 ### Per-datatype lists of standards
 @app.route('/datatype/<dataType>')
 def dataType(dataType):
     query_string = fromSlug(dataType)
-    message = None
-    error = None
     schemes = db.table('metadata-schemes')
     Scheme = Query()
     results = schemes.search(Scheme.dataTypes.any([ query_string ]))
     no_of_hits = len(results)
     if no_of_hits > 0:
-        message = 'Found {:N scheme/s} used for this type of data.'.format(\
-            Pluralizer(no_of_hits))
+        flash('Found {:N scheme/s} used for this type of data.'.format(\
+            Pluralizer(no_of_hits)))
     else:
-        error = 'No schemes have been reported to be used for this type of data.'
-    return render_template('search-results.html', title=query_string, message=message,\
-        error=error, results=results)
+        flash('No schemes have been reported to be used for this type of data.', 'error')
+    return render_template('search-results.html', title=query_string, results=results)
 
 ### List of standards
 
@@ -721,8 +714,6 @@ def search():
     organizations = db.table('organizations')
     if request.method == 'POST':
         title = 'Search results'
-        message = ''
-        error = ''
         results = list()
         Scheme = Query()
         no_of_queries = 0
@@ -733,11 +724,12 @@ def search():
             title_search = schemes.search(Scheme.title.search(title_query))
             no_of_hits = len(title_search)
             if no_of_hits > 0:
-                message += 'Found {:N scheme/s} with title "{}". '.format(\
-                    Pluralizer(no_of_hits), request.form['title'])
+                flash('Found {:N scheme/s} with title "{}". '.format(\
+                    Pluralizer(no_of_hits), request.form['title']))
                 results.extend(title_search)
             else:
-                error += 'No schemes found with title "{}". '.format(request.form['title'])
+                flash('No schemes found with title "{}". '.format(\
+                    request.form['title']), 'error')
 
         if request.form['keyword'] != '' :
             no_of_queries += 1
@@ -749,7 +741,8 @@ def search():
                 # - Translate term into concept ID
                 concept_id = getTermURI(request.form['keyword'])
                 if not concept_id:
-                    error += 'The subject "{}" was not found in the <a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>.\n'.format(request.form['keyword'])
+                    flash('The subject "{}" was not found in the {}.\n'.format(\
+                        request.form['keyword'], thesaurus_link), 'error')
                 # - Find list of broader and narrower terms
                 term_uri_list = getTermList(concept_id)
                 for term_uri in term_uri_list:
@@ -761,11 +754,12 @@ def search():
             subject_search = schemes.search(Scheme.keywords.any(term_list))
             no_of_hits = len(subject_search)
             if no_of_hits > 0:
-                message += 'Found {:N scheme/s} related to {}. '.format(\
-                    Pluralizer(no_of_hits), request.form['keyword'])
+                flash('Found {:N scheme/s} related to {}. '.format(\
+                    Pluralizer(no_of_hits), request.form['keyword']))
                 results.extend(subject_search)
             else:
-                error += 'No schemes found related to {}. '.format(request.form['keyword'])
+                flash('No schemes found related to {}. '.format(\
+                    request.form['keyword']), 'error')
 
         if request.form['id'] != '':
             no_of_queries += 1
@@ -773,11 +767,12 @@ def search():
             id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
             no_of_hits = len(id_search)
             if no_of_hits > 0:
-                message += 'Found {:N scheme/s} with identifier "{}". '.format(\
-                    Pluralizer(no_of_hits), request.form['id'])
+                flash('Found {:N scheme/s} with identifier "{}". '.format(\
+                    Pluralizer(no_of_hits), request.form['id']))
                 results.extend(id_search)
             else:
-                error += 'No schemes found with identifier "{}". '.format(request.form['id'])
+                flash('No schemes found with identifier "{}". '.format(\
+                    request.form['id']), 'error')
 
         if 'funder' in request.form and request.form['funder'] != '':
             no_of_queries += 1
@@ -789,7 +784,8 @@ def search():
             for funder in funder_search:
                 matching_funders.append('msc:g{}'.format(funder.eid))
             if len(matching_funders) == 0:
-                error += 'No funders found called "{}" .'.format(request.form['funder'])
+                flash('No funders found called "{}" .'.format(\
+                    request.form['funder']), 'error')
             else:
                 Relation = Query()
                 with_funder = list()
@@ -799,22 +795,24 @@ def search():
                             (Relation.role == 'funder') & (Relation.id == funder_id) )))
                 no_of_hits = len(with_funder)
                 if no_of_hits > 0:
-                    message += 'Found {:N scheme/s} with funder "{}". '.format(\
-                        Pluralizer(no_of_hits), request.form['funder'])
+                    flash('Found {:N scheme/s} with funder "{}". '.format(\
+                        Pluralizer(no_of_hits), request.form['funder']))
                     results.extend(with_funder)
                 else:
-                    error += 'No schemes found with funder "{}". '.format(request.form['funder'])
+                    flash('No schemes found with funder "{}". '.format(\
+                        request.form['funder']), 'error')
 
         if 'dataType' in request.form and request.form['dataType'] != '':
             no_of_queries += 1
             type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
             no_of_hits = len(type_search)
             if no_of_hits > 0:
-                message += 'Found {:N scheme/s} associated with {}. '.format(\
-                    Pluralizer(no_of_hits), request.form['dataType'])
+                flash('Found {:N scheme/s} associated with {}. '.format(\
+                    Pluralizer(no_of_hits), request.form['dataType']))
                 results.extend(type_search)
             else:
-                error += 'No schemes found associated with {}. '.format(request.form['dataType'])
+                flash('No schemes found associated with {}. '.format(\
+                    request.form['dataType']), 'error')
 
         # Are there any duplicates?
         result_eids = list()
@@ -825,21 +823,16 @@ def search():
                 result_eids.append(result.eid)
         no_of_hits = len(result_list)
         if no_of_queries > 1:
-            message += 'Found {:N scheme/s} in total. '.format(Pluralizer(no_of_hits))
+            flash('Found {:N scheme/s} in total. '.format(Pluralizer(no_of_hits)))
         if no_of_hits == 1:
             # Go direct to that page
             result = result_list[0]
-            if error:
-                flash(error, 'error')
-            if message:
-                flash(message)
             return redirect(url_for('scheme', number=result.eid))
         else:
             if no_of_hits > 1:
                 result_list.sort(key=lambda k: k['title'].lower())
             # Show results list
-            return render_template('search-results.html', title=title, message=message,\
-                error=error, results=result_list)
+            return render_template('search-results.html', title=title, results=result_list)
 
     else:
         # Title, identifier, funder, dataType help
@@ -1017,8 +1010,10 @@ def login():
         if openid:
             return oid.try_login(openid, ask_for=['email', 'nickname'],\
                 ask_for_optional=['fullname'])
-    return render_template('login.html', next=oid.get_next_url(),
-                           error=oid.fetch_error())
+    error = oid.fetch_error()
+    if error:
+        flash(error, 'error')
+    return render_template('login.html', next=oid.get_next_url())
 
 @oid.after_login
 def create_or_login(resp):
@@ -1067,17 +1062,54 @@ def edit_scheme(number):
     if g.user is None:
         flash('You must sign in before making any changes.', 'error')
         return redirect(url_for('login'))
+    schemes = db.table('metadata-schemes')
+    organizations = db.table('organizations')
+    element = schemes.get(eid=number)
     if request.method == 'POST':
-        pass
+        flash('Your edits were received but the gubbins for implementing them aren’t in place yet.')
+        return redirect(url_for('scheme', number=number))
     else:
-        schemes = db.table('metadata-schemes')
-        element = schemes.get(eid=number)
         if element:
             flash('You can edit this existing record using the form below.')
         else:
             flash('You can add a new record using the form below.')
             element = dict()
-        return render_template('edit-scheme.html', record=element, eid=number)
+        # Title, identifier, funder, dataType help
+        all_schemes = schemes.all()
+        id_set = set()
+        funder_set = set()
+        type_set = set()
+        for scheme in all_schemes:
+            for identifier in scheme['identifiers']:
+                id_set.add(identifier['id'])
+            if 'dataTypes' in scheme:
+                for type in scheme['dataTypes']:
+                    type_set.add(type)
+            if 'relatedEntities' in scheme:
+                for entity in scheme['relatedEntities']:
+                    if entity['role'] == 'funder':
+                        org_id = entity['id']
+                        funder = organizations.get(eid=int(org_id[5:]))
+                        if funder:
+                            funder_set.add(funder['name'])
+                        else:
+                            print('Could not look up organization with eid {}. '.format(org_id[5:]))
+        id_list = list(id_set)
+        id_list.sort()
+        funder_list = list(funder_set)
+        funder_list.sort(key=lambda k: k.lower())
+        type_list = list(type_set)
+        type_list.sort(key=lambda k: k.lower())
+        # Subject help
+        full_keyword_uris = getAllTermURIs()
+        subject_set = set()
+        for uri in full_keyword_uris:
+            subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
+        subject_set.add('Multidisciplinary')
+        subject_list = list(subject_set)
+        subject_list.sort()
+        return render_template('edit-scheme.html', record=element, eid=number,\
+            subjects=subject_list)
 
 ### Ajax form snippets
 
