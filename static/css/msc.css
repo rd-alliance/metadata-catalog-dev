@@ -64,12 +64,21 @@ ul.locations li a {
 	color: black;
 }
 
-/* Special formats for the editing screens */
+/* Special formats for form controls */
 
 @media (min-width: 768px) {
-	.form-control-narrow {
+	.form-inline .form-control-narrow {
 		display: inline-block;
-		width: 49%;
+		width: 221px;
+	}
+	.form-group-wide {
+		width: 100%;
+	}
+	.form-group-wide .input-group {
+		width: 75%;
+	}
+}
+
 	}
 }
 

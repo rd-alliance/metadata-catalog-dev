@@ -4,16 +4,14 @@
   <p>You can sign in using any OpenID provider. This will allow you to
     contribute changes to the Catalog. Please consult your provider's
     documentation for the right URL to use.</p>
-  <form action="{{ url_for('login') }}" method=post class="form-horizontal">
-    <div class="form-group">
-      <label for="openid" class="col-sm-2 control-label">OpenID</label>
-      <div class="col-sm-10">
-        <div class="input-group">
-          <input id="openid" name="openid" placeholder="URL for your OpenID account" class="form-control">
-          <span class="input-group-btn">
-            <button class="btn btn-primary">Sign in</button>
-          </span>
-        </div>
+  <form action="{{ url_for('login') }}" method=post class="form-inline">
+    <div class="form-group form-group-wide">
+      <label for="openid" class="control-label">OpenID URL</label>
+      <div class="input-group">
+        <input id="openid" name="openid" placeholder="URL for your OpenID account" class="form-control">
+        <span class="input-group-btn">
+          <button class="btn">Sign in</button>
+        </span>
       </div>
       <input type="hidden" name="next" value="{{ next }}">
     </div>
