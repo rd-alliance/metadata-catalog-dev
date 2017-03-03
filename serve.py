@@ -1018,9 +1018,6 @@ def login():
 @oid.after_login
 def create_or_login(resp):
     session['openid'] = resp.identity_url
-    flash('Setting session Open ID to {}.'.format(resp.identity_url))
-    if 'openid' in session:
-        flash('Session Open ID is now {}.'.format(session['openid']))
     User = Query()
     user = user_db.get(User.openid == resp.identity_url)
     if user:
