@@ -231,19 +231,22 @@ for, then an explanation can be given here.
 ### Keywords
 
 This element contains a list of terms indicating the disciplinary scope of the
-scheme. The terms will be drawn from a dedicated taxonomy (specified
-separately).
+scheme. The terms must be drawn from the [UNESCO Thesaurus]; the preferred
+English labels of Domains, MicroThesauri and Concepts may be used. (If a label
+is used at more than one level, the broadest one will be inferred.)
+
+[UNESCO Thesaurus]: http://vocabularies.unesco.org/browser/thesaurus/en/
 
 Schemes with no particular disciplinary focus should be given the special
-keyword *multidisciplinary*.
+keyword *Multidisciplinary*.
 
 *Notes*
 
-  * The MSC will make use of the hierarchical nature of the taxonomy. Tagging
+  * The MSC makes use of the hierarchical nature of the taxonomy. Tagging
     a scheme with a particular term will make it show up in searches for the
-    term itself, plus narrower and wider terms, but not disjoint terms.
+    term itself, plus narrower and broader terms, but not disjoint terms.
   * With the above in mind, provide as few terms as possible to describe the
-    subject areas in which the scheme is most used and useful. In many cases,
+    subject areas in which the scheme is most used and useful. In some cases,
     it may be better to use a broader term even if not all of the available
     narrower terms apply.
 
