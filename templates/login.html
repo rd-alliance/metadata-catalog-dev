@@ -1,14 +1,21 @@
 {% extends 'base.html' %}
 {% block title %}Sign in{% endblock %}
 {% block main %}
-  <form action="{{ url_for('login') }}" method=post>
-    <p>
-      <label>
-        <span>OpenID</span>
-        <input type=text name=openid size=30>
-      </label>
-      <button>Sign in</button>
-      <input type=hidden name=next value="{{ next }}">
-    </p>
+  <p>You can sign in using any OpenID provider. This will allow you to
+    contribute changes to the Catalog. Please consult your provider's
+    documentation for the right URL to use.</p>
+  <form action="{{ url_for('login') }}" method=post class="form-horizontal">
+    <div class="form-group">
+      <label for="openid" class="col-sm-2 control-label">OpenID</label>
+      <div class="col-sm-10">
+        <div class="input-group">
+          <input id="openid" name="openid" placeholder="URL for your OpenID account" class="form-control">
+          <span class="input-group-btn">
+            <button class="btn btn-primary">Sign in</button>
+          </span>
+        </div>
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+    </div>
   </form>
 {% endblock %}
