@@ -79,10 +79,33 @@ ul.locations li a {
 	}
 }
 
+.form-inline label,
+.form-inline input {
+	margin-right: 16px;
+}
+
+.form-block .form-group + .form-group {
+	margin-top: 32px;
+}
+.form-block .help-block {
+	margin-top: 16px;
+	margin-bottom: 16px;
+}
+.form-block .help-block li + li {
+	margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+	ol.form-list {
+		padding: 0px 1.5em;
 	}
 }
 
 /* Special formatting for the footer */
+
+aside {
+	margin-top: 40px;
+}
 
 footer {
 	margin-top: 64px;

@@ -1,106 +1,161 @@
 {% extends "base.html" %}
 {% block title %}Edit Record msc:m{{ eid }}{% endblock %}
 {% block main %}
-  <form action="{{ url_for('edit_scheme', number=eid) }}" method="post"  accept-charset="utf-8" class="form-horizontal">
+  <form action="{{ url_for('edit_scheme', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
     <div class="form-group">
-      <label for="title" class="col-sm-3 control-label">Name of scheme</label>
-      <div class="col-sm-9">
-        <input id="title" name="title" {% if 'title' in record %}value="{{ record['title'] }}"{% endif %} placeholder="Name of scheme" class="form-control">
-      </div>
+      <label for="title" class="control-label">Name of scheme</label>
+      <input id="title" name="title" {% if 'title' in record %}value="{{ record['title'] }}"{% endif %} placeholder="Name of scheme" class="form-control">
+      <ul class="help-block">
+        <li>If the scheme is known by an abbreviation, put this at the start of
+          the name, then give the expanded form in parentheses, e.g. “SDMX
+          (Statistical Data and Metadata Exchange)”.</li>
+        <li>If the title is in English, use title case, i.e. give each
+          significant word a capital letter. Do not use an irregular case to
+          indicate how an abbreviation was defined, e.g. do not write
+          “Statistical Data and Metadata eXchange”.</li>
+      </ul>
     </div>
     <div class="form-group">
-      <label for="id" class="col-sm-3 control-label">Identifiers</label>
-      {% for identifier in record['identifiers'] if not identifier['scheme'] == 'RDA-MSCWG' %}
-      <div class="col-sm-5">
-        <input id="id{{ loop.index }}" name="id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
-      </div>
-      <label for="id-scheme{{ loop.index }}" class="col-sm-2 control-label">Scheme</label>
-      <div class="col-sm-2">
-        <input id="id-scheme{{ loop.index }}" name="id-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}"class="form-control">
-      </div>
-      <div class="col-sm-3"></div>
-      {% endfor %}
-      <div class="col-sm-5">
-        <input id="id" name="id" placeholder="e.g. 10.001/1234" class="form-control">
-      </div>
-      <label for="id-scheme" class="col-sm-2 control-label">Scheme</label>
-      <div class="col-sm-2">
-        <input id="id-scheme" name="id-scheme" list="id-schemes" class="form-control">
-        <datalist id="id-schemes">
-          <option value="">(No scheme)</option>
-          <option>DOI</option>
-        </datalist>
-      </div>
+      <label for="description" class="control-label">Description</label>
+      <textarea id="description" name="description" class="form-control">
+      {% if 'description' in record %}{{ record['description'] }}{% endif %}
+      </textarea>
+      <ul class="help-block">
+        <li>This could indicate if the scheme is used to create standalone metadata
+          records, or insert metadata into data files, or is in fact a data format
+          that includes metadata elements.</li>
+        <li>This could indicate the intended use cases satisfied by the scheme, e.g.
+          discovery, exchange.</li>
+        <li>If many keywords are used to describe the disciplinary scope of the scheme,
+          this could pick out the disciplines in which it is most popular.</li>
+        <li>If the scheme is a profile, this could clarify whether it closely follows
+          one parent scheme, or mixes together elements from a variety of parent
+          schemes.</li>
+        <li>This could indicate if the scheme is tied to a particular serialization
+          (e.g. XML) or could be expressed in various ways (e.g. RDF).</li>
+      </ul>
     </div>
     <div class="form-group">
-      <label for="description" class="col-sm-3 control-label">Description</label>
-      <div class="col-sm-9">
-        <textarea id="description" name="description" class="form-control">
-        {% if 'description' in record %}{{ record['description'] }}{% endif %}
-        </textarea>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="keywords" class="col-sm-3 control-label">Subject areas</label>
-      <div class="col-sm-9">
+      <label for="keyword" class="control-label">Subject areas</label>
+      <datalist id="keyword-list">
+        {% for item in subjects %}
+        <option>{{ item }}</option>
+        {% endfor %}
+      </datalist>
+      <div class="form-inline">
         {% for item in record['keywords'] %}
-        <input id="keywords{{ loop.index }}" name="keywords" list="keyword-list" value="{{ item }}" class="form-control form-control-narrow">
+        <input id="keyword{{ loop.index }}" name="keywords" list="keyword-list" value="{{ item }}" class="form-control form-control-narrow">
         {% endfor %}
-        <input id="keywords" name="keywords" list="keyword-list" placeholder="Subject area" class="form-control form-control-narrow">
-        <datalist id="keyword-list">
-          {% for item in subjects %}
-          <option>{{ item }}</option>
-          {% endfor %}
-        </datalist>
+        <input id="keyword" name="keywords" list="keyword-list" placeholder="Subject area" class="form-control form-control-narrow">
       </div>
+      <ul class="help-block">
+        <li>Use domains, micro-thesaurus names or concepts from the
+          <a href="http://vocabularies.unesco.org/browser/thesaurus/en/" target="_blank">UNESCO Thesaurus</a>.</li>
+        <li>To give several terms, save after adding each one.</li>
+      </ul>
     </div>
     <div class="form-group">
-      <label for="dataTypes" class="col-sm-3 control-label">Data types</label>
-      <div class="col-sm-9">
+      <label for="dataType" class="control-label">Data types</label>
+      <datalist id="dataType-list">
+        {% for item in dataTypes %}
+        <option>{{ item }}</option>
+        {% endfor %}
+      </datalist>
+      <div class="form-inline">
         {% for item in record['dataTypes'] %}
-        <input id="dataTypes{{ loop.index }}" name="dataTypes" list="dataType-list" value="{{ item }}" class="form-control">
+        <input id="dataType{{ loop.index }}" name="dataTypes" list="dataType-list" value="{{ item }}" class="form-control form-control-narrow">
         {% endfor %}
-        <input id="dataTypes" name="dataTypes" list="dataType-list" placeholder="Type of data described by this scheme" class="form-control">
-        <datalist id="dataType-list">
-          {% for item in dataTypes %}
-          <option>{{ item }}</option>
-          {% endfor %}
-        </datalist>
+        <input id="dataType" name="dataTypes" list="dataType-list" placeholder="Data type" class="form-control form-control-narrow">
       </div>
+      <ul class="help-block">
+        <li>Provide types of data which this scheme is usually used to describe.</li>
+        <li>To give several terms, save after adding each one.</li>
+      </ul>
     </div>
     <div class="form-group">
-      <label for="location-url" class="col-sm-3 control-label">Locations</label>
-      {% for location in record['locations'] %}
-      <div class="col-sm-5">
-        <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" class="form-control">
-      </div>
-      <label for="location-type{{ loop.index }}" class="col-sm-1 control-label">Type</label>
-      <div class="col-sm-3">
-        <input id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" list="location-types" value="{{ location['type'] }}" class="form-control">
-      </div>
-      <div class="col-sm-3"></div>
-      {% endfor %}
-      <div class="col-sm-5">
-        <input id="location-url" name="location-url" placeholder="URL e.g. https://www..." class="form-control">
-      </div>
-      <label for="location-type" class="col-sm-1 control-label">Type</label>
-      <div class="col-sm-3">
-        <input id="location-type" name="location-type" list="location-types" class="form-control">
-        <datalist id="location-types">
-          <option>website</option>
-          <option>document</option>
-          <option>RDA-MIG</option>
-          <option>DTD</option>
-          <option>XSD</option>
-          <option>RDFS</option>
-        </datalist>
-      </div>
+      <label for="location-url" class="control-label">Locations</label>
+      <datalist id="location-types">
+        <option>website</option>
+        <option>document</option>
+        <option>RDA-MIG</option>
+        <option>DTD</option>
+        <option>XSD</option>
+        <option>RDFS</option>
+      </datalist>
+      <ol class="form-list">
+        {% for location in record['locations'] %}
+        <li>
+          <label for="location-url{{ loop.index }}" class="control-label">URL</label>
+          <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" size="37" class="form-control">
+          <label for="location-type{{ loop.index }}" class="control-label">Type</label>
+          <input id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" list="location-types" value="{{ location['type'] }}" size="10" class="form-control" style="width:auto;">
+        </li>
+        {% endfor %}
+        <li>
+          <label for="location-url" class="control-label">URL</label>
+          <input id="location-url" name="location-url" placeholder="URL e.g. https://www..." size="37" class="form-control">
+          <label for="location-type" class="control-label">Type</label>
+          <input id="location-type" name="location-type" list="location-types" size="10" class="form-control" style="width:auto;">
+        </li>
+      </ol>
+      <ul class="help-block">
+        <li>To give several locations, save after adding each one.</li>
+      </ul>
     </div>
     <div class="form-group">
-      <div class="col-sm-offset-3 col-sm-9">
-        <button class="btn btn-primary">Save changes</button>
-        <a href="{{ url_for('scheme', number=eid) }}" class="btn btn-default">Cancel &amp; view record</a>
-      </div>
+      <label for="sample-title" class="control-label">Samples</label>
+      <ol class="form-list">
+        {% for location in record['samples'] %}
+        <li class="form-inline">
+          <label for="sample-title{{ loop.index }}" class="control-label">Title</label>
+          <input id="sample-title{{ loop.index }}" name="sample-title{{ loop.index }}" value="{{ sample['title'] }}" class="form-control">
+          <label for="sample-url{{ loop.index }}" class="control-label">URL</label>
+          <input id="sample-url{{ loop.index }}" name="sample-url{{ loop.index }}" value="{{ sample['url'] }}" class="form-control">
+        </li>
+        {% endfor %}
+        <li>
+          <label for="sample-title" class="control-label">Title</label>
+          <input id="sample-title" name="sample-title" class="form-control">
+          <label for="sample-url" class="control-label">URL</label>
+          <input id="sample-url" name="sample-url" placeholder="URL e.g. https://www..." class="form-control">
+        </li>
+      </ol>
+      <ul class="help-block">
+        <li>To give several locations, save after adding each one.</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="id" class="control-label">Identifiers</label>
+      <datalist id="id-schemes">
+        <option value="">(No scheme)</option>
+        <option>DOI</option>
+      </datalist>
+      <ol class="form-list">
+        {% for identifier in record['identifiers'] if not identifier['scheme'] == 'RDA-MSCWG' %}
+        <li>
+          <label for="id{{ loop.index }}" class="control-label">ID</label>
+          <input id="id{{ loop.index }}" name="id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
+          <label for="id-scheme{{ loop.index }}" class="control-label">Scheme</label>
+          <input id="id-scheme{{ loop.index }}" name="id-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}" class="form-control" style="width:auto;">
+        </li>
+        {% endfor %}
+        <li>
+          <label for="id" class="control-label">ID</label>
+          <input id="id" name="id" placeholder="e.g. 10.001/1234" class="form-control">
+          <label for="id-scheme" class="control-label">Scheme</label>
+          <input id="id-scheme" name="id-scheme" list="id-schemes" class="form-control" style="width:auto;">
+        </li>
+      </ol>
+      <ul class="help-block">
+        <li>Provide an identifier, if known, for the scheme across all versions.
+          To identify individual versions, provide details under the version instead.</li>
+        <li>You do not need to repeat the internal Catalog identifier here.</li>
+        <li>To give several identifiers, save after adding each one.</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary">Save changes</button>
+      <a href="{{ url_for('scheme', number=eid) }}" class="btn btn-default">Cancel &amp; view record</a>
     </div>
   </form>
 {% endblock %}
