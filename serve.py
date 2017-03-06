@@ -248,11 +248,17 @@ def wild2regex(string):
     regex = regex.replace('\?','.?')
     return regex
 
+def parseDateRange(string):
+    date_split = string.partition('/')
+    if date_split[2]:
+        return tuple(date_split[0], date_split[2])
+    return tuple(string, None)
+
 ### Functions made available to templates
 
 @app.context_processor
 def utility_processor():
-    return { 'toSlug': toSlug, 'fromSlug': fromSlug }
+    return { 'toSlug': toSlug, 'fromSlug': fromSlug, 'parseDateRange': parseDateRange }
 
 ### User handling
 
@@ -301,18 +307,17 @@ def scheme(number, field=None):
             if 'issued' in v:
                 this_version['date'] = v['issued']
                 if 'valid' in v:
-                    if '/' in v['valid']:
-                        date_range = v['valid'].partition('/')
-                        this_version['status'] = 'deprecated on '.format(date_range[2])
+                    date_range = parseDateRange(v['valid'])
+                    if date_range[1]:
+                        this_version['status'] = 'deprecated on '.format(date_range[1])
                     else:
                         this_version['status'] = 'current'
             elif 'valid' in v:
-                if '/' in v['valid']:
-                    date_range = v['valid'].partition('/')
-                    this_version['date'] = date_range[0]
-                    this_version['status'] = 'deprecated on '.format(date_range[2])
+                date_range = parseDateRange(v['valid'])
+                this_version['date'] = date_range[0]
+                if date_range[1]:
+                    this_version['status'] = 'deprecated on '.format(date_range[1])
                 else:
-                    this_version['date'] = v['valid']
                     this_version['status'] = 'current'
             elif 'available' in v:
                 this_version['date'] = v['available']
@@ -1063,40 +1068,46 @@ def edit_scheme(number):
     organizations = db.table('organizations')
     element = schemes.get(eid=number)
     if request.method == 'POST':
+        version = request.form.get('version', '')
         flash('Your edits were received but the gubbins for implementing them aren’t in place yet.')
         return redirect(url_for('scheme', number=number))
     else:
-        if element:
+        version = request.args.get('version')
+        if version:
+            flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
+            record = dict()
+            for release in element['versions']:
+                if 'number' in release and release['number'] == version:
+                    record = release
+                    break
+        elif element:
             flash('You can edit this existing record using the form below.')
+            record = element
         else:
             flash('You can add a new record using the form below.')
-            element = dict()
-        # Title, identifier, funder, dataType help
-        all_schemes = schemes.all()
+            record = dict()
+        # Identifier, dataType, scheme, organization help
+        scheme_list = list() 
         id_set = set()
-        funder_set = set()
         type_set = set()
-        for scheme in all_schemes:
+        for scheme in schemes.all():
+            scheme_list.append({'id': 'msc:m{}'.format(scheme.eid),\
+                'title': scheme['title']})
             for identifier in scheme['identifiers']:
                 id_set.add(identifier['id'])
             if 'dataTypes' in scheme:
                 for type in scheme['dataTypes']:
                     type_set.add(type)
-            if 'relatedEntities' in scheme:
-                for entity in scheme['relatedEntities']:
-                    if entity['role'] == 'funder':
-                        org_id = entity['id']
-                        funder = organizations.get(eid=int(org_id[5:]))
-                        if funder:
-                            funder_set.add(funder['name'])
-                        else:
-                            print('Could not look up organization with eid {}. '.format(org_id[5:]))
+        scheme_list.sort(key=lambda k: k['title'].lower())
         id_list = list(id_set)
         id_list.sort()
-        funder_list = list(funder_set)
-        funder_list.sort(key=lambda k: k.lower())
         type_list = list(type_set)
         type_list.sort(key=lambda k: k.lower())
+        organization_list = list()
+        for organization in organizations.all():
+            organization_list.append({'id': 'msc:g{}'.format(organization.eid),\
+                'name': organization['name']})
+        organization_list.sort(key=lambda k: k['name'].lower())
         # Subject help
         all_keyword_uris = set()
         for generator in [thesaurus.subjects(RDF.type, UNO.Domain),\
@@ -1110,8 +1121,13 @@ def edit_scheme(number):
         subject_set.add('Multidisciplinary')
         subject_list = list(subject_set)
         subject_list.sort()
-        return render_template('edit-scheme.html', record=element, eid=number,\
-            subjects=subject_list, dataTypes=type_list)
+        # Location types
+        location_type_list = ['website', 'document', 'RDA-MIG', 'DTD',\
+            'XSD', 'RDFS']
+        return render_template('edit-scheme.html', record=record, eid=number,\
+            version=version, subjects=subject_list, dataTypes=type_list,\
+            locationTypes=location_type_list,\
+            schemes=scheme_list, organizations=organization_list)
 
 ### Ajax form snippets
 

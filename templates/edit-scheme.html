@@ -1,7 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Edit Record msc:m{{ eid }}{% endblock %}
+{% block title %}Edit Record msc:m{{ eid }}{% if version %}, version {{ version }}{% endif %}{% endblock %}
 {% block main %}
   <form action="{{ url_for('edit_scheme', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
+    {% if version %}
+    <input type="hidden" name="version" value="{{ version }}">
+    {% endif %}
     <div class="form-group">
       <label for="title" class="control-label">Name of scheme</label>
       <input id="title" name="title" {% if 'title' in record %}value="{{ record['title'] }}"{% endif %} placeholder="Name of scheme" class="form-control">
@@ -65,30 +68,29 @@
         {% for item in record['dataTypes'] %}
         <input id="dataType{{ loop.index }}" name="dataTypes" list="dataType-list" value="{{ item }}" class="form-control form-control-narrow">
         {% endfor %}
-        <input id="dataType" name="dataTypes" list="dataType-list" placeholder="Data type" class="form-control form-control-narrow">
+        <input id="dataType" name="dataTypes" list="dataType-list" placeholder="URL or term" class="form-control form-control-narrow">
       </div>
       <ul class="help-block">
         <li>Provide types of data which this scheme is usually used to describe.</li>
+        <li>You can provide either a link to a definition in a data type registry, or a plain term.</li>
         <li>To give several terms, save after adding each one.</li>
       </ul>
     </div>
     <div class="form-group">
       <label for="location-url" class="control-label">Locations</label>
-      <datalist id="location-types">
-        <option>website</option>
-        <option>document</option>
-        <option>RDA-MIG</option>
-        <option>DTD</option>
-        <option>XSD</option>
-        <option>RDFS</option>
-      </datalist>
       <ol class="form-list">
         {% for location in record['locations'] %}
         <li>
           <label for="location-url{{ loop.index }}" class="control-label">URL</label>
           <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" size="37" class="form-control">
           <label for="location-type{{ loop.index }}" class="control-label">Type</label>
-          <input id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" list="location-types" value="{{ location['type'] }}" size="10" class="form-control" style="width:auto;">
+          <select id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" class="form-control" style="width:auto;">
+            {% for type in locationTypes %}
+            <option
+              {%- if location['type'] == type %} selected
+              {%- endif %}>{{ type }}</option>
+            {% endfor %}
+          </select>
         </li>
         {% endfor %}
         <li>
@@ -135,7 +137,7 @@
         <li>
           <label for="id{{ loop.index }}" class="control-label">ID</label>
           <input id="id{{ loop.index }}" name="id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
-          <label for="id-scheme{{ loop.index }}" class="control-label">Scheme</label>
+          <label for="id-scheme{{ loop.index }}" class="control-label">ID scheme</label>
           <input id="id-scheme{{ loop.index }}" name="id-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}" class="form-control" style="width:auto;">
         </li>
         {% endfor %}
@@ -147,15 +149,133 @@
         </li>
       </ol>
       <ul class="help-block">
+        {% if version %}
+        <li>Provide an identifier, if known, for this particular version of the
+          scheme.</li>
+        {% else %}
         <li>Provide an identifier, if known, for the scheme across all versions.
           To identify individual versions, provide details under the version instead.</li>
+        {% endif %}
         <li>You do not need to repeat the internal Catalog identifier here.</li>
         <li>To give several identifiers, save after adding each one.</li>
       </ul>
     </div>
+    {% if not version %}
+    <div class="form-group">
+      <label for="version-number" class="control-label">Versions</label>
+      <ol class="form-list">
+        {% for release in record['versions'] %}
+        <li>
+          <label for="version-number{{ loop.index }}" class="control-label">Number</label>
+          <div class="form-inline"><div class="form-group">
+            <input id="version-number{{ loop.index }}" name="version-number{{ loop.index }}" {% if 'number' in release -%}
+              value="{{ release['number'] }}"
+            {%- else -%}
+              placeholder="e.g. 3.1"
+            {%- endif %} class="form-control">
+            {% if 'number' in release %}
+            <a href="{{ url_for('edit_scheme', number=eid) }}?version={{ release['number'] }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
+            {% endif %}
+          </div></div>
+          <label for="version-issued{{ loop.index }}" class="control-label">Date released as final</label>
+          <input type="date" id="version-issued{{ loop.index }}" name="version-issued{{ loop.index }}" {% if 'issued' in release -%}
+            value="{{ release['issued'] }}"
+          {%- endif %} class="form-control" style="width:auto;">
+          <label for="version-available{{ loop.index }}" class="control-label">Date released as draft/proposal</label>
+          <input type="date" id="version-available{{ loop.index }}" name="version-available{{ loop.index }}" {% if 'issued' in release -%}
+            value="{{ release['available'] }}"
+          {%- endif %} class="form-control" style="width:auto;">
+          <label for="version-valid-from{{ loop.index }}" class="control-label">Date considered current</label>
+          <div class="form-inline"><div class="form-group">
+            <label for="version-valid-from{{ loop.index }}" class="control-label">from</label>
+            <input type="date" id="version-valid-from{{ loop.index }}" name="version-valid-from{{ loop.index }}" {% if 'valid' in release -%}
+              value="{{ parseDateRange(release['valid'])[0] }}"
+            {%- endif %} class="form-control">
+            <label for="version-valid-to{{ loop.index }}" class="control-label">until</label>
+            <input type="date" id="version-valid-to{{ loop.index }}" name="version-valid-to{{ loop.index }}" {% if 'valid' in release and parseDateRange(release['valid'])[1] -%}
+              value="{{ parseDateRange(release['valid'])[1] }}"
+            {%- endif %} class="form-control">
+          </div></div>
+        </li>
+        {% endfor %}
+        <li>
+          <label for="version-number" class="control-label">Number</label>
+          <input id="version-number" name="version-number" placeholder="e.g. 3.1" class="form-control" style="width:auto;">
+          <p class="help-block">Do not preface the version number with 'version' or 'v'.</p>
+          <label for="version-issued" class="control-label">Date released as final</label>
+          <input type="date" id="version-issued" name="version-issued" class="form-control" style="width:auto;">
+          <p class="help-block">In most cases, the only date you need to provide is 'date released as final'.</p>
+          <label for="version-available" class="control-label">Date released as draft/proposal</label>
+          <input type="date" id="version-available" name="version-available" class="form-control" style="width:auto;">
+          <p class="help-block">If the version has not been released in its final version,
+            please provide the date when the draft was first released. You do not need to
+            remove this information when the final version is published.</p>
+          <label for="version-valid-from" class="control-label">Date considered current</label>
+          <div class="form-inline"><div class="form-group">
+            <label for="version-valid-from" class="control-label">from</label>
+            <input type="date" id="version-valid-from" name="version-valid-from" class="form-control">
+            <label for="version-valid-to" class="control-label">until</label>
+            <input type="date" id="version-valid-to" name="version-valid-to" class="form-control">
+          </div></div>
+          <p class="help-block">Use 'date considered current' only for cases where two or
+            more versions are considered current at the same time.</p>
+        </li>
+      </ol>
+      <ul class="help-block">
+        <li>To give several versions, save after adding each one.</li>
+        <li>Once you have saved, you will be able to add version-specific
+          overrides to the other information given on this page.</li>
+      </ul>
+    </div>
+    {% endif %}
+    <h2>Relationships to other records</h2>
+    <div class="form-group">
+      <label for="parent-schemes" class="control-label">Parent schemes</label>
+      <select id="parent-schemes" name="parent-schemes" multiple class="form-control">
+        {% for scheme in schemes %}
+        <option value="{{ scheme['id'] }}"
+          {%- if scheme['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'parent scheme')|map(attribute='id') %} selected
+          {%- endif %}>{{ scheme['title'] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="maintainers" class="control-label">Maintainers</label>
+      <select id="maintainers" name="maintainers" multiple class="form-control">
+        {% for group in organizations %}
+        <option value="{{ group['id'] }}"
+          {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'maintainer')|map(attribute='id') %} selected
+          {%- endif %}>{{ group['name'] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="funders" class="control-label">Funders</label>
+      <select id="funders" name="funders" multiple class="form-control">
+        {% for group in organizations %}
+        <option value="{{ group['id'] }}"
+          {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'funder')|map(attribute='id') %} selected
+          {%- endif %}>{{ group['name'] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="user" class="control-label">Users</label>
+      <select id="users" name="users" multiple class="form-control">
+        {% for group in organizations %}
+        <option value="{{ group['id'] }}"
+          {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'user')|map(attribute='id') %} selected
+          {%- endif %}>{{ group['name'] }}</option>
+        {% endfor %}
+      </select>
+    </div>
     <div class="form-group">
       <button class="btn btn-primary">Save changes</button>
+      {% if version %}
+      <a href="{{ url_for('edit_scheme', number=eid) }}" class="btn btn-default">Cancel &amp; edit main record</a>
+      {% else %}
       <a href="{{ url_for('scheme', number=eid) }}" class="btn btn-default">Cancel &amp; view record</a>
+      {% endif %}
     </div>
   </form>
 {% endblock %}

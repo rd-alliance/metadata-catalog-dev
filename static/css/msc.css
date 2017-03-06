@@ -101,6 +101,10 @@ ul.locations li a {
 	}
 }
 
+ol.form-list li + li {
+	padding-top: 24px;
+}
+
 /* Special formatting for the footer */
 
 aside {
