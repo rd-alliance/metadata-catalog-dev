@@ -129,23 +129,24 @@
     <div class="form-group">
       <label for="id" class="control-label">Identifiers</label>
       <datalist id="id-schemes">
-        <option value="">(No scheme)</option>
-        <option>DOI</option>
+        {% for idScheme in idSchemes %}
+        <option>{{ idScheme }}</option>
+        {% endfor %}
       </datalist>
       <ol class="form-list">
         {% for identifier in record['identifiers'] if not identifier['scheme'] == 'RDA-MSCWG' %}
         <li>
-          <label for="id{{ loop.index }}" class="control-label">ID</label>
-          <input id="id{{ loop.index }}" name="id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
-          <label for="id-scheme{{ loop.index }}" class="control-label">ID scheme</label>
-          <input id="id-scheme{{ loop.index }}" name="id-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}" class="form-control" style="width:auto;">
+          <label for="identifier-id{{ loop.index }}" class="control-label">ID</label>
+          <input id="identifier-id{{ loop.index }}" name="identifier-id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
+          <label for="identifier-scheme{{ loop.index }}" class="control-label">ID scheme</label>
+          <input id="identifier-scheme{{ loop.index }}" name="identifier-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}" class="form-control" style="width:auto;">
         </li>
         {% endfor %}
         <li>
-          <label for="id" class="control-label">ID</label>
-          <input id="id" name="id" placeholder="e.g. 10.001/1234" class="form-control">
-          <label for="id-scheme" class="control-label">Scheme</label>
-          <input id="id-scheme" name="id-scheme" list="id-schemes" class="form-control" style="width:auto;">
+          <label for="identifier-id" class="control-label">ID</label>
+          <input id="identifier-id" name="identifier-id" placeholder="e.g. 10.001/1234" class="form-control">
+          <label for="identifier-scheme" class="control-label">Scheme</label>
+          <input id="identifier-scheme" name="identifier-scheme" list="id-schemes" class="form-control" style="width:auto;">
         </li>
       </ol>
       <ul class="help-block">

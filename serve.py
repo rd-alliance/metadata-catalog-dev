@@ -4,7 +4,7 @@
 
 ## Standard
 
-import os, sys, re
+import os, sys, re, json
 
 ## Non-standard
 
@@ -1068,9 +1068,66 @@ def edit_scheme(number):
     organizations = db.table('organizations')
     element = schemes.get(eid=number)
     if request.method == 'POST':
-        version = request.form.get('version', '')
-        flash('Your edits were received but the gubbins for implementing them aren’t in place yet.')
-        return redirect(url_for('scheme', number=number))
+        version = request.form.get('version')
+        record = dict()
+        # Compile the response into a record
+        form_properties = ['title', 'description']
+        for property in form_properties:
+            if property in request.form:
+                value = request.form[property]
+                if value:
+                    record[property] = value
+        form_properties = ['keywords', 'dataTypes']
+        for property in form_properties:
+            if property in request.form and request.form[property]:
+                record[property] = request.form.getlist(property)
+        form_dictionaries = { 'location/s': [ 'url', 'type'],\
+            'sample/s': [ 'url', 'title' ],\
+            'identifier/s': [ 'id', 'scheme' ] }
+        for field, properties in form_dictionaries.items():
+            current_list = list()
+            i = 1
+            print(field)
+            print(properties)
+            key1 = '{{:{}}}-{}'.format(field, properties[0])
+            key1 = key1.format(Pluralizer(1))
+            key2 = '{{:{}}}-{}'.format(field, properties[1])
+            key2 = key2.format(Pluralizer(1))
+            while '{}{}'.format(key1, i) in request.form and '{}{}'.format(key2, i) in request.form:
+                instance = dict()
+                instance[properties[0]] = request.form['{}{}'.format(key1, i)]
+                instance[properties[1]] = request.form['{}{}'.format(key2, i)]
+                if instance[properties[0]]:
+                    if instance[properties[1]]:
+                        current_list.append(instance)
+                i += 1
+            if key1 in request.form and key2 in request.form:
+                instance = dict()
+                instance[properties[0]] = request.form[key1]
+                instance[properties[1]] = request.form[key2]
+                if instance[properties[0]]:
+                    if instance[properties[1]]:
+                        current_list.append(instance)
+            if len(current_list) > 0:
+                key = '{{:{}}}'.format(field)
+                record[key.format(Pluralizer(2))] = current_list
+        relation_roles = [ 'parent schemes', 'maintainers', 'funders', 'users' ]
+        related_entities = list()
+        for role in relation_roles:
+            if role in request.form:
+                for id in request.form.getlist(role):
+                    instance = dict()
+                    instance['id'] = id
+                    instance['role'] = role
+                    related_entities.append(instance)
+        if len(related_entities) > 0:
+            record['relatedEntities'] = related_entities
+        # Validation and sorting
+        flash(json.dumps(record))
+        if version:
+            return redirect(url_for('edit_scheme', number=number))
+        else:
+            return redirect(url_for('scheme', number=number))
     else:
         version = request.args.get('version')
         if version:
@@ -1121,12 +1178,13 @@ def edit_scheme(number):
         subject_set.add('Multidisciplinary')
         subject_list = list(subject_set)
         subject_list.sort()
-        # Location types
+        # Location types and ID schemes
         location_type_list = ['website', 'document', 'RDA-MIG', 'DTD',\
             'XSD', 'RDFS']
+        id_scheme_list = [ 'DOI' ]
         return render_template('edit-scheme.html', record=record, eid=number,\
             version=version, subjects=subject_list, dataTypes=type_list,\
-            locationTypes=location_type_list,\
+            locationTypes=location_type_list, idSchemes=id_scheme_list,\
             schemes=scheme_list, organizations=organization_list)
 
 ### Ajax form snippets
