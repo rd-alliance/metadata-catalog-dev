@@ -4,7 +4,7 @@
 
 ## Standard
 
-import os, sys, re, json
+import os, sys, re, urllib
 
 ## Non-standard
 
@@ -12,7 +12,7 @@ import os, sys, re, json
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo -H pip3 install flask
-from flask import Flask, request, url_for, render_template, flash, redirect, jsonify, g, session
+from flask import Flask, request, url_for, render_template, flash, redirect, json, jsonify, g, session
 
 # See https://pythonhosted.org/Flask-OpenID/
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
@@ -253,6 +253,39 @@ def parseDateRange(string):
     if date_split[2]:
         return tuple(date_split[0], date_split[2])
     return tuple(string, None)
+
+def formDictList(prefix, fields):
+    current_list = list()
+    i = 1
+    while '{}-{}{}'.format(prefix, fields[0], i) in request.form:
+        instance = dict()
+        isWorthKeeping = False
+        for field in fields:
+            instance[field] = request.form['{}-{}{}'.format(prefix, field, i)]
+            if instance[field]:
+                isWorthKeeping = True
+        if isWorthKeeping:
+            current_list.append(instance)
+        i += 1
+    instance = dict()
+    isWorthKeeping = False
+    for field in fields:
+        instance[field] = request.form['{}-{}'.format(prefix, field)]
+        if instance[field]:
+            isWorthKeeping = True
+    if isWorthKeeping:
+        current_list.append(instance)
+    return current_list
+
+min_url_attributes = ('scheme', 'netloc')
+def isValidURL(url, qualifying=None):
+    """Test whether a URL is well-formed.
+
+    From http://stackoverflow.com/a/36283503
+    """
+    qualifying = min_url_attributes if qualifying is None else qualifying
+    token = urllib.parse.urlparse(url)
+    return all([getattr(token, qualifying_attr) for qualifying_attr in qualifying])
 
 ### Functions made available to templates
 
@@ -1067,50 +1100,77 @@ def edit_scheme(number):
     schemes = db.table('metadata-schemes')
     organizations = db.table('organizations')
     element = schemes.get(eid=number)
+    location_type_list = ['website', 'document', 'RDA-MIG', 'DTD',\
+        'XSD', 'RDFS']
     if request.method == 'POST':
         version = request.form.get('version')
         record = dict()
         # Compile the response into a record
-        form_properties = ['title', 'description']
-        for property in form_properties:
-            if property in request.form:
-                value = request.form[property]
-                if value:
-                    record[property] = value
-        form_properties = ['keywords', 'dataTypes']
-        for property in form_properties:
-            if property in request.form and request.form[property]:
-                record[property] = request.form.getlist(property)
-        form_dictionaries = { 'location/s': [ 'url', 'type'],\
-            'sample/s': [ 'url', 'title' ],\
-            'identifier/s': [ 'id', 'scheme' ] }
-        for field, properties in form_dictionaries.items():
-            current_list = list()
-            i = 1
-            print(field)
-            print(properties)
-            key1 = '{{:{}}}-{}'.format(field, properties[0])
-            key1 = key1.format(Pluralizer(1))
-            key2 = '{{:{}}}-{}'.format(field, properties[1])
-            key2 = key2.format(Pluralizer(1))
-            while '{}{}'.format(key1, i) in request.form and '{}{}'.format(key2, i) in request.form:
-                instance = dict()
-                instance[properties[0]] = request.form['{}{}'.format(key1, i)]
-                instance[properties[1]] = request.form['{}{}'.format(key2, i)]
-                if instance[properties[0]]:
-                    if instance[properties[1]]:
-                        current_list.append(instance)
-                i += 1
-            if key1 in request.form and key2 in request.form:
-                instance = dict()
-                instance[properties[0]] = request.form[key1]
-                instance[properties[1]] = request.form[key2]
-                if instance[properties[0]]:
-                    if instance[properties[1]]:
-                        current_list.append(instance)
-            if len(current_list) > 0:
-                key = '{{:{}}}'.format(field)
-                record[key.format(Pluralizer(2))] = current_list
+        # We start with single-value fields
+        form_fields = ['title', 'description']
+        for property in form_fields:
+            value = request.form[property]
+            if value:
+                record[property] = value.strip()
+        # Next, fields that take lists of values
+        keyword_list = list()
+        for keyword in request.form.getlist('keywords'):
+            if keyword:
+                if keyword == 'Multidisciplinary' or getTermURI(keyword):
+                    keyword_list.append(keyword)
+                else:
+                    flash('"{}" is not in the UNESCO Vocabulary.'.format(keyword), 'error')
+        if len(keyword_list) > 0:
+            record['keywords'] = keyword_list
+        dataType_list = list()
+        for dataType in request.form.getlist('dataTypes'):
+            if dataType:
+                # Validation goes here
+                dataType_list.append(keyword)
+        if len(dataType_list) > 0:
+            record['dataTypes'] = dataType_list
+        # Next, fields that are lists of dictionaries
+        location_list = list()
+        locations = formDictList('location', ['url', 'type'])
+        for location in locations:
+            error = ''
+            if not isValidURL(location['url']):
+                error += 'Location "{}" is not a valid URL. '.format(location['url'])
+            if not location['type'] in location_type_list:
+                error += '"{}" is not a valid location type'.format(location['type'])
+            if error:
+                flash(error, 'error')
+            else:
+                location_list.append(location)
+        if len(location_list) > 0:
+            record['locations'] = location_list
+        sample_list = list()
+        samples = formDictList('sample', ['url', 'title'])
+        for sample in samples:
+            error = ''
+            if not isValidURL(sample['url']):
+                error += 'Sample location "{}" is not a valid URL. '.format(sample['url'])
+            if not sample['title']:
+                error += 'Sample at "{}" has an empty title'.format(sample['url'])
+            if error:
+                flash(error, 'error')
+            else:
+                sample_list.append(sample)
+        if len(sample_list) > 0:
+            record['samples'] = sample_list
+        identifier_list = list()
+        ids = formDictList('identifier', ['id', 'scheme'])
+        for id in ids:
+            error = ''
+            if not id['id']:
+                error += 'Identifier with scheme {} is blank.'.format(id['scheme'])
+            if error:
+                flash(error, 'error')
+            else:
+                identifier_list.append(id)
+        if len(identifier_list) > 0:
+            record['identifiers'] = identifier_list
+        # Next, fields that are lists of values in the form but lists of dictionaries in the record
         relation_roles = [ 'parent schemes', 'maintainers', 'funders', 'users' ]
         related_entities = list()
         for role in relation_roles:
@@ -1122,7 +1182,8 @@ def edit_scheme(number):
                     related_entities.append(instance)
         if len(related_entities) > 0:
             record['relatedEntities'] = related_entities
-        # Validation and sorting
+        # Versions have to be dealt with carefully as they are split between two forms.
+        
         flash(json.dumps(record))
         if version:
             return redirect(url_for('edit_scheme', number=number))
@@ -1179,8 +1240,6 @@ def edit_scheme(number):
         subject_list = list(subject_set)
         subject_list.sort()
         # Location types and ID schemes
-        location_type_list = ['website', 'document', 'RDA-MIG', 'DTD',\
-            'XSD', 'RDFS']
         id_scheme_list = [ 'DOI' ]
         return render_template('edit-scheme.html', record=record, eid=number,\
             version=version, subjects=subject_list, dataTypes=type_list,\
