@@ -1334,6 +1334,7 @@ def edit_scheme(number):
                 schemes=scheme_list, organizations=organization_list)
 
         # Otherwise, apply changes
+        # TODO: apply logging and version control
         if version:
             if element and 'versions' in element:
                 version_list = element['versions']
@@ -1387,9 +1388,30 @@ def edit_scheme(number):
             locationTypes=location_type_list, idSchemes=id_scheme_list,\
             schemes=scheme_list, organizations=organization_list)
 
-### Ajax form snippets
-
-
+@app.route('/edit/g<int:number>', methods=['GET', 'POST'])
+def edit_organization(number):
+    if g.user is None:
+        flash('You must sign in before making any changes.', 'error')
+        return redirect(url_for('login'))
+    organizations = db.table('organizations')
+    element = organizations.get(eid=number)
+    # Types and ID schemes
+    id_scheme_list = [ 'DOI' ]
+    organization_type_list = ['standards body', 'archive', 'professional group',\
+        'coordination group']
+    location_type_list = ['website', 'email']
+    # Processing the request
+    if request.method == 'POST':
+        record = dict()
+    else:
+        if element:
+            record = element
+        else:
+            flash('You can add a new record using the form below.')
+            record = dict()
+        return render_template('edit-organization.html', record=record, eid=number,\
+            organizationTypes=organization_type_list, locationTypes=location_type_list,\
+            idSchemes=id_scheme_list)
 ### Executing
 
 if __name__ == '__main__':

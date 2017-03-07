@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Edit Record msc:g{{ eid }}{% endblock %}
+{% block main %}
+  <form action="{{ url_for('edit_organization', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
+    <div class="form-group">
+      <label for="name" class="control-label">Name of organization</label>
+      <input id="name" name="name" {% if 'name' in record %}value="{{ record['name'] }}"{% endif %} placeholder="Name of organization" class="form-control">
+      <ul class="help-block">
+        <li>The full name of the organization as it is usually given.</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="types" class="control-label">Type of organization</label>
+      <select id="types" name="types" multiple class="form-control" style="width:auto;">
+        {% for type in organizationTypes %}
+        <option {% if type in record['types'] %}selected{% endif %}>{{ type }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="location-url" class="control-label">Locations</label>
+      {% with messages = get_flashed_messages(category_filter=['location-error']) %}
+      {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p>{{ message|safe }}</p>
+      </div>
+      {% endfor %}
+      {% endwith %}
+      <ol class="form-list">
+        {% for location in record['locations'] %}
+        <li>
+          <label for="location-url{{ loop.index }}" class="control-label">URL</label>
+          <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" size="37" class="form-control">
+          <label for="location-type{{ loop.index }}" class="control-label">Type</label>
+          <select id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" class="form-control" style="width:auto;">
+            {% for type in locationTypes %}
+            <option
+              {%- if location['type'] == type %} selected
+              {%- endif %}>{{ type }}</option>
+            {% endfor %}
+          </select>
+        </li>
+        {% endfor %}
+        <li>
+          <label for="location-url" class="control-label">URL</label>
+          <input id="location-url" name="location-url" placeholder="URL e.g. https://www..." size="37" class="form-control">
+          <label for="location-type" class="control-label">Type</label>
+          <input id="location-type" name="location-type" list="location-types" size="10" class="form-control" style="width:auto;">
+        </li>
+      </ol>
+      <ul class="help-block">
+        <li>To give several locations, save after adding each one.</li>
+        <li>Preface email addresses with "mailto:".</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="identifier-id" class="control-label">Identifiers</label>
+      {% with messages = get_flashed_messages(category_filter=['identifier-error']) %}
+      {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p>{{ message|safe }}</p>
+      </div>
+      {% endfor %}
+      {% endwith %}
+      <datalist id="id-schemes">
+        {% for idScheme in idSchemes %}
+        <option>{{ idScheme }}</option>
+        {% endfor %}
+      </datalist>
+      <ol class="form-list">
+        {% for identifier in record['identifiers'] if not identifier['scheme'] == 'RDA-MSCWG' %}
+        <li>
+          <label for="identifier-id{{ loop.index }}" class="control-label">ID</label>
+          <input id="identifier-id{{ loop.index }}" name="identifier-id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
+          <label for="identifier-scheme{{ loop.index }}" class="control-label">ID scheme</label>
+          <input id="identifier-scheme{{ loop.index }}" name="identifier-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}" class="form-control" style="width:auto;">
+        </li>
+        {% endfor %}
+        <li>
+          <label for="identifier-id" class="control-label">ID</label>
+          <input id="identifier-id" name="identifier-id" placeholder="e.g. 10.001/1234" class="form-control">
+          <label for="identifier-scheme" class="control-label">Scheme</label>
+          <input id="identifier-scheme" name="identifier-scheme" list="id-schemes" class="form-control" style="width:auto;">
+        </li>
+      </ol>
+      <ul class="help-block">
+        <li>Provide an identifier (e.g. FundRef DOI), if known, for this organization.</li>
+        <li>You do not need to repeat the internal Catalog identifier here.</li>
+        <li>To give several identifiers, save after adding each one.</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary">Save changes</button>
+      {% if version %}
+      <a href="{{ url_for('edit_organization', number=eid) }}" class="btn btn-default">Cancel &amp; edit main record</a>
+      {% else %}
+      <a href="{{ url_for('hello') }}" class="btn btn-default">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}
