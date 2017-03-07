@@ -21,7 +21,7 @@
     <div class="form-group">
       <label for="description" class="control-label">Description</label>
       <textarea id="description" name="description" class="form-control">
-      {% if 'description' in record %}{{ record['description'] }}{% endif %}
+      {%- if 'description' in record %}{{ record['description'] }}{% endif -%}
       </textarea>
       <ul class="help-block">
         <li>This could indicate if the scheme is used to create standalone metadata
@@ -40,6 +40,14 @@
     </div>
     <div class="form-group">
       <label for="keyword" class="control-label">Subject areas</label>
+      {% with messages = get_flashed_messages(category_filter=['keyword-error']) %}
+      {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p>{{ message|safe }}</p>
+      </div>
+      {% endfor %}
+      {% endwith %}
       <datalist id="keyword-list">
         {% for item in subjects %}
         <option>{{ item }}</option>
@@ -78,6 +86,14 @@
     </div>
     <div class="form-group">
       <label for="location-url" class="control-label">Locations</label>
+      {% with messages = get_flashed_messages(category_filter=['location-error']) %}
+      {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p>{{ message|safe }}</p>
+      </div>
+      {% endfor %}
+      {% endwith %}
       <ol class="form-list">
         {% for location in record['locations'] %}
         <li>
@@ -106,6 +122,14 @@
     </div>
     <div class="form-group">
       <label for="sample-title" class="control-label">Samples</label>
+      {% with messages = get_flashed_messages(category_filter=['sample-error']) %}
+      {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p>{{ message|safe }}</p>
+      </div>
+      {% endfor %}
+      {% endwith %}
       <ol class="form-list">
         {% for location in record['samples'] %}
         <li class="form-inline">
@@ -128,6 +152,14 @@
     </div>
     <div class="form-group">
       <label for="id" class="control-label">Identifiers</label>
+      {% with messages = get_flashed_messages(category_filter=['identifier-error']) %}
+      {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p>{{ message|safe }}</p>
+      </div>
+      {% endfor %}
+      {% endwith %}
       <datalist id="id-schemes">
         {% for idScheme in idSchemes %}
         <option>{{ idScheme }}</option>
@@ -164,6 +196,14 @@
     {% if not version %}
     <div class="form-group">
       <label for="version-number" class="control-label">Versions</label>
+      {% with messages = get_flashed_messages(category_filter=['date-error']) %}
+      {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <p>{{ message|safe }}</p>
+      </div>
+      {% endfor %}
+      {% endwith %}
       <ol class="form-list">
         {% for release in record['versions'] %}
         <li>
@@ -175,15 +215,16 @@
               placeholder="e.g. 3.1"
             {%- endif %} class="form-control">
             {% if 'number' in release %}
+            <input type="hidden" name="version-number-old{{ loop.index }}" value="{{ release['number'] }}">
             <a href="{{ url_for('edit_scheme', number=eid) }}?version={{ release['number'] }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
             {% endif %}
           </div></div>
-          <label for="version-issued{{ loop.index }}" class="control-label">Date released as final</label>
+          <label for="version-issued{{ loop.index }}" class="control-label">Date published</label>
           <input type="date" id="version-issued{{ loop.index }}" name="version-issued{{ loop.index }}" {% if 'issued' in release -%}
             value="{{ release['issued'] }}"
           {%- endif %} class="form-control" style="width:auto;">
           <label for="version-available{{ loop.index }}" class="control-label">Date released as draft/proposal</label>
-          <input type="date" id="version-available{{ loop.index }}" name="version-available{{ loop.index }}" {% if 'issued' in release -%}
+          <input type="date" id="version-available{{ loop.index }}" name="version-available{{ loop.index }}" {% if 'available' in release -%}
             value="{{ release['available'] }}"
           {%- endif %} class="form-control" style="width:auto;">
           <label for="version-valid-from{{ loop.index }}" class="control-label">Date considered current</label>
@@ -203,9 +244,9 @@
           <label for="version-number" class="control-label">Number</label>
           <input id="version-number" name="version-number" placeholder="e.g. 3.1" class="form-control" style="width:auto;">
           <p class="help-block">Do not preface the version number with 'version' or 'v'.</p>
-          <label for="version-issued" class="control-label">Date released as final</label>
+          <label for="version-issued" class="control-label">Date published</label>
           <input type="date" id="version-issued" name="version-issued" class="form-control" style="width:auto;">
-          <p class="help-block">In most cases, the only date you need to provide is 'date released as final'.</p>
+          <p class="help-block">In most cases, the only date you need to provide is 'date published'.</p>
           <label for="version-available" class="control-label">Date released as draft/proposal</label>
           <input type="date" id="version-available" name="version-available" class="form-control" style="width:auto;">
           <p class="help-block">If the version has not been released in its final version,
@@ -231,8 +272,8 @@
     {% endif %}
     <h2>Relationships to other records</h2>
     <div class="form-group">
-      <label for="parent-schemes" class="control-label">Parent schemes</label>
-      <select id="parent-schemes" name="parent-schemes" multiple class="form-control">
+      <label for="parent-scheme" class="control-label">Parent schemes</label>
+      <select id="parent-scheme" name="parent-scheme" multiple class="form-control">
         {% for scheme in schemes %}
         <option value="{{ scheme['id'] }}"
           {%- if scheme['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'parent scheme')|map(attribute='id') %} selected
@@ -241,8 +282,8 @@
       </select>
     </div>
     <div class="form-group">
-      <label for="maintainers" class="control-label">Maintainers</label>
-      <select id="maintainers" name="maintainers" multiple class="form-control">
+      <label for="maintainer" class="control-label">Maintainers</label>
+      <select id="maintainer" name="maintainer" multiple class="form-control">
         {% for group in organizations %}
         <option value="{{ group['id'] }}"
           {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'maintainer')|map(attribute='id') %} selected
@@ -251,8 +292,8 @@
       </select>
     </div>
     <div class="form-group">
-      <label for="funders" class="control-label">Funders</label>
-      <select id="funders" name="funders" multiple class="form-control">
+      <label for="funder" class="control-label">Funders</label>
+      <select id="funder" name="funder" multiple class="form-control">
         {% for group in organizations %}
         <option value="{{ group['id'] }}"
           {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'funder')|map(attribute='id') %} selected
@@ -262,7 +303,7 @@
     </div>
     <div class="form-group">
       <label for="user" class="control-label">Users</label>
-      <select id="users" name="users" multiple class="form-control">
+      <select id="user" name="user" multiple class="form-control">
         {% for group in organizations %}
         <option value="{{ group['id'] }}"
           {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'user')|map(attribute='id') %} selected

@@ -9,7 +9,7 @@
     <p class="col-md-2">Used in</p>
     <ul class="col-md-10 list-inline">
     {% for keyword in record['keywords'] %}
-      <li><a class="btn btn-default" href="{{ url_for('subject', subject=toSlug(keyword)) }}">{{ keyword }}</a></li>
+      <li><a class="btn btn-default" href="{{ url_for('subject', subject=toURLSlug(keyword)) }}">{{ keyword }}</a></li>
     {% endfor %}
     </ul>
   </div>
@@ -19,7 +19,7 @@
     <p>Used for</p>
     <ul class="list-inline">
     {% for type in record['dataTypes'] %}
-      <li><a class="btn btn-default" href="{{ url_for('dataType', dataType=toSlug(type)) }}">{{ type }}</a></li>
+      <li><a class="btn btn-default" href="{{ url_for('dataType', dataType=toURLSlug(type)) }}">{{ type }}</a></li>
     {% endfor %}
     </ul>
   </div>
@@ -99,7 +99,7 @@
     <ul>
     {% for version in versions %}
       <li>
-        <p>{{ version['date'] }}: version {{ version['number'] }}{% if 'status' in version %} ({{ version['status'] }}){% endif %}</p>
+        <p>{{ version['date'] }}: version {{ version['number'] }}{% if version['status'] %} ({{ version['status'] }}){% endif %}</p>
       </li>
     {% endfor %}
     </ul>

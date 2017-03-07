@@ -4,7 +4,7 @@
 
 ## Standard
 
-import os, sys, re, urllib
+import os, sys, re, urllib, json, unicodedata
 
 ## Non-standard
 
@@ -12,7 +12,7 @@ import os, sys, re, urllib
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo -H pip3 install flask
-from flask import Flask, request, url_for, render_template, flash, redirect, json, jsonify, g, session
+from flask import Flask, request, url_for, render_template, flash, redirect, jsonify, g, session
 
 # See https://pythonhosted.org/Flask-OpenID/
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
@@ -21,6 +21,7 @@ from flask.ext.openid import OpenID
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query, where
+from tinydb.operations import delete
 
 # See http://rdflib.readthedocs.io/
 # On Debian, Ubuntu, etc.:
@@ -137,7 +138,7 @@ def getTermNode(uri, filter=list()):
     result = dict()
     term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
     result['name'] = term
-    slug = toSlug(term)
+    slug = toURLSlug(term)
     result['url'] = url_for('subject', subject=slug)
     narrower_ids = thesaurus.objects(uri, SKOS.narrower)
     children = list()
@@ -231,14 +232,32 @@ class Pluralizer:
 
         return "{}{}".format(start, singular if self.value == 1 else plural)
 
-def toSlug(string):
-    """Transforms string into URL-safe slug."""
-    slug = string.replace(' ', '+')
+def toFileSlug(string):
+    """Transforms string into slug for use when decomposing the database to
+    individual files.
+    """
+    # Put to lower case, turn spaces to hyphens
+    slug = string.strip().lower().replace(' ', '-')
+    # Fixes for problem entries
+    slug = unicodedata.normalize('NFD', slug)
+    slug = slug.encode('ascii', 'ignore')
+    slug = slug.decode('utf-8')
+    # Strip out non-alphanumeric ASCII characters
+    slug = re.sub(r'[^-A-Za-z0-9_]+', '', slug)
+    # Remove duplicate hyphens
+    slug = re.sub(r'-+', '-', slug)
+    # Truncate
+    slug = slug[:71]
     return slug
 
-def fromSlug(slug):
+def toURLSlug(string):
+    """Transforms string into URL-safe slug."""
+    slug = urllib.parse.quote_plus(string)
+    return slug
+
+def fromURLSlug(slug):
     """Transforms URL-safe slug back into regular string."""
-    string = slug.replace('+', ' ')
+    string = urllib.parse.unquote_plus(slug)
     return string
 
 def wild2regex(string):
@@ -251,17 +270,31 @@ def wild2regex(string):
 def parseDateRange(string):
     date_split = string.partition('/')
     if date_split[2]:
-        return tuple(date_split[0], date_split[2])
-    return tuple(string, None)
+        return (date_split[0], date_split[2])
+    return (string, None)
 
 def formDictList(prefix, fields):
+    """Processes families of form elements named according to the scheme
+    'prefix-field' or 'prefix-field1'. Numbered fields are processed first,
+    then unnumbered fields. The fields are assembled into a list of dictionaries
+    where, in each dictionary, the fields form the keys.
+
+    Arguments:
+        prefix (str): common first element of form input names
+        fields (list): list of strings that occur as the second element of form
+            input names
+
+    Returns:
+        list: list of dictionaries, where each dictionary contains the fields
+            as keys and the submitted content as values.
+    """
     current_list = list()
     i = 1
     while '{}-{}{}'.format(prefix, fields[0], i) in request.form:
         instance = dict()
         isWorthKeeping = False
         for field in fields:
-            instance[field] = request.form['{}-{}{}'.format(prefix, field, i)]
+            instance[field] = request.form.get('{}-{}{}'.format(prefix, field, i))
             if instance[field]:
                 isWorthKeeping = True
         if isWorthKeeping:
@@ -270,7 +303,7 @@ def formDictList(prefix, fields):
     instance = dict()
     isWorthKeeping = False
     for field in fields:
-        instance[field] = request.form['{}-{}'.format(prefix, field)]
+        instance[field] = request.form.get('{}-{}'.format(prefix, field))
         if instance[field]:
             isWorthKeeping = True
     if isWorthKeeping:
@@ -287,11 +320,20 @@ def isValidURL(url, qualifying=None):
     token = urllib.parse.urlparse(url)
     return all([getattr(token, qualifying_attr) for qualifying_attr in qualifying])
 
+w3cdate = re.compile(r'^\d{4}(-\d{2}){0,2}$')
+def isValidDate(date):
+    """Test whether a string is a valid W3C-formatted date."""
+    if w3cdate.search(date) is None:
+        return False
+    return True
+
 ### Functions made available to templates
 
 @app.context_processor
 def utility_processor():
-    return { 'toSlug': toSlug, 'fromSlug': fromSlug, 'parseDateRange': parseDateRange }
+    return { 'toURLSlug': toURLSlug,\
+        'fromURLSlug': fromURLSlug,\
+        'parseDateRange': parseDateRange }
 
 ### User handling
 
@@ -612,12 +654,12 @@ def endorsement(number, field=None):
 @app.route('/subject/<subject>')
 def subject(subject):
     # If people start using geographical keywords, the following will need more sophistication
-    query_string = fromSlug(subject)
+    query_string = fromURLSlug(subject)
     results = list()
 
     # Interpret subject
     term_list = list()
-    if subject == 'multidisciplinary':
+    if subject == 'Multidisciplinary':
         term_list.append('Multidisciplinary')
     else:
         # - Translate term into concept ID
@@ -686,7 +728,7 @@ def group(funder=None, maintainer=None, user=None):
 ### Per-datatype lists of standards
 @app.route('/datatype/<dataType>')
 def dataType(dataType):
-    query_string = fromSlug(dataType)
+    query_string = fromURLSlug(dataType)
     schemes = db.table('metadata-schemes')
     Scheme = Query()
     results = schemes.search(Scheme.dataTypes.any([ query_string ]))
@@ -740,7 +782,7 @@ def subject_index():
             subject_tree.append( getTermNode(domain, filter=full_keyword_uris) )
     subject_tree.sort(key=lambda k: k['name'].lower())
     subject_tree.insert(0, { 'name': 'Multidisciplinary',\
-        'url': url_for('subject', subject='multidisciplinary')})
+        'url': url_for('subject', subject='Multidisciplinary')})
     return render_template('contents.html', title='Index of subjects',\
         tree=subject_tree)
 
@@ -1100,11 +1142,50 @@ def edit_scheme(number):
     schemes = db.table('metadata-schemes')
     organizations = db.table('organizations')
     element = schemes.get(eid=number)
+    # Identifier, dataType, scheme, organization help
+    scheme_list = list() 
+    id_set = set()
+    type_set = set()
+    for scheme in schemes.all():
+        scheme_list.append({'id': 'msc:m{}'.format(scheme.eid),\
+            'title': scheme['title']})
+        for identifier in scheme['identifiers']:
+            id_set.add(identifier['id'])
+        if 'dataTypes' in scheme:
+            for type in scheme['dataTypes']:
+                type_set.add(type)
+    scheme_list.sort(key=lambda k: k['title'].lower())
+    id_list = list(id_set)
+    id_list.sort()
+    type_list = list(type_set)
+    type_list.sort(key=lambda k: k.lower())
+    organization_list = list()
+    for organization in organizations.all():
+        organization_list.append({'id': 'msc:g{}'.format(organization.eid),\
+            'name': organization['name']})
+    organization_list.sort(key=lambda k: k['name'].lower())
+    # Subject help
+    all_keyword_uris = set()
+    for generator in [thesaurus.subjects(RDF.type, UNO.Domain),\
+        thesaurus.subjects(RDF.type, UNO.MicroThesaurus),\
+        thesaurus.subjects(RDF.type, SKOS.Concept)]:
+        for uri in generator:
+            all_keyword_uris.add(uri)
+    subject_set = set()
+    for uri in all_keyword_uris:
+        subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
+    subject_set.add('Multidisciplinary')
+    subject_list = list(subject_set)
+    subject_list.sort()
+    # Location types and ID schemes
+    id_scheme_list = [ 'DOI' ]
     location_type_list = ['website', 'document', 'RDA-MIG', 'DTD',\
         'XSD', 'RDFS']
+    # Processing the request
     if request.method == 'POST':
         version = request.form.get('version')
         record = dict()
+        errors = 0
         # Compile the response into a record
         # We start with single-value fields
         form_fields = ['title', 'description']
@@ -1119,14 +1200,15 @@ def edit_scheme(number):
                 if keyword == 'Multidisciplinary' or getTermURI(keyword):
                     keyword_list.append(keyword)
                 else:
-                    flash('"{}" is not in the UNESCO Vocabulary.'.format(keyword), 'error')
+                    flash('"{}" is not in the {}.'.format(keyword, thesaurus_link), 'keyword-error')
+                    errors += 1
         if len(keyword_list) > 0:
             record['keywords'] = keyword_list
         dataType_list = list()
         for dataType in request.form.getlist('dataTypes'):
             if dataType:
                 # Validation goes here
-                dataType_list.append(keyword)
+                dataType_list.append(dataType)
         if len(dataType_list) > 0:
             record['dataTypes'] = dataType_list
         # Next, fields that are lists of dictionaries
@@ -1137,9 +1219,13 @@ def edit_scheme(number):
             if not isValidURL(location['url']):
                 error += 'Location "{}" is not a valid URL. '.format(location['url'])
             if not location['type'] in location_type_list:
-                error += '"{}" is not a valid location type'.format(location['type'])
+                if location['type']:
+                    error += '"{}" is not a valid location type.'.format(location['type'])
+                else:
+                    error += 'You must provide a location type.'
             if error:
-                flash(error, 'error')
+                flash(error, 'location-error')
+                errors += 1
             else:
                 location_list.append(location)
         if len(location_list) > 0:
@@ -1153,25 +1239,30 @@ def edit_scheme(number):
             if not sample['title']:
                 error += 'Sample at "{}" has an empty title'.format(sample['url'])
             if error:
-                flash(error, 'error')
+                flash(error, 'sample-error')
+                errors += 1
             else:
                 sample_list.append(sample)
         if len(sample_list) > 0:
             record['samples'] = sample_list
         identifier_list = list()
+        if not version:
+            identifier_list.append({'id': 'msc:m{}'.format(number),\
+                'scheme': 'RDA-MSCWG'})
         ids = formDictList('identifier', ['id', 'scheme'])
         for id in ids:
             error = ''
             if not id['id']:
                 error += 'Identifier with scheme {} is blank.'.format(id['scheme'])
             if error:
-                flash(error, 'error')
+                flash(error, 'identifier-error')
+                errors += 1
             else:
                 identifier_list.append(id)
         if len(identifier_list) > 0:
             record['identifiers'] = identifier_list
         # Next, fields that are lists of values in the form but lists of dictionaries in the record
-        relation_roles = [ 'parent schemes', 'maintainers', 'funders', 'users' ]
+        relation_roles = [ 'parent scheme', 'maintainer', 'funder', 'user' ]
         related_entities = list()
         for role in relation_roles:
             if role in request.form:
@@ -1183,64 +1274,114 @@ def edit_scheme(number):
         if len(related_entities) > 0:
             record['relatedEntities'] = related_entities
         # Versions have to be dealt with carefully as they are split between two forms.
-        
-        flash(json.dumps(record))
+        if not version:
+            # This is the top level form
+            version_list = list()
+            version_fields =  ['number', 'number-old', 'issued', 'available',\
+                'valid-from', 'valid-to']
+            vns = formDictList('version', version_fields)
+            for vn in vns:
+                version_dict = dict()
+                # Copy overriding data from existing record
+                if vn['number-old']:
+                    for release in element['versions']:
+                        if str(release['number']) == str(vn['number-old']):
+                            version_dict = {k: v for k, v in release.items()\
+                                if k not in ['number', 'available', 'issued', 'valid']}
+                            break
+                # Add in data from form
+                if vn['number']:
+                    version_dict['number'] = str(vn['number'])
+                for k, v in {'available': 'date of release as draft/proposal', 'issued': 'date of publication'}.items():
+                    if vn[k]:
+                        if isValidDate(vn[k]):
+                            version_dict[k] = vn[k]
+                        else:
+                            flash('"{}" is not a valid {}.'.format(vn[k], v), 'date-error')
+                            errors += 1
+                if vn['valid-from']:
+                    valid = ''
+                    if isValidDate(vn['valid-from']):
+                        valid = vn['valid-from']
+                        if vn['valid-to']:
+                            if isValidDate(vn['valid-to']):
+                                valid += '/'
+                                valid += vn['valid-to']
+                            else:
+                                flash('"{}" is not a valid date to which to be considered current.'.format(vn['valid-to']), 'date-error')
+                                errors += 1
+                    else:
+                        flash('"{}" is not a valid date from which to be considered current.'.format(vn['valid-from']), 'date-error')
+                        errors += 1
+                    if valid:
+                        version_dict['valid'] = valid
+                if len(version_dict) > 0:
+                    version_list.append(version_dict)
+            if len(version_list) > 0:
+                record['versions'] = version_list
+            # Add other hidden fields from original record
+            if element and 'slug' in element:
+                record['slug'] = element['slug']
+            elif record['title']:
+                record['slug'] = toFileSlug(record['title'])
+
+        # Handle any errors
+        if errors > 0:
+            flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(errors)), 'error')
+            return render_template('edit-scheme.html', record=record, eid=number,\
+                version=version, subjects=subject_list, dataTypes=type_list,\
+                locationTypes=location_type_list, idSchemes=id_scheme_list,\
+                schemes=scheme_list, organizations=organization_list)
+
+        # Otherwise, apply changes
         if version:
+            if element and 'versions' in element:
+                version_list = element['versions']
+                for index, item in enumerate(version_list):
+                    if str(item['number']) == str(version):
+                        version_dict = {k: v for k, v in item.items()\
+                            if k in ['number', 'available', 'issued', 'valid']}
+                        version_dict.update(record)
+                        version_list[index] = version_dict
+                        break
+                Scheme = Query()
+                Version = Query()
+                schemes.update({'versions': version_list},\
+                    Scheme.versions.any(Version.number == version),\
+                    eids=[number])
+            else:
+                # The user is creating a version for an unknown standard.
+                # This should NEVER HAPPEN, but just in case...
+                record['number'] = str(version)
+                version_list = [ record ]
+                number = schemes.insert({'versions': version_list})
+            flash('Successfully updated record for version {}.'.format(version), 'success')
             return redirect(url_for('edit_scheme', number=number))
         else:
-            return redirect(url_for('scheme', number=number))
+            if element:
+                # Existing record
+                for key in element.copy():
+                    schemes.update(delete(key), eids=[number])
+                schemes.update(record, eids=[number])
+            else:
+                # New record
+                number = schemes.insert(record)
+            flash('Successfully updated record.', 'success')
+            return redirect(url_for('edit_scheme', number=number))
     else:
         version = request.args.get('version')
         if version:
             flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
             record = dict()
             for release in element['versions']:
-                if 'number' in release and release['number'] == version:
+                if 'number' in release and str(release['number']) == str(version):
                     record = release
                     break
         elif element:
-            flash('You can edit this existing record using the form below.')
             record = element
         else:
             flash('You can add a new record using the form below.')
             record = dict()
-        # Identifier, dataType, scheme, organization help
-        scheme_list = list() 
-        id_set = set()
-        type_set = set()
-        for scheme in schemes.all():
-            scheme_list.append({'id': 'msc:m{}'.format(scheme.eid),\
-                'title': scheme['title']})
-            for identifier in scheme['identifiers']:
-                id_set.add(identifier['id'])
-            if 'dataTypes' in scheme:
-                for type in scheme['dataTypes']:
-                    type_set.add(type)
-        scheme_list.sort(key=lambda k: k['title'].lower())
-        id_list = list(id_set)
-        id_list.sort()
-        type_list = list(type_set)
-        type_list.sort(key=lambda k: k.lower())
-        organization_list = list()
-        for organization in organizations.all():
-            organization_list.append({'id': 'msc:g{}'.format(organization.eid),\
-                'name': organization['name']})
-        organization_list.sort(key=lambda k: k['name'].lower())
-        # Subject help
-        all_keyword_uris = set()
-        for generator in [thesaurus.subjects(RDF.type, UNO.Domain),\
-            thesaurus.subjects(RDF.type, UNO.MicroThesaurus),\
-            thesaurus.subjects(RDF.type, SKOS.Concept)]:
-            for uri in generator:
-                all_keyword_uris.add(uri)
-        subject_set = set()
-        for uri in all_keyword_uris:
-            subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
-        subject_set.add('Multidisciplinary')
-        subject_list = list(subject_set)
-        subject_list.sort()
-        # Location types and ID schemes
-        id_scheme_list = [ 'DOI' ]
         return render_template('edit-scheme.html', record=record, eid=number,\
             version=version, subjects=subject_list, dataTypes=type_list,\
             locationTypes=location_type_list, idSchemes=id_scheme_list,\
