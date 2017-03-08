@@ -310,15 +310,16 @@ def formDictList(prefix, fields):
         current_list.append(instance)
     return current_list
 
-min_url_attributes = ('scheme', 'netloc')
-def isValidURL(url, qualifying=None):
-    """Test whether a URL is well-formed.
-
-    From http://stackoverflow.com/a/36283503
-    """
-    qualifying = min_url_attributes if qualifying is None else qualifying
-    token = urllib.parse.urlparse(url)
-    return all([getattr(token, qualifying_attr) for qualifying_attr in qualifying])
+def isValidURL(url):
+    """Test whether a URL/email address is well-formed."""
+    result = urllib.parse.urlparse(url)
+    if result.scheme == 'mailto':
+        if re.match(r'[^@\s]+@[^@\s\.]+\.[^@\s]+', result.path):
+            return True
+    else:
+        if result.scheme and result.netloc:
+            return True
+    return False
 
 w3cdate = re.compile(r'^\d{4}(-\d{2}){0,2}$')
 def isValidDate(date):
@@ -1253,7 +1254,7 @@ def edit_scheme(number):
         for id in ids:
             error = ''
             if not id['id']:
-                error += 'Identifier with scheme {} is blank.'.format(id['scheme'])
+                error += 'Identifier with scheme "{}" is blank.'.format(id['scheme'])
             if error:
                 flash(error, 'identifier-error')
                 errors += 1
@@ -1339,12 +1340,16 @@ def edit_scheme(number):
             if element and 'versions' in element:
                 version_list = element['versions']
                 for index, item in enumerate(version_list):
+                    failed = True
                     if str(item['number']) == str(version):
                         version_dict = {k: v for k, v in item.items()\
                             if k in ['number', 'available', 'issued', 'valid']}
                         version_dict.update(record)
                         version_list[index] = version_dict
+                        failed = False
                         break
+                    if failed:
+                        flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version))
                 Scheme = Query()
                 Version = Query()
                 schemes.update({'versions': version_list},\
@@ -1357,7 +1362,7 @@ def edit_scheme(number):
                 version_list = [ record ]
                 number = schemes.insert({'versions': version_list})
             flash('Successfully updated record for version {}.'.format(version), 'success')
-            return redirect(url_for('edit_scheme', number=number))
+            return redirect('{}?version={}'.format(url_for('edit_scheme', number=number), version))
         else:
             if element:
                 # Existing record
@@ -1403,6 +1408,81 @@ def edit_organization(number):
     # Processing the request
     if request.method == 'POST':
         record = dict()
+        errors = 0
+        # Compile the response into a record
+        # We start with single-value fields
+        form_fields = ['name', 'description']
+        for property in form_fields:
+            value = request.form[property]
+            if value:
+                record[property] = value.strip()
+        # Next, fields that take lists of values
+        type_list = list()
+        for type in request.form.getlist('types'):
+            if type:
+                if type in organization_type_list:
+                    type_list.append(type)
+        if len(type_list) > 0:
+            record['types'] = type_list
+        # Next, fields that are lists of dictionaries
+        location_list = list()
+        locations = formDictList('location', ['url', 'type'])
+        for location in locations:
+            error = ''
+            if not isValidURL(location['url']):
+                error += 'Location "{}" is not a valid URL. '.format(location['url'])
+            if not location['type'] in location_type_list:
+                if location['type']:
+                    error += '"{}" is not a valid location type.'.format(location['type'])
+                else:
+                    error += 'You must provide a location type.'
+            if error:
+                flash(error, 'location-error')
+                errors += 1
+            else:
+                location_list.append(location)
+        if len(location_list) > 0:
+            record['locations'] = location_list
+        identifier_list = list()
+        identifier_list.append({'id': 'msc:g{}'.format(number),\
+            'scheme': 'RDA-MSCWG'})
+        ids = formDictList('identifier', ['id', 'scheme'])
+        for id in ids:
+            error = ''
+            if not id['id']:
+                error += 'Identifier with scheme "{}" is blank.'.format(id['scheme'])
+            if error:
+                flash(error, 'identifier-error')
+                errors += 1
+            else:
+                identifier_list.append(id)
+        if len(identifier_list) > 0:
+            record['identifiers'] = identifier_list
+        # Add other hidden fields from original record
+        if element and 'slug' in element:
+            record['slug'] = element['slug']
+        elif record['name']:
+            record['slug'] = toFileSlug(record['name'])
+
+        # Handle any errors
+        if errors > 0:
+            flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(errors)), 'error')
+            return render_template('edit-organization.html', record=record, eid=number,\
+                organizationTypes=organization_type_list, locationTypes=location_type_list,\
+                idSchemes=id_scheme_list)
+
+        # Otherwise, apply changes
+        # TODO: apply logging and version control
+        if element:
+            # Existing record
+            for key in element.copy():
+                organizations.update(delete(key), eids=[number])
+            organizations.update(record, eids=[number])
+        else:
+            # New record
+            number = organizations.insert(record)
+        flash('Successfully updated record.', 'success')
+        return redirect(url_for('edit_organization', number=number))
     else:
         if element:
             record = element
@@ -1412,6 +1492,7 @@ def edit_organization(number):
         return render_template('edit-organization.html', record=record, eid=number,\
             organizationTypes=organization_type_list, locationTypes=location_type_list,\
             idSchemes=id_scheme_list)
+
 ### Executing
 
 if __name__ == '__main__':

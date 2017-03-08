@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Edit Record msc:g{{ eid }}{% endblock %}
+{% block title %}{% if eid == 0 %}Add new organization{% else %}Edit record msc:g{{ eid }}{% endif %}{% endblock %}
 {% block main %}
   <form action="{{ url_for('edit_organization', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
     <div class="form-group">
@@ -7,6 +7,18 @@
       <input id="name" name="name" {% if 'name' in record %}value="{{ record['name'] }}"{% endif %} placeholder="Name of organization" class="form-control">
       <ul class="help-block">
         <li>The full name of the organization as it is usually given.</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="description" class="control-label">Description</label>
+      <textarea id="description" name="description" class="form-control">
+      {%- if 'description' in record %}{{ record['description'] }}{% endif -%}
+      </textarea>
+      <ul class="help-block">
+        <li>This should give the reader an impression of what the organization does
+          and its role in the research environment.
+        <li>This could describe the organization's interest in metadata or metadata
+          standards.</li>
       </ul>
     </div>
     <div class="form-group">
@@ -34,6 +46,7 @@
           <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" size="37" class="form-control">
           <label for="location-type{{ loop.index }}" class="control-label">Type</label>
           <select id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" class="form-control" style="width:auto;">
+            <option value=""></option>
             {% for type in locationTypes %}
             <option
               {%- if location['type'] == type %} selected
@@ -46,7 +59,12 @@
           <label for="location-url" class="control-label">URL</label>
           <input id="location-url" name="location-url" placeholder="URL e.g. https://www..." size="37" class="form-control">
           <label for="location-type" class="control-label">Type</label>
-          <input id="location-type" name="location-type" list="location-types" size="10" class="form-control" style="width:auto;">
+          <select id="location-type" name="location-type" class="form-control" style="width:auto;">
+            <option value=""></option>
+            {% for type in locationTypes %}
+            <option>{{ type }}</option>
+            {% endfor %}
+          </select>
         </li>
       </ol>
       <ul class="help-block">

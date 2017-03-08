@@ -68,8 +68,8 @@ identifiers:
 versions:
   - number: 1.0
     issued: 2016-09-15
-description: >
-    This scheme is used to document itself.
+description: >-
+    <p>This scheme is used to document itself.</p>
 keywords:
   - keyword 1
   - keyword 2
@@ -356,6 +356,8 @@ name: The Organization
 identifiers:
   - id: "msc:g1"
     scheme: RDA-MSCWG
+description: >-
+    <p>This group is committed to open data.</p>
 types:
   - standards body
 locations:
@@ -386,6 +388,17 @@ identifier:
 *Notes*
 
   * The same considerations apply as for “Metadata Scheme”.
+
+### Description
+
+A sentence or two introducing the organization.
+
+*Notes*
+
+  * This should give the reader an impression of what the organization does
+    and its role in the research environment.
+  * This could describe the organization's interest in metadata or metadata
+    standards.
 
 ### Types
 
