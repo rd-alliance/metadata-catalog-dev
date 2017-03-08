@@ -22,6 +22,7 @@ from flask.ext.openid import OpenID
 # Install from PyPi: sudo -H pip3 install Flask-WTF
 from flask_wtf import FlaskForm
 from wtforms import validators, widgets, Form, FormField, FieldList, StringField, DateField, SelectField, SelectMultipleField, ValidationError
+from wtforms.compat import string_types
 
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install tinydb
@@ -338,23 +339,36 @@ def EmailOrURL(form, field):
         if not result.netloc:
             return ValidationError('That URL does not look quite right.')
 
-class RequiredIf(validators.Optional):
+class RequiredIf(object):
     """A validator which makes a field required if another field is set and has
     a truthy value, and optional otherwise.
     """
+    field_flags = ('optional', )
 
-    def __init__(self, other_field_name, *args, **kwargs):
+    def __init__(self, other_field_name, message=None, strip_whitespace=True):
         self.other_field_name = other_field_name
-        super(RequiredIf, self).__init__(*args, **kwargs)
+        self.message = message
+        if strip_whitespace:
+            self.string_check = lambda s: s.strip()
+        else:
+            self.string_check = lambda s: s
 
     def __call__(self, form, field):
         other_field = form._fields.get(self.other_field_name)
         if other_field is None:
             raise Exception('No field named "{}" in form'.format(self.other_field_name))
         if bool(other_field.data):
-            validators.Required.__call__(self, form, field)
-        else:
-            super(RequiredIf, self).__call__(form, field)
+            self.field_flags = ('required', )
+            if not field.raw_data or not field.raw_data[0]:
+                if self.message is None:
+                    message = field.gettext('This field is required.')
+                else:
+                    message = self.message
+                field.errors[:] = []
+                raise validators.StopValidation(message)
+        elif not field.raw_data or isinstance(field.raw_data[0], string_types) and not self.string_check(field.raw_data[0]):
+            field.errors[:] = []
+            raise validators.StopValidation()
 
 w3cdate = re.compile(r'^\d{4}(-\d{2}){0,2}$')
 def isValidDate(date):
@@ -362,6 +376,11 @@ def isValidDate(date):
     if w3cdate.search(date) is None:
         return False
     return True
+
+def W3CDate(form, field):
+    """Test whether a string is a valid W3C-formatted date."""
+    if w3cdate.search(field) is None:
+        raise ValidationError('Please provide the date in yyyy-mm-dd format.')
 
 ### Functions made available to templates
 
@@ -1528,42 +1547,7 @@ def edit_organization(number):
             organizationTypes=organization_type_list, locationTypes=location_type_list,\
             idSchemes=id_scheme_list)
 
-class NativeDateField(DateField):
-    widget = widgets.Input(input_type='date')
-
-class LocationForm(Form):
-    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
-    type = SelectField('Type', validators=[RequiredIf('url')])
-
-class IdentifierForm(Form):
-    id = StringField('ID')
-    scheme = StringField('ID scheme')
-
-class SchemeVersionForm(Form):
-    schemes = db.table('metadata-schemes')
-    scheme_choices = [('', '')]
-    for scheme in schemes.all():
-        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
-    scheme_choices.sort(key=lambda k: k[1].lower())
-
-    id = SelectField('Metadata scheme', choices=scheme_choices)
-    version = StringField('Version')
-
-class EndorsementForm(FlaskForm):
-    organizations = db.table('organizations')
-    organization_choices = list()
-    for organization in organizations.all():
-        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
-    organization_choices.sort(key=lambda k: k[1].lower())
-
-    citation = StringField('Citation')
-    issued = NativeDateField('Endorsement date', validators=[validators.Optional()])
-    valid_from = NativeDateField('Endorsement period', validators=[validators.Optional()])
-    valid_to = NativeDateField('until', validators=[validators.Optional()])
-    locations = FieldList(FormField(LocationForm), 'Locations of this endorsement', min_entries=1)
-    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this endorsement', min_entries=1)
-    endorsed_schemes = FieldList(FormField(SchemeVersionForm), 'Endorsed schemes', min_entries=1)
-    originators = SelectMultipleField('Endorsing organizations', choices=organization_choices)
+# Utility functions for WTForms implementation
 
 def clean_dict(data):
     """Takes dictionary and recursively removes fields where the value is (a)
@@ -1599,6 +1583,155 @@ def clean_dict(data):
             del data[key]
     return data
 
+relations_msc_form = {\
+    'parent scheme': 'parent_schemes',\
+    'maintainer': 'maintainers',\
+    'funder': 'funders',\
+    'user': 'users',\
+    'supported scheme': 'supported_schemes',\
+    'input scheme': 'input_schemes',\
+    'output scheme': 'output_schemes',\
+    'endorsed scheme': 'endorsed_schemes',\
+    'originator': 'originators',\
+    }
+
+relations_form_msc = {v: k for k, v in relations_msc_form.items()}
+
+def msc_to_form(msc_data):
+    form_data = dict()
+    for k, v in msc_data.items():
+        if k == 'relatedEntities':
+            for entity in v:
+                role = entity['role']
+                mapped_role = relations_msc_form[role]
+                if mapped_role not in form_data:
+                    form_data[mapped_role] = list()
+                id_tuple = entity['id'].partition('#')
+                if mapped_role == 'endorsed_schemes':
+                    form_data[mapped_role].append({'id': id_tuple[0], 'version': id_tuple[2]})
+                else:
+                    form_data[mapped_role].append(id_tuple[0])
+        elif k == 'valid':
+            valid_tuple = v.partition('/')
+            form_data['valid_from'] = valid_tuple[0]
+            form_data['valid_to'] = valid_tuple[2]
+        elif k == 'versions':
+            if k not in form_data:
+                form_data[k] = list()
+            for version in v:
+                mapped_version = dict()
+                for key, value in version.items():
+                    if key == 'valid':
+                        valid_tuple = v.partition('/')
+                        mapped_version['valid_from'] = valid_tuple[0]
+                        mapped_version['valid_to'] = valid_tuple[2]
+                    else:
+                        mapped_version[key] = value
+                form_data[k].append(mapped_version)
+        else:
+            form_data[k] = v
+    if 'locations' in form_data:
+        form_data['locations'].append({'url': '', 'type': '' })
+    if 'identifiers' in form_data:
+        form_data['identifiers'].append({'id': '', 'scheme': '' })
+    if 'endorsed_schemes' in form_data:
+        form_data['endorsed_schemes'].append({'id': '', 'version': '' })
+    return form_data
+
+def form_to_msc(form_data):
+    msc_data = dict()
+    clean_data = clean_dict(form_data)
+    has_tl_valid_from = False
+    has_tl_valid_to = False
+    for k, v in clean_data.items():
+        if k in relations_form_msc:
+            if 'relatedEntities' not in msc_data:
+                msc_data['relatedEntities'] = list()
+            role = relations_form_msc[k]
+            for item in v:
+                if isinstance(item, dict):
+                    if 'version' in item:
+                        id_string = '{}#{}'.format(item['id'], item['version'])
+                    else:
+                        id_string = item['id']
+                else:
+                    id_string = item
+                msc_data['relatedEntities'].append({'id': id_string, 'role': role})
+        elif k == 'valid_from':
+            has_tl_valid_from = True
+        elif k == 'valid_to':
+            has_tl_valid_to = True
+        elif k == 'versions':
+            if k not in msc_data:
+                msc_data[k] = list()
+            for version in v:
+                mapped_version = dict()
+                has_vn_valid_from = False
+                has_vn_valid_to = False
+                for key, value in version.items():
+                    if key == 'valid_from':
+                        has_vn_valid_from = True
+                    elif key == 'valid_to':
+                        has_vn_valid_to = True
+                    else:
+                        mapped_version[key] = value
+                if has_vn_valid_from:
+                    if has_vn_valid_to:
+                        mapped_version['valid'] = '{}/{}'.format(version['valid_from'], version['valid_to'])
+                    else:
+                        mapped_version['valid'] = version['valid_from']
+                form_data[k].append(mapped_version)
+        else:
+            msc_data[k] = v
+        if has_tl_valid_from:
+            if has_tl_valid_to:
+                msc_data['valid'] = '{}/{}'.format(clean_data['valid_from'], clean_data['valid_to'])
+            else:
+                msc_data['valid'] = clean_data['valid_from']
+    return msc_data
+
+# Common form snippets
+
+class NativeDateField(StringField):
+    widget = widgets.Input(input_type='date')
+    validators = [W3CDate]
+
+class LocationForm(Form):
+    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+    type = SelectField('Type', validators=[RequiredIf('url')])
+
+class IdentifierForm(Form):
+    id = StringField('ID')
+    scheme = StringField('ID scheme')
+
+class SchemeVersionForm(Form):
+    schemes = db.table('metadata-schemes')
+    scheme_choices = [('', '')]
+    for scheme in schemes.all():
+        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+    scheme_choices.sort(key=lambda k: k[1].lower())
+
+    id = SelectField('Metadata scheme', choices=scheme_choices)
+    version = StringField('Version')
+
+# Editing endorsements
+
+class EndorsementForm(FlaskForm):
+    organizations = db.table('organizations')
+    organization_choices = list()
+    for organization in organizations.all():
+        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+    organization_choices.sort(key=lambda k: k[1].lower())
+
+    citation = StringField('Citation')
+    issued = NativeDateField('Endorsement date', validators=[validators.Optional()])
+    valid_from = NativeDateField('Endorsement period', validators=[validators.Optional()])
+    valid_to = NativeDateField('until', validators=[validators.Optional()])
+    locations = FieldList(FormField(LocationForm), 'Locations of this endorsement', min_entries=1)
+    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this endorsement', min_entries=1)
+    endorsed_schemes = FieldList(FormField(SchemeVersionForm), 'Endorsed schemes', min_entries=1)
+    originators = SelectMultipleField('Endorsing organizations', choices=organization_choices)
+
 @app.route('/edit/e<int:number>', methods=['GET', 'POST'])
 def edit_endorsement(number):
     endorsements = db.table('endorsements')
@@ -1606,14 +1739,16 @@ def edit_endorsement(number):
     id_scheme_list = [ 'DOI' ]
     if element:
         # Translate from internal data model to form data
-        form = EndorsementForm(request.form, element)
+        form = EndorsementForm(request.form, data=msc_to_form(element))
     else:
         form = EndorsementForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('document', 'document')]
     if request.method == 'POST' and form.validate():
         # Translate form data into internal data model
-        flash(clean_dict(form.data), 'success')
+        msc_data = form_to_msc(form.data)
+        number = endorsements.insert(msc_data)
+        flash('Successfully modified record.', 'success')
         return redirect(url_for('edit_endorsement', number=number))
     if form.errors:
         flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
