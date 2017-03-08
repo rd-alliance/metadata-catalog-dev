@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Edit Record msc:m{{ eid }}{% if version %}, version {{ version }}{% endif %}{% endblock %}
+{% block title %}{% if eid == 0 %}Add new metadata scheme{% else %}Edit record msc:m{{ eid }}{% endif %}{% if version %}, version {{ version }}{% endif %}{% endblock %}
 {% block main %}
   <form action="{{ url_for('edit_scheme', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
     {% if version %}
@@ -101,6 +101,7 @@
           <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" size="37" class="form-control">
           <label for="location-type{{ loop.index }}" class="control-label">Type</label>
           <select id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" class="form-control" style="width:auto;">
+            <option value=""></option>
             {% for type in locationTypes %}
             <option
               {%- if location['type'] == type %} selected
@@ -113,7 +114,12 @@
           <label for="location-url" class="control-label">URL</label>
           <input id="location-url" name="location-url" placeholder="URL e.g. https://www..." size="37" class="form-control">
           <label for="location-type" class="control-label">Type</label>
-          <input id="location-type" name="location-type" list="location-types" size="10" class="form-control" style="width:auto;">
+          <select id="location-type" name="location-type" class="form-control" style="width:auto;">
+            <option value=""></option>
+            {% for type in locationTypes %}
+            <option>{{ type }}</option>
+            {% endfor %}
+          </select>
         </li>
       </ol>
       <ul class="help-block">
