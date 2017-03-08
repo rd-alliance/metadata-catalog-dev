@@ -18,6 +18,11 @@ from flask import Flask, request, url_for, render_template, flash, redirect, jso
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
 from flask.ext.openid import OpenID
 
+# See https://flask-wtf.readthedocs.io/en/stable/quickstart.html
+# Install from PyPi: sudo -H pip3 install Flask-WTF
+from flask_wtf import FlaskForm
+from wtforms import validators, widgets, Form, FormField, FieldList, StringField, DateField, SelectField, SelectMultipleField, ValidationError
+
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query, where
@@ -320,6 +325,36 @@ def isValidURL(url):
         if result.scheme and result.netloc:
             return True
     return False
+
+def EmailOrURL(form, field):
+    """Raise error if URL/email address is not well-formed."""
+    result = urllib.parse.urlparse(field.data)
+    if result.scheme == 'mailto':
+        if not re.match(r'[^@\s]+@[^@\s\.]+\.[^@\s]+', result.path):
+            raise ValidationError('That email address does not look quite right.')
+    else:
+        if not result.scheme:
+            raise ValidationError('Please provide the protocol (e.g. "http://", "mailto:").')
+        if not result.netloc:
+            return ValidationError('That URL does not look quite right.')
+
+class RequiredIf(validators.Optional):
+    """A validator which makes a field required if another field is set and has
+    a truthy value, and optional otherwise.
+    """
+
+    def __init__(self, other_field_name, *args, **kwargs):
+        self.other_field_name = other_field_name
+        super(RequiredIf, self).__init__(*args, **kwargs)
+
+    def __call__(self, form, field):
+        other_field = form._fields.get(self.other_field_name)
+        if other_field is None:
+            raise Exception('No field named "{}" in form'.format(self.other_field_name))
+        if bool(other_field.data):
+            validators.Required.__call__(self, form, field)
+        else:
+            super(RequiredIf, self).__call__(form, field)
 
 w3cdate = re.compile(r'^\d{4}(-\d{2}){0,2}$')
 def isValidDate(date):
@@ -1492,6 +1527,98 @@ def edit_organization(number):
         return render_template('edit-organization.html', record=record, eid=number,\
             organizationTypes=organization_type_list, locationTypes=location_type_list,\
             idSchemes=id_scheme_list)
+
+class NativeDateField(DateField):
+    widget = widgets.Input(input_type='date')
+
+class LocationForm(Form):
+    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+    type = SelectField('Type', validators=[RequiredIf('url')])
+
+class IdentifierForm(Form):
+    id = StringField('ID')
+    scheme = StringField('ID scheme')
+
+class SchemeVersionForm(Form):
+    schemes = db.table('metadata-schemes')
+    scheme_choices = [('', '')]
+    for scheme in schemes.all():
+        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+    scheme_choices.sort(key=lambda k: k[1].lower())
+
+    id = SelectField('Metadata scheme', choices=scheme_choices)
+    version = StringField('Version')
+
+class EndorsementForm(FlaskForm):
+    organizations = db.table('organizations')
+    organization_choices = list()
+    for organization in organizations.all():
+        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+    organization_choices.sort(key=lambda k: k[1].lower())
+
+    citation = StringField('Citation')
+    issued = NativeDateField('Endorsement date', validators=[validators.Optional()])
+    valid_from = NativeDateField('Endorsement period', validators=[validators.Optional()])
+    valid_to = NativeDateField('until', validators=[validators.Optional()])
+    locations = FieldList(FormField(LocationForm), 'Locations of this endorsement', min_entries=1)
+    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this endorsement', min_entries=1)
+    endorsed_schemes = FieldList(FormField(SchemeVersionForm), 'Endorsed schemes', min_entries=1)
+    originators = SelectMultipleField('Endorsing organizations', choices=organization_choices)
+
+def clean_dict(data):
+    """Takes dictionary and recursively removes fields where the value is (a)
+    an empty string, (b) an empty list, (c) a dictionary wherein all the values
+    are empty, (d) null.
+    """
+    for key, value in data.copy().items():
+        if isinstance(value, dict):
+            new_value = clean_dict(value)
+            if len(new_value) == 0:
+                del data[key]
+            else:
+                data[key] = new_value
+        elif isinstance(value, list):
+            if len(value) == 0:
+                del data[key]
+            else:
+                isWorthKeeping = False
+                for item in value:
+                    if isinstance(item, dict):
+                        new_item = clean_dict(item)
+                        if len(new_item) > 0:
+                            isWorthKeeping = True
+                    elif item:
+                        isWorthKeeping = True
+                if not isWorthKeeping:
+                    del data[key]
+        elif value is '':
+            del data[key]
+        elif value is None:
+            del data[key]
+        elif key is 'csrf_token':
+            del data[key]
+    return data
+
+@app.route('/edit/e<int:number>', methods=['GET', 'POST'])
+def edit_endorsement(number):
+    endorsements = db.table('endorsements')
+    element = endorsements.get(eid=number)
+    id_scheme_list = [ 'DOI' ]
+    if element:
+        # Translate from internal data model to form data
+        form = EndorsementForm(request.form, element)
+    else:
+        form = EndorsementForm(request.form)
+    for f in form.locations:
+        f['type'].choices = [('', ''), ('document', 'document')]
+    if request.method == 'POST' and form.validate():
+        # Translate form data into internal data model
+        flash(clean_dict(form.data), 'success')
+        return redirect(url_for('edit_endorsement', number=number))
+    if form.errors:
+        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
+    return render_template('edit-endorsement.html', form=form, eid=number,\
+        idSchemes=id_scheme_list)
 
 ### Executing
 
