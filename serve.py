@@ -1630,6 +1630,9 @@ def msc_to_form(msc_data):
         else:
             form_data[k] = v
     # Ensure there is a blank entry at the end of the following lists
+    for l in ['types']:
+        if l in form_data:
+            form_data[l].append('')
     if 'locations' in form_data:
         form_data['locations'].append({'url': '', 'type': '' })
     if 'identifiers' in form_data:
@@ -1677,6 +1680,8 @@ def form_to_msc(form_data):
                         has_vn_valid_from = True
                     elif key == 'valid_to':
                         has_vn_valid_to = True
+                    elif key == 'number_old':
+                        continue
                     else:
                         mapped_version[key] = value
                 if has_vn_valid_from:
@@ -1700,6 +1705,8 @@ computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
 programming_languages = [ 'C', 'Java', 'PHP', 'JavaScript', 'C++', 'Python',
     'Shell', 'Ruby', 'Objective-C', 'C#' ]
 programming_languages.sort()
+
+id_scheme_list = [ 'DOI' ]
 
 # Common form snippets
 
@@ -1746,6 +1753,119 @@ class CreatorForm(Form):
     givenName = StringField('Given name(s)')
     familyName = StringField('Family name')
 
+# Editing tools
+
+class ToolForm(FlaskForm):
+    schemes = db.table('metadata-schemes')
+    scheme_choices = list()
+    for scheme in schemes.all():
+        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+    scheme_choices.sort(key=lambda k: k[1].lower())
+    organizations = db.table('organizations')
+    organization_choices = list()
+    for organization in organizations.all():
+        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+    organization_choices.sort(key=lambda k: k[1].lower())
+
+    title = StringField('Name of tool')
+    description = TextAreaField('Description')
+    supported_schemes = SelectMultipleField('Input metadata scheme(s)', choices=scheme_choices)
+    # Regex for types allowed for mappings
+    allowed_types = r'(terminal \([^)]+\)|graphical \([^)]+\)|web service|web application|^$)'
+    type_help = 'Must be one of "terminal (<platform>)", "graphical (<platform>)", "web service", "web application".'
+    types = FieldList(StringField('Type', validators=[\
+        validators.Regexp(allowed_types, message=type_help)]), 'Type of tool', min_entries=1)
+    creators = FieldList(FormField(CreatorForm), 'People responsible for this tool', min_entries=1)
+    maintainers = SelectMultipleField('Organizations that maintain this tool', choices=organization_choices)
+    funders = SelectMultipleField('Organizations that funded this tool', choices=organization_choices)
+    locations = FieldList(FormField(LocationForm), 'Links to this tool', min_entries=1)
+    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this tool', min_entries=1)
+    versions = FieldList(FormField(VersionForm), 'Version history', min_entries=1)
+
+@app.route('/edit/t<int:number>', methods=['GET', 'POST'])
+def edit_tool(number):
+    tools = db.table('tools')
+    element = tools.get(eid=number)
+    version = request.values.get('version')
+    if version and request.referrer == request.base_url:
+        # This is the version screen, opened from the main screen
+        flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
+    type_list = ['web application', 'web service']
+    for platform in computing_platforms:
+        type_list.append('terminal ({})'.format(platform))
+        type_list.append('graphical ({})'.format(platform))
+    if element:
+        # Translate from internal data model to form data
+        if version:
+            for release in element['versions']:
+                if 'number' in release and str(release['number']) == str(version):
+                    form = ToolForm(request.form, data=msc_to_form(release))
+                    break
+            else:
+                form = ToolForm(request.form)
+            del form['versions']
+        else:
+            form = ToolForm(request.form, data=msc_to_form(element))
+            for f in form.versions:
+                if f.number.data:
+                    f.number_old.data = f.number.data
+    else:
+        form = ToolForm(request.form)
+    for f in form.locations:
+        f['type'].choices = [('', ''), ('document', 'document'), ('website', 'website'),\
+            ('application', 'application'), ('service', 'service endpoint')]
+        f['type'].validators = [validators.Optional()]
+    if request.method == 'POST' and form.validate():
+        # TODO: apply logging and version control
+        # Translate form data into internal data model
+        msc_data = form_to_msc(form.data)
+        if version:
+            # Editing the version-specific overrides
+            if element and 'versions' in element:
+                version_list = element['versions']
+                for index, item in enumerate(version_list):
+                    if str(item['number']) == str(version):
+                        version_dict = {k: v for k, v in item.items()\
+                            if k in ['number', 'available', 'issued', 'valid']}
+                        version_dict.update(msc_data)
+                        version_list[index] = version_dict
+                        Tool = Query()
+                        Version = Query()
+                        tools.update({'versions': version_list},\
+                            Tool.versions.any(Version.number == version),\
+                            eids=[number])
+                        flash('Successfully updated record for version {}.'.format(version), 'success')
+                        break
+                else:
+                    # This version is not in the list
+                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+            else:
+                # The version list or the main record is missing
+                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+            return redirect('{}?version={}'.format(url_for('edit_tool', number=number), version))
+        elif element:
+            # Editing an existing record
+            # Add special internal fields
+            if 'slug' in element:
+                msc_data['slug'] = element['slug']
+            elif 'title' in msc_data:
+                msc_data['slug'] = toFileSlug(msc_data['title'])
+            for key in element:
+                tools.update(delete(key), eids=[number])
+            tools.update(msc_data, eids=[number])
+            flash('Successfully updated record.', 'success')
+        else:
+            # Adding a new record
+            if 'title' in msc_data:
+                msc_data['slug'] = toFileSlug(msc_data['title'])
+            number = tools.insert(msc_data)
+            flash('Successfully added record.', 'success')
+        return redirect(url_for('edit_tool', number=number))
+    if form.errors:
+        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
+    return render_template('edit-tool.html', form=form, eid=number,\
+        version=version, idSchemes=id_scheme_list, toolTypes=type_list)
+
 # Editing mappings
 
 class MappingForm(FlaskForm):
@@ -1778,7 +1898,6 @@ def edit_mapping(number):
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
         flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
-    id_scheme_list = [ 'DOI' ]
     location_type_list = ['document']
     for language in programming_languages:
         location_type_list.append('library ({})'.format(language))
@@ -1874,7 +1993,6 @@ class EndorsementForm(FlaskForm):
 def edit_endorsement(number):
     endorsements = db.table('endorsements')
     element = endorsements.get(eid=number)
-    id_scheme_list = [ 'DOI' ]
     if element:
         # Translate from internal data model to form data
         form = EndorsementForm(request.form, data=msc_to_form(element))

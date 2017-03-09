@@ -105,6 +105,10 @@ ol.form-list li + li {
 	padding-top: 24px;
 }
 
+fieldset {
+  margin-bottom: 24px;
+}
+
 /* Special formatting for the footer */
 
 aside {

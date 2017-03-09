@@ -1,39 +1,48 @@
 {% extends "base.html" %}
 {% from "macros-forms.html" import state, errors %}
-{% block title %}{% if eid == 0 %}Add new mapping{% else %}Edit mapping msc:c{{ eid }}{% endif %}{% if version %}, version {{ version }}{% endif %}{% endblock %}
+{% block title %}{% if eid == 0 %}Add new tool{% else %}Edit tool msc:t{{ eid }}{% endif %}{% if version %}, version {{ version }}{% endif %}{% endblock %}
 {% block main %}
-  <form action="{{ url_for('edit_mapping', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
+  <form action="{{ url_for('edit_tool', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
     {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.title.label(class="control-label") }}
+      {{ form.title(class="form-control") }}
+    </div>
     <div class="form-group">
       {{ form.description.label(class="control-label") }}
       {{ form.description(class="form-control") }}
       <ul class="help-block">
-        <li>This could indicate if the mapping has been tailored to the outputs
-          or inputs of specific repositories or services.</li>
-        <li>This could indicate if certain parts of the input or output schemes
-          have been ignored.</li>
-        <li>This could indicate if specific conventions in the input scheme are
-          preferred (or necessary).</li>
-        <li>This could recommend steps to be taken before or after applying the
-          mapping in order to improve results.</li>
+        <li>Please provide s short description of the intended use of the tool,
+          and its capabilities.</li>
       </ul>
     </div>
     <div class="form-group">
-      {{ form.input_schemes.label(class="control-label") }}
-      {{ form.input_schemes(class="form-control") }}
+      {{ form.supported_schemes.label(class="control-label") }}
+      {{ form.supported_schemes(class="form-control") }}
       <ul class="help-block">
-        <li>Indicate to what scheme (or schemes) the input into the mapping
-          should conform.</li>
+        <li>Select a scheme if the tool accepts metadata conforming to it as
+          an input, or emits metadata conforming to it as an output.</li>
       </ul>
     </div>
+    <fieldset>
+    <legend>{{ form.types.label.text }}</legend>
+    <datalist id="tool-types">
+      {% for toolType in toolTypes %}
+      <option>{{ toolType }}</option>
+      {% endfor %}
+    </datalist>
     <div class="form-group">
-      {{ form.output_schemes.label(class="control-label") }}
-      {{ form.output_schemes(class="form-control") }}
-      <ul class="help-block">
-        <li>Indicate to what scheme (or schemes) the outputs from the mapping
-          conform.</li>
-      </ul>
+      <ol class="form-list">
+      {% for f in form.types %}
+        <li class="{{ state(f) }}">
+          {{ f.label(class="control-label") }}
+          {{ f(list="tool-types", class="form-control") }}
+          {{ errors(f) }}
+        </li>
+      {% endfor %}
+      </ol>
     </div>
+    </fieldset>
     <fieldset>
     <legend>{{ form.creators.label.text }}</legend>
     <div class="form-group">
@@ -67,11 +76,6 @@
     </div>
     <fieldset>
     <legend>{{ form.locations.label.text }}</legend>
-    <datalist id="location-types">
-      {% for locationType in locationTypes %}
-      <option>{{ locationType }}</option>
-      {% endfor %}
-    </datalist>
     <div class="form-group">
       <ol class="form-list">
       {% for f in form.locations %}
@@ -83,7 +87,7 @@
           </div>
           <div class="{{ state(f['type']) }}">
           {{ f['type'].label(class="control-label") }}
-          {{ f['type'](list="location-types", class="form-control", style="width:auto;") }}
+          {{ f['type'](class="form-control", style="width:auto;") }}
           {{ errors(f['type']) }}
           </div>
         </li>
@@ -126,7 +130,7 @@
               {{ f.number(class="form-control", style="width:auto;") }}
               {% if f.number_old.data %}
               {{ f.number_old() }}
-              <a href="{{ url_for('edit_mapping', number=eid) }}?version={{ f.number_old.data }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
+              <a href="{{ url_for('edit_tool', number=eid) }}?version={{ f.number_old.data }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
               {% endif %}
             </div></div>
             {{ errors(f.number) }}
