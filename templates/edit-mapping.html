@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% from "macros-forms.html" import state, errors %}
+{% block title %}{% if eid == 0 %}Add new mapping{% else %}Edit record msc:c{{ eid }}{% endif %}{% endblock %}
+{% block main %}
+  <form action="{{ url_for('edit_mapping', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.description.label(class="control-label") }}
+      {{ form.description(class="form-control") }}
+      <ul class="help-block">
+        <li>This could indicate if the mapping has been tailored to the outputs
+          or inputs of specific repositories or services.</li>
+        <li>This could indicate if certain parts of the input or output schemes
+          have been ignored.</li>
+        <li>This could indicate if specific conventions in the input scheme are
+          preferred (or necessary).</li>
+        <li>This could recommend steps to be taken before or after applying the
+          mapping in order to improve results.</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      {{ form.input_schemes.label(class="control-label") }}
+      {{ form.input_schemes(class="form-control") }}
+      <ul class="help-block">
+        <li>Indicate to what scheme (or schemes) the input into the mapping
+          should conform.</li>
+      </ul>
+    </div>
+    <div class="form-group">
+      {{ form.output_schemes.label(class="control-label") }}
+      {{ form.output_schemes(class="form-control") }}
+      <ul class="help-block">
+        <li>Indicate to what scheme (or schemes) the outputs from the mapping
+          conform.</li>
+      </ul>
+    </div>
+    <fieldset>
+    <legend>{{ form.creators.label.text }}</legend>
+    <div class="form-group">
+      <ol class="form-list">
+      {% for f in form.creators %}
+        <li>
+          {{ f.givenName.label(class="control-label") }}
+          {{ f.givenName(class="form-control") }}
+          {{ f.familyName.label(class="control-label") }}
+          {{ f.familyName(class="form-control") }}
+          {{ f.fullName.label(class="control-label") }}
+          {{ f.fullName(class="form-control") }}
+        </li>
+      {% endfor %}
+      </ol>
+    </div>
+    </fieldset>
+    <div class="form-group">
+      {{ form.maintainers.label(class="control-label") }}
+      {{ form.maintainers(class="form-control", style="width:auto;") }}
+    </div>
+    <div class="form-group">
+      {{ form.funders.label(class="control-label") }}
+      {{ form.funders(class="form-control", style="width:auto;") }}
+    </div>
+    <fieldset>
+    <legend>{{ form.locations.label.text }}</legend>
+    <datalist id="location-types">
+      {% for locationType in locationTypes %}
+      <option>{{ locationType }}</option>
+      {% endfor %}
+    </datalist>
+    <div class="form-group">
+      <ol class="form-list">
+      {% for f in form.locations %}
+        <li>
+          <div class="{{ state(f.url) }}">
+          {{ f.url.label(class="control-label") }}
+          {{ f.url(placeholder="URL e.g. https://www...", class="form-control") }}
+          {{ errors(f.url) }}
+          </div>
+          <div class="{{ state(f['type']) }}">
+          {{ f['type'].label(class="control-label") }}
+          {{ f['type'](list="location-types", class="form-control", style="width:auto;") }}
+          {{ errors(f['type']) }}
+          </div>
+        </li>
+      {% endfor %}
+      </ol>
+    </div>
+    </fieldset>
+    <fieldset>
+    <legend>{{ form.identifiers.label.text }}</legend>
+    <datalist id="id-schemes">
+      {% for idScheme in idSchemes %}
+      <option>{{ idScheme }}</option>
+      {% endfor %}
+    </datalist>
+    <div class="form-group">
+      <ol class="form-list">
+      {% for f in form.identifiers %}
+        <li>
+        {{ f['id'].label(class="control-label") }}
+        {{ f['id'](placeholder="e.g. 10.001/1234", class="form-control") }}
+        {{ f.scheme.label(class="control-label") }}
+        {{ f.scheme(class="form-control", list="id-schemes", style="width:auto;") }}
+        </li>
+      {% endfor %}
+      </ol>
+    </div>
+    </fieldset>
+    <fieldset>
+    <legend>{{ form.versions.label.text }}</legend>
+    <div class="form-group">
+      <ol class="form-list">
+      {% for f in form.versions %}
+        <li>
+          <div class="form-group{{ state(f.number) }}">
+            {{ f.number.label(class="control-label") }}
+            <div class="form-inline"><div class="form-group">
+              {{ f.number(class="form-control", style="width:auto;") }}
+              {% if f.number_old.data %}
+              {{ f.number_old() }}
+              <a href="{{ url_for('edit_mapping', number=eid) }}?version={{ f.number_old.data }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
+              {% endif %}
+            </div></div>
+            {{ errors(f.number) }}
+            <ul class="help-block">
+              <li>Do not preface the version number with "version" or "v".</li>
+            </ul>
+            {{ f.issued.label(class="control-label") }}
+            {{ f.issued(class="form-control", style="width:auto;") }}
+            {{ errors(f.issued) }}
+          </div>
+        </li>
+      {% endfor %}
+      </ol>
+    </div>
+    </fieldset>
+    <div class="form-group">
+      <button class="btn btn-primary">Save changes</button>
+      <a href="{{ url_for('hello') }}" class="btn btn-default">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

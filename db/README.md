@@ -459,7 +459,7 @@ identifiers:
     scheme: RDA-MSCWG
 versions:
   - number: 1.0
-    date: 2016-09-15
+    issued: 2016-09-15
 creators:
   - fullName: Jane Doe
     givenName: Jane
@@ -515,7 +515,7 @@ version:
   * **number**  
     The number, code or other string used to identify the version.
 
-  * **date**  
+  * **issued**  
     The date on which the version was published.
 
   * Other elements as required.

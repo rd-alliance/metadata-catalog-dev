@@ -21,7 +21,7 @@ from flask.ext.openid import OpenID
 # See https://flask-wtf.readthedocs.io/en/stable/quickstart.html
 # Install from PyPi: sudo -H pip3 install Flask-WTF
 from flask_wtf import FlaskForm
-from wtforms import validators, widgets, Form, FormField, FieldList, StringField, DateField, SelectField, SelectMultipleField, ValidationError
+from wtforms import validators, widgets, Form, FormField, FieldList, StringField, TextAreaField, SelectField, SelectMultipleField, HiddenField, ValidationError
 from wtforms.compat import string_types
 
 # See http://tinydb.readthedocs.io/
@@ -1633,10 +1633,15 @@ def msc_to_form(msc_data):
                 form_data[k].append(mapped_version)
         else:
             form_data[k] = v
+    # Ensure there is a blank entry at the end of the following lists
     if 'locations' in form_data:
         form_data['locations'].append({'url': '', 'type': '' })
     if 'identifiers' in form_data:
         form_data['identifiers'].append({'id': '', 'scheme': '' })
+    if 'versions' in form_data:
+        form_data['versions'].append({'number': '', 'issued': ''})
+    if 'creators' in form_data:
+        form_data['creators'].append({'fullName': '', 'givenName': '', 'familyName': ''})
     if 'endorsed_schemes' in form_data:
         form_data['endorsed_schemes'].append({'id': '', 'version': '' })
     return form_data
@@ -1693,6 +1698,13 @@ def form_to_msc(form_data):
                 msc_data['valid'] = clean_data['valid_from']
     return msc_data
 
+computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
+
+# Top 10 languages according to http://www.langpop.com/ in 2013
+programming_languages = [ 'C', 'Java', 'PHP', 'JavaScript', 'C++', 'Python',
+    'Shell', 'Ruby', 'Objective-C', 'C#' ]
+programming_languages.sort()
+
 # Common form snippets
 
 class NativeDateField(StringField):
@@ -1703,9 +1715,25 @@ class LocationForm(Form):
     url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
     type = SelectField('Type', validators=[RequiredIf('url')])
 
+class FreeLocationForm(Form):
+    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+    # Regex for location types allowed for mappings
+    allowed_locations = r'(document|library \([^)]+\)|executable \([^)]+\))'
+    type_help = 'Must be one of "document", "library (<language>)", "executable (<platform>)".'
+    type = StringField('Type', validators=[RequiredIf('url'),\
+        validators.Regexp(allowed_locations, message=type_help)])
+
 class IdentifierForm(Form):
     id = StringField('ID')
     scheme = StringField('ID scheme')
+
+class VersionForm(Form):
+    number = StringField('Version number', validators=[RequiredIf('issued'), RequiredIf('available'), RequiredIf('valid_from'), validators.Length(max=20)])
+    number_old = HiddenField(validators=[validators.Length(max=20)])
+    issued = NativeDateField('Date published')
+    available = NativeDateField('Date released as draft/proposal')
+    valid_from = NativeDateField('Date considered current')
+    valid_to = NativeDateField('until')
 
 class SchemeVersionForm(Form):
     schemes = db.table('metadata-schemes')
@@ -1716,6 +1744,78 @@ class SchemeVersionForm(Form):
 
     id = SelectField('Metadata scheme', choices=scheme_choices)
     version = StringField('Version')
+
+class CreatorForm(Form):
+    fullName = StringField('Full name')
+    givenName = StringField('Given name(s)')
+    familyName = StringField('Family name')
+
+# Editing mappings
+
+class MappingForm(FlaskForm):
+    schemes = db.table('metadata-schemes')
+    scheme_choices = list()
+    for scheme in schemes.all():
+        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+    scheme_choices.sort(key=lambda k: k[1].lower())
+    organizations = db.table('organizations')
+    organization_choices = list()
+    for organization in organizations.all():
+        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+    organization_choices.sort(key=lambda k: k[1].lower())
+
+    description = TextAreaField('Description')
+    input_schemes = SelectMultipleField('Input metadata scheme(s)', choices=scheme_choices)
+    output_schemes = SelectMultipleField('Output metadata scheme(s)', choices=scheme_choices)
+    creators = FieldList(FormField(CreatorForm), 'People responsible for this mapping', min_entries=1)
+    maintainers = SelectMultipleField('Organizations that maintain this mapping', choices=organization_choices)
+    funders = SelectMultipleField('Organizations that funded this mapping', choices=organization_choices)
+    locations = FieldList(FormField(FreeLocationForm), 'Links to this mapping', min_entries=1)
+    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this mapping', min_entries=1)
+    versions = FieldList(FormField(VersionForm), 'Version history', min_entries=1)
+
+@app.route('/edit/c<int:number>', methods=['GET', 'POST'])
+def edit_mapping(number):
+    mappings = db.table('mappings')
+    element = mappings.get(eid=number)
+    id_scheme_list = [ 'DOI' ]
+    location_type_list = ['document']
+    for language in programming_languages:
+        location_type_list.append('library ({})'.format(language))
+    for platform in computing_platforms:
+        location_type_list.append('executable ({})'.format(platform))
+    if element:
+        # Translate from internal data model to form data
+        form = MappingForm(request.form, data=msc_to_form(element))
+        for f in form.versions:
+            if f.number.data:
+                f.number_old.data = f.number.data
+    else:
+        form = MappingForm(request.form)
+    if request.method == 'POST' and form.validate():
+        # Translate form data into internal data model
+        msc_data = form_to_msc(form.data)
+        # Add special internal fields
+        if element and 'slug' in element:
+            msc_data['slug'] = element['slug']
+        elif 'citation' in msc_data:
+            msc_data['slug'] = toFileSlug(msc_data['citation'])
+        # TODO: apply logging and version control
+        if element:
+            # Existing record
+            for key in element.copy():
+                mappings.update(delete(key), eids=[number])
+            mappings.update(msc_data, eids=[number])
+            flash('Successfully updated record.', 'success')
+        else:
+            # New record
+            number = mappings.insert(msc_data)
+            flash('Successfully added record.', 'success')
+        return redirect(url_for('edit_mapping', number=number))
+    if form.errors:
+        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
+    return render_template('edit-mapping.html', form=form, eid=number,\
+        idSchemes=id_scheme_list, locationTypes=location_type_list)
 
 # Editing endorsements
 
