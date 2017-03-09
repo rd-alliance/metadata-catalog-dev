@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "macros-forms.html" import state, errors %}
-{% block title %}{% if eid == 0 %}Add new mapping{% else %}Edit record msc:c{{ eid }}{% endif %}{% endblock %}
+{% block title %}{% if eid == 0 %}Add new mapping{% else %}Edit record msc:c{{ eid }}{% endif %}{% if version %}, version {{ version }}{% endif %}{% endblock %}
 {% block main %}
   <form action="{{ url_for('edit_mapping', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
     {{ form.hidden_tag() }}
@@ -105,6 +105,9 @@
       </ol>
     </div>
     </fieldset>
+    {% if version %}
+    <input type="hidden" name="version" value="{{ version }}">
+    {% else %}
     <fieldset>
     <legend>{{ form.versions.label.text }}</legend>
     <div class="form-group">
@@ -133,6 +136,7 @@
       </ol>
     </div>
     </fieldset>
+    {% endif %}
     <div class="form-group">
       <button class="btn btn-primary">Save changes</button>
       <a href="{{ url_for('hello') }}" class="btn btn-default">Cancel</a>

@@ -1394,28 +1394,24 @@ def edit_scheme(number):
             if element and 'versions' in element:
                 version_list = element['versions']
                 for index, item in enumerate(version_list):
-                    failed = True
                     if str(item['number']) == str(version):
                         version_dict = {k: v for k, v in item.items()\
                             if k in ['number', 'available', 'issued', 'valid']}
                         version_dict.update(record)
                         version_list[index] = version_dict
-                        failed = False
+                        Scheme = Query()
+                        Version = Query()
+                        schemes.update({'versions': version_list},\
+                            Scheme.versions.any(Version.number == version),\
+                            eids=[number])
+                        flash('Successfully updated record for version {}.'.format(version), 'success')
                         break
-                    if failed:
-                        flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version))
-                Scheme = Query()
-                Version = Query()
-                schemes.update({'versions': version_list},\
-                    Scheme.versions.any(Version.number == version),\
-                    eids=[number])
+                else:
+                    # This version does not yet exist in the standard
+                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
             else:
-                # The user is creating a version for an unknown standard.
-                # This should NEVER HAPPEN, but just in case...
-                record['number'] = str(version)
-                version_list = [ record ]
-                number = schemes.insert({'versions': version_list})
-            flash('Successfully updated record for version {}.'.format(version), 'success')
+                # This version does not yet exist in the standard, or the standard is unknown
+                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
             return redirect('{}?version={}'.format(url_for('edit_scheme', number=number), version))
         else:
             if element:
@@ -1778,6 +1774,10 @@ class MappingForm(FlaskForm):
 def edit_mapping(number):
     mappings = db.table('mappings')
     element = mappings.get(eid=number)
+    version = request.values.get('version')
+    if version and request.referrer == request.base_url:
+        # This is the version screen, opened from the main screen
+        flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
     id_scheme_list = [ 'DOI' ]
     location_type_list = ['document']
     for language in programming_languages:
@@ -1786,36 +1786,71 @@ def edit_mapping(number):
         location_type_list.append('executable ({})'.format(platform))
     if element:
         # Translate from internal data model to form data
-        form = MappingForm(request.form, data=msc_to_form(element))
-        for f in form.versions:
-            if f.number.data:
-                f.number_old.data = f.number.data
+        if version:
+            for release in element['versions']:
+                if 'number' in release and str(release['number']) == str(version):
+                    form = MappingForm(request.form, data=msc_to_form(release))
+                    break
+            else:
+                form = MappingForm(request.form)
+            del form['versions']
+        else:
+            form = MappingForm(request.form, data=msc_to_form(element))
+            for f in form.versions:
+                if f.number.data:
+                    f.number_old.data = f.number.data
     else:
         form = MappingForm(request.form)
     if request.method == 'POST' and form.validate():
+        # TODO: apply logging and version control
         # Translate form data into internal data model
         msc_data = form_to_msc(form.data)
-        # Add special internal fields
-        if element and 'slug' in element:
-            msc_data['slug'] = element['slug']
-        elif 'citation' in msc_data:
-            msc_data['slug'] = toFileSlug(msc_data['citation'])
-        # TODO: apply logging and version control
-        if element:
-            # Existing record
-            for key in element.copy():
+        if version:
+            # Editing the version-specific overrides
+            if element and 'versions' in element:
+                version_list = element['versions']
+                for index, item in enumerate(version_list):
+                    if str(item['number']) == str(version):
+                        version_dict = {k: v for k, v in item.items()\
+                            if k in ['number', 'available', 'issued', 'valid']}
+                        version_dict.update(msc_data)
+                        version_list[index] = version_dict
+                        Mapping = Query()
+                        Version = Query()
+                        mappings.update({'versions': version_list},\
+                            Mapping.versions.any(Version.number == version),\
+                            eids=[number])
+                        flash('Successfully updated record for version {}.'.format(version), 'success')
+                        break
+                else:
+                    # This version is not in the list
+                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+            else:
+                # The version list or the main record is missing
+                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+            return redirect('{}?version={}'.format(url_for('edit_mapping', number=number), version))
+        elif element:
+            # Editing an existing record
+            # Add special internal fields
+            if 'slug' in element:
+                msc_data['slug'] = element['slug']
+            elif 'citation' in msc_data:
+                msc_data['slug'] = toFileSlug(msc_data['citation'])
+            for key in element:
                 mappings.update(delete(key), eids=[number])
             mappings.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
-            # New record
+            # Adding a new record
+            if 'citation' in msc_data:
+                msc_data['slug'] = toFileSlug(msc_data['citation'])
             number = mappings.insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_mapping', number=number))
     if form.errors:
         flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
     return render_template('edit-mapping.html', form=form, eid=number,\
-        idSchemes=id_scheme_list, locationTypes=location_type_list)
+        version=version, idSchemes=id_scheme_list, locationTypes=location_type_list)
 
 # Editing endorsements
 
@@ -1862,7 +1897,7 @@ def edit_endorsement(number):
         # TODO: apply logging and version control
         if element:
             # Existing record
-            for key in element.copy():
+            for key in element:
                 endorsements.update(delete(key), eids=[number])
             endorsements.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
