@@ -379,7 +379,7 @@ def isValidDate(date):
 
 def W3CDate(form, field):
     """Test whether a string is a valid W3C-formatted date."""
-    if w3cdate.search(field) is None:
+    if w3cdate.search(field.data) is None:
         raise ValidationError('Please provide the date in yyyy-mm-dd format.')
 
 ### Functions made available to templates
@@ -1532,10 +1532,11 @@ def edit_organization(number):
             for key in element.copy():
                 organizations.update(delete(key), eids=[number])
             organizations.update(record, eids=[number])
+            flash('Successfully updated record.', 'success')
         else:
             # New record
             number = organizations.insert(record)
-        flash('Successfully updated record.', 'success')
+            flash('Successfully added record.', 'success')
         return redirect(url_for('edit_organization', number=number))
     else:
         if element:
@@ -1565,15 +1566,17 @@ def clean_dict(data):
             if len(value) == 0:
                 del data[key]
             else:
-                isWorthKeeping = False
+                clean_list = list()
                 for item in value:
                     if isinstance(item, dict):
                         new_item = clean_dict(item)
                         if len(new_item) > 0:
-                            isWorthKeeping = True
+                            clean_list.append(new_item)
                     elif item:
-                        isWorthKeeping = True
-                if not isWorthKeeping:
+                        clean_list.append(item)
+                if len(clean_list) > 0:
+                    data[key] = clean_list
+                else:
                     del data[key]
         elif value is '':
             del data[key]
@@ -1680,7 +1683,7 @@ def form_to_msc(form_data):
                         mapped_version['valid'] = '{}/{}'.format(version['valid_from'], version['valid_to'])
                     else:
                         mapped_version['valid'] = version['valid_from']
-                form_data[k].append(mapped_version)
+                msc_data[k].append(mapped_version)
         else:
             msc_data[k] = v
         if has_tl_valid_from:
@@ -1694,7 +1697,7 @@ def form_to_msc(form_data):
 
 class NativeDateField(StringField):
     widget = widgets.Input(input_type='date')
-    validators = [W3CDate]
+    validators = [validators.Optional(), W3CDate]
 
 class LocationForm(Form):
     url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
@@ -1724,10 +1727,10 @@ class EndorsementForm(FlaskForm):
     organization_choices.sort(key=lambda k: k[1].lower())
 
     citation = StringField('Citation')
-    issued = NativeDateField('Endorsement date', validators=[validators.Optional()])
-    valid_from = NativeDateField('Endorsement period', validators=[validators.Optional()])
-    valid_to = NativeDateField('until', validators=[validators.Optional()])
-    locations = FieldList(FormField(LocationForm), 'Locations of this endorsement', min_entries=1)
+    issued = NativeDateField('Endorsement date')
+    valid_from = NativeDateField('Endorsement period')
+    valid_to = NativeDateField('until')
+    locations = FieldList(FormField(LocationForm), 'Links to this endorsement', min_entries=1)
     identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this endorsement', min_entries=1)
     endorsed_schemes = FieldList(FormField(SchemeVersionForm), 'Endorsed schemes', min_entries=1)
     originators = SelectMultipleField('Endorsing organizations', choices=organization_choices)
@@ -1744,11 +1747,29 @@ def edit_endorsement(number):
         form = EndorsementForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('document', 'document')]
+        f['type'].validators = [validators.Optional()]
     if request.method == 'POST' and form.validate():
+        for f in form.locations:
+            if f.url:
+                f['type'].data = 'document'
         # Translate form data into internal data model
         msc_data = form_to_msc(form.data)
-        number = endorsements.insert(msc_data)
-        flash('Successfully modified record.', 'success')
+        # Add special internal fields
+        if element and 'slug' in element:
+            msc_data['slug'] = element['slug']
+        elif 'citation' in msc_data:
+            msc_data['slug'] = toFileSlug(msc_data['citation'])
+        # TODO: apply logging and version control
+        if element:
+            # Existing record
+            for key in element.copy():
+                endorsements.update(delete(key), eids=[number])
+            endorsements.update(msc_data, eids=[number])
+            flash('Successfully updated record.', 'success')
+        else:
+            # New record
+            number = endorsements.insert(msc_data)
+            flash('Successfully added record.', 'success')
         return redirect(url_for('edit_endorsement', number=number))
     if form.errors:
         flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
