@@ -1597,6 +1597,15 @@ relations_msc_form = {\
 relations_form_msc = {v: k for k, v in relations_msc_form.items()}
 
 def msc_to_form(msc_data):
+    """Transforms data from MSC database into the data structure used by the
+    web forms.
+
+    Arguments:
+        msc_data (dict): Record from the MSC database.
+
+    Returns:
+        dict: Dictionary suitable for populating a web form.
+    """
     form_data = dict()
     for k, v in msc_data.items():
         if k == 'relatedEntities':
@@ -1626,6 +1635,8 @@ def msc_to_form(msc_data):
                         mapped_version['valid_to'] = valid_tuple[2]
                     else:
                         mapped_version[key] = value
+                    if key == 'number':
+                        mapped_version['number_old'] = value
                 form_data[k].append(mapped_version)
         else:
             form_data[k] = v
@@ -1645,7 +1656,18 @@ def msc_to_form(msc_data):
         form_data['endorsed_schemes'].append({'id': '', 'version': '' })
     return form_data
 
-def form_to_msc(form_data):
+def form_to_msc(form_data, element):
+    """Transforms data from web form into the MSC data model, supplemented by
+    data that the form does not supply.
+
+    Arguments:
+        form_data (dict): Data from the form.
+        element (dict or None): Existing record from the database that the
+            form_data is intended to update.
+
+    Returns:
+        dict: Dictionary suitable for inclusion in the database
+    """
     msc_data = dict()
     clean_data = clean_dict(form_data)
     has_tl_valid_from = False
@@ -1681,7 +1703,14 @@ def form_to_msc(form_data):
                     elif key == 'valid_to':
                         has_vn_valid_to = True
                     elif key == 'number_old':
-                        continue
+                        # Restore information from existing record
+                        if element and 'versions' in element:
+                            for release in element['versions']:
+                                if 'number' in release and str(release['number']) == str(value):
+                                    overrides = {k: v for k, v in release.items()\
+                                        if k not in ['number', 'available', 'issued', 'valid']}
+                                    mapped_version.update(overrides)
+                                    break
                     else:
                         mapped_version[key] = value
                 if has_vn_valid_from:
@@ -1697,7 +1726,78 @@ def form_to_msc(form_data):
                 msc_data['valid'] = '{}/{}'.format(clean_data['valid_from'], clean_data['valid_to'])
             else:
                 msc_data['valid'] = clean_data['valid_from']
+    # Restore other data that never appears in the form
+    for k in ['slug']:
+        if element and k in element:
+            msc_data[k] = element[k]
     return msc_data
+
+def fix_slug(record, series):
+    """If the given record does not have a slug value, attempts to generate one.
+
+    Arguments:
+        record (dict): Dictionary using MSC data model.
+        series (str): One of 'm', 'g', 't', 'c', 'e', referring to the type of
+            record.
+
+    Returns:
+        dict: Dictionary using MSC data model.
+    """
+    # Exit if slug already exists
+    if 'slug' in record:
+        return record
+    # Otherwise attempt to generate from existing data
+    tables = {\
+        'm': 'metadata-schemes',\
+        'g': 'organizations',\
+        't': 'tools',\
+        'c': 'mappings',\
+        'e': 'endorsements' }
+    slug = None
+    if series == 'm' or series == 't':
+        if 'title' in record:
+            slug = toFileSlug(record['title'])
+    elif series == 'g':
+        if 'name' in record:
+            slug = toFileSlug(record['title'])
+    elif series == 'e':
+        if 'citation' in record:
+            slug = toFileSlug(record['citation'])
+    elif series == 'c':
+        if 'relatedEntities' in record:
+            slug_from = ''
+            slug_to = ''
+            schemes = db.table(tables['m'])
+            for entity in record['relatedEntities']:
+                eid = entity['id'][5:]
+                if entity['role'] == 'input scheme':
+                    element = schemes.get(eid=eid)
+                    if 'slug' in element:
+                        slug_from = element['slug']
+                elif entity['role'] == 'output scheme':
+                    element = schemes.get(eid=eid)
+                    if 'slug' in element:
+                        slug_to = element['slug']
+            if slug_from and slug_to:
+                slug = '-'.join(slug_from.split('-')[:3])
+                slug += '_TO_'
+                slug += '-'.join(slug_to.split('-')[:3])
+    else:
+        raise Exception('Unrecognized record series "{}"; cannot fix slug.'.format(series))
+    # Exit if this didn't work
+    if not slug:
+        return record
+    # Ensure uniqueness then apply
+    table = db.table(tables[series])
+    i = ''
+    while len(table.search(Query().slug == (slug + str(i)))) > 0:
+        if i == '':
+            i = 1
+        else:
+            i += 1
+    else:
+        record['slug'] = slug
+    return record
 
 computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
 
@@ -1806,9 +1906,6 @@ def edit_tool(number):
             del form['versions']
         else:
             form = ToolForm(request.form, data=msc_to_form(element))
-            for f in form.versions:
-                if f.number.data:
-                    f.number_old.data = f.number.data
     else:
         form = ToolForm(request.form)
     for f in form.locations:
@@ -1818,7 +1915,7 @@ def edit_tool(number):
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
         # Translate form data into internal data model
-        msc_data = form_to_msc(form.data)
+        msc_data = form_to_msc(form.data, element)
         if version:
             # Editing the version-specific overrides
             if element and 'versions' in element:
@@ -1845,19 +1942,14 @@ def edit_tool(number):
             return redirect('{}?version={}'.format(url_for('edit_tool', number=number), version))
         elif element:
             # Editing an existing record
-            # Add special internal fields
-            if 'slug' in element:
-                msc_data['slug'] = element['slug']
-            elif 'title' in msc_data:
-                msc_data['slug'] = toFileSlug(msc_data['title'])
+            msc_data = fix_slug(msc_data, 't')
             for key in element:
                 tools.update(delete(key), eids=[number])
             tools.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # Adding a new record
-            if 'title' in msc_data:
-                msc_data['slug'] = toFileSlug(msc_data['title'])
+            msc_data = fix_slug(msc_data, 't')
             number = tools.insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_tool', number=number))
@@ -1915,15 +2007,12 @@ def edit_mapping(number):
             del form['versions']
         else:
             form = MappingForm(request.form, data=msc_to_form(element))
-            for f in form.versions:
-                if f.number.data:
-                    f.number_old.data = f.number.data
     else:
         form = MappingForm(request.form)
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
         # Translate form data into internal data model
-        msc_data = form_to_msc(form.data)
+        msc_data = form_to_msc(form.data, element)
         if version:
             # Editing the version-specific overrides
             if element and 'versions' in element:
@@ -1950,19 +2039,14 @@ def edit_mapping(number):
             return redirect('{}?version={}'.format(url_for('edit_mapping', number=number), version))
         elif element:
             # Editing an existing record
-            # Add special internal fields
-            if 'slug' in element:
-                msc_data['slug'] = element['slug']
-            elif 'citation' in msc_data:
-                msc_data['slug'] = toFileSlug(msc_data['citation'])
+            msc_data = fix_slug(msc_data, 'c')
             for key in element:
                 mappings.update(delete(key), eids=[number])
             mappings.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # Adding a new record
-            if 'citation' in msc_data:
-                msc_data['slug'] = toFileSlug(msc_data['citation'])
+            msc_data = fix_slug(msc_data, 'c')
             number = mappings.insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_mapping', number=number))
@@ -2006,12 +2090,8 @@ def edit_endorsement(number):
             if f.url:
                 f['type'].data = 'document'
         # Translate form data into internal data model
-        msc_data = form_to_msc(form.data)
-        # Add special internal fields
-        if element and 'slug' in element:
-            msc_data['slug'] = element['slug']
-        elif 'citation' in msc_data:
-            msc_data['slug'] = toFileSlug(msc_data['citation'])
+        msc_data = form_to_msc(form.data, element)
+        msc_data = fix_slug(msc_data, 'e')
         # TODO: apply logging and version control
         if element:
             # Existing record
