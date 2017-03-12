@@ -918,8 +918,11 @@ def search():
 
         if request.form['id'] != '':
             no_of_queries += 1
-            Identifier = Query()
-            id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
+            if request.form['id'][:5] == 'msc:m':
+                id_search = schemes.get(eid=int(request.form['id'][5:]))
+            else:
+                Identifier = Query()
+                id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
             no_of_hits = len(id_search)
             if no_of_hits > 0:
                 flash('Found {:N scheme/s} with identifier "{}". '.format(\
@@ -1092,8 +1095,11 @@ def scheme_query():
             results.extend(subject_search)
 
     if 'id' in request.form and request.form['id'] != '':
-        Identifier = Query()
-        id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
+        if request.form['id'][:5] == 'msc:m':
+            id_search = schemes.get(eid=int(request.form['id'][5:]))
+        else:
+            Identifier = Query()
+            id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
         no_of_hits = len(id_search)
         if no_of_hits > 0:
             results.extend(id_search)
