@@ -33,14 +33,18 @@ script_dir = os.path.dirname(sys.argv[0])
 default_folder = os.path.realpath(os.path.join(script_dir, 'db'))
 default_file = os.path.realpath(os.path.join(script_dir, 'db.json'))
 
-subfolders = ['endorsements', 'mappings', 'metadata-schemes', 'organizations', 'tools']
+subfolders = {'endorsements': 'e',
+    'mappings': 'c',
+    'metadata-schemes': 'm',
+    'organizations': 'g',
+    'tools': 't'}
 
 ## Command-line arguments
 
 parser = argparse.ArgumentParser(description='''
 Converts a collection of YAML files into TinyDB database or vice versa. The
 YAML files should be arranged in subfolders according to type, i.e. {}.'''.format(\
-    ', '.join(subfolders)))
+    ', '.join(subfolders.keys().sort())))
 parser.add_argument('-f', '--folder'\
     ,help='location of YAML data file collection (default: ./db/)'\
     ,action='store'\
@@ -99,11 +103,14 @@ def dbCompile(args):
             with open(os.path.join(folder_path, entry), 'r') as r:
                 record = yaml.safe_load(r)
             record['slug'] = os.path.splitext(entry)[0]
+            id_list = list()
             for identifier in record['identifiers']:
                 if identifier['scheme'] == 'RDA-MSCWG':
                     id_string = identifier['id']
                     id_number = id_string[5:]
-                    break
+                else:
+                    id_list.append(identifier)
+            record['identifiers'] = id_list
             db[folder][id_number] = record
 
         isCompiled = True
@@ -134,7 +141,7 @@ def dbDump(args):
         print('Do you wish to erase it, back it up, or keep it? [e(rase)/(b)ackup/K(eep)]')
         reply = input("> ")
         if reply[:1].lower() == 'e':
-            for folder in subfolders:
+            for folder in subfolders.keys().sort():
                 folder_path = os.path.join(args.folder, folder)
                 if not os.path.isdir(folder_path):
                     continue
@@ -155,7 +162,7 @@ def dbDump(args):
 
     db = TinyDB(args.file)
 
-    for folder in subfolders:
+    for folder, series in subfolders:
         folder_path = os.path.join(args.folder, folder)
         if not os.path.isdir(folder_path):
             os.makedirs(folder_path)
@@ -163,6 +170,11 @@ def dbDump(args):
         records = tbl.all()
         for record in records:
             slug = record['slug']
+            if 'identifiers' not in record:
+                record['identifiers'] = list()
+            record['identifiers'].insert(0,\
+                {'id': 'msc:{}{}'.format(series, record.eid),\
+                    'scheme': 'RDA-MSCWG'})
             dumped_record = os.path.join(folder_path, slug + '.yml')
             with open(dumped_record, 'w') as r:
                 yaml.safe_dump(dict(record), r, default_flow_style=False)

@@ -415,6 +415,10 @@ def scheme(number, field=None):
     element = schemes.get(eid=number)
 
     if request_wants_json():
+        if 'identifiers' not in element:
+            element['identifiers'] = list()
+        element['identifiers'].insert(0,\
+            {'id': 'msc:m{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
                 return jsonify({ field: element[field] })
@@ -590,6 +594,10 @@ def tool(number, field=None):
     element = tools.get(eid=number)
 
     if request_wants_json():
+        if 'identifiers' not in element:
+            element['identifiers'] = list()
+        element['identifiers'].insert(0,\
+            {'id': 'msc:t{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
                 return jsonify({ field: element[field] })
@@ -653,6 +661,10 @@ def organization(number, field=None):
     element = organizations.get(eid=number)
 
     if request_wants_json():
+        if 'identifiers' not in element:
+            element['identifiers'] = list()
+        element['identifiers'].insert(0,\
+            {'id': 'msc:g{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
                 return jsonify({ field: element[field] })
@@ -673,6 +685,10 @@ def mapping(number, field=None):
     element = mappings.get(eid=number)
 
     if request_wants_json():
+        if 'identifiers' not in element:
+            element['identifiers'] = list()
+        element['identifiers'].insert(0,\
+            {'id': 'msc:c{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
                 return jsonify({ field: element[field] })
@@ -693,6 +709,10 @@ def endorsement(number, field=None):
     element = endorsements.get(eid=number)
 
     if request_wants_json():
+        if 'identifiers' not in element:
+            element['identifiers'] = list()
+        element['identifiers'].insert(0,\
+            {'id': 'msc:e{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
                 return jsonify({ field: element[field] })
@@ -1198,7 +1218,7 @@ def edit_scheme(number):
     organizations = db.table('organizations')
     element = schemes.get(eid=number)
     # Identifier, dataType, scheme, organization help
-    scheme_list = list() 
+    scheme_list = list()
     id_set = set()
     type_set = set()
     for scheme in schemes.all():

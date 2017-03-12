@@ -70,13 +70,14 @@
   <div class="identifiers">
     <h2>Identifiers</h2>
     <ul>
+      <li>Internal MSC ID: <a href="{{ url_for('scheme', number=record.eid) }}">msc:t{{ record.eid }}</a></li>
     {% for identifier in record['identifiers'] %}
-      {% if identifier['scheme'] == 'RDA-MSCWG' %}
-      <li>Internal MSC ID: <a href="{{ url_for('tool', number=identifier['id'][5:]) }}">{{ identifier['id'] }}</a></li>
-      {% elif identifier['scheme'] == 'DOI' %}
+      {% if identifier['scheme'] == 'DOI' %}
       <li>DOI: <a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></li>
-      {% else %}
+      {% elif identifier['scheme'] %}
       <li>{{ identifier['scheme'] }}: {{ identifier['id'] }}</li>
+      {% else %}
+      <li>{{ identifier['id'] }}</li>
       {% endif %}
     {% endfor %}
     </ul>
