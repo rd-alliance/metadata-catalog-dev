@@ -1213,261 +1213,7 @@ def logout():
     flash('You were signed out')
     return redirect(oid.get_next_url())
 
-### Editing screen
-
-@app.route('/edit/m<int:number>', methods=['GET', 'POST'])
-def edit_scheme(number):
-    if g.user is None:
-        flash('You must sign in before making any changes.', 'error')
-        return redirect(url_for('login'))
-    schemes = db.table('metadata-schemes')
-    organizations = db.table('organizations')
-    element = schemes.get(eid=number)
-    # Identifier, dataType, scheme, organization help
-    scheme_list = list()
-    id_set = set()
-    type_set = set()
-    for scheme in schemes.all():
-        scheme_list.append({'id': 'msc:m{}'.format(scheme.eid),\
-            'title': scheme['title']})
-        for identifier in scheme['identifiers']:
-            id_set.add(identifier['id'])
-        if 'dataTypes' in scheme:
-            for type in scheme['dataTypes']:
-                type_set.add(type)
-    scheme_list.sort(key=lambda k: k['title'].lower())
-    id_list = list(id_set)
-    id_list.sort()
-    type_list = list(type_set)
-    type_list.sort(key=lambda k: k.lower())
-    organization_list = list()
-    for organization in organizations.all():
-        organization_list.append({'id': 'msc:g{}'.format(organization.eid),\
-            'name': organization['name']})
-    organization_list.sort(key=lambda k: k['name'].lower())
-    # Subject help
-    all_keyword_uris = set()
-    for generator in [thesaurus.subjects(RDF.type, UNO.Domain),\
-        thesaurus.subjects(RDF.type, UNO.MicroThesaurus),\
-        thesaurus.subjects(RDF.type, SKOS.Concept)]:
-        for uri in generator:
-            all_keyword_uris.add(uri)
-    subject_set = set()
-    for uri in all_keyword_uris:
-        subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
-    subject_set.add('Multidisciplinary')
-    subject_list = list(subject_set)
-    subject_list.sort()
-    # Location types and ID schemes
-    id_scheme_list = [ 'DOI' ]
-    location_type_list = ['website', 'document', 'RDA-MIG', 'DTD',\
-        'XSD', 'RDFS']
-    # Processing the request
-    if request.method == 'POST':
-        version = request.form.get('version')
-        record = dict()
-        errors = 0
-        # Compile the response into a record
-        # We start with single-value fields
-        form_fields = ['title', 'description']
-        for property in form_fields:
-            value = request.form[property]
-            if value:
-                record[property] = value.strip()
-        # Next, fields that take lists of values
-        keyword_list = list()
-        for keyword in request.form.getlist('keywords'):
-            if keyword:
-                if keyword == 'Multidisciplinary' or getTermURI(keyword):
-                    keyword_list.append(keyword)
-                else:
-                    flash('"{}" is not in the {}.'.format(keyword, thesaurus_link), 'keyword-error')
-                    errors += 1
-        if len(keyword_list) > 0:
-            record['keywords'] = keyword_list
-        dataType_list = list()
-        for dataType in request.form.getlist('dataTypes'):
-            if dataType:
-                # Validation goes here
-                dataType_list.append(dataType)
-        if len(dataType_list) > 0:
-            record['dataTypes'] = dataType_list
-        # Next, fields that are lists of dictionaries
-        location_list = list()
-        locations = formDictList('location', ['url', 'type'])
-        for location in locations:
-            error = ''
-            if not isValidURL(location['url']):
-                error += 'Location "{}" is not a valid URL. '.format(location['url'])
-            if not location['type'] in location_type_list:
-                if location['type']:
-                    error += '"{}" is not a valid location type.'.format(location['type'])
-                else:
-                    error += 'You must provide a location type.'
-            if error:
-                flash(error, 'location-error')
-                errors += 1
-            else:
-                location_list.append(location)
-        if len(location_list) > 0:
-            record['locations'] = location_list
-        sample_list = list()
-        samples = formDictList('sample', ['url', 'title'])
-        for sample in samples:
-            error = ''
-            if not isValidURL(sample['url']):
-                error += 'Sample location "{}" is not a valid URL. '.format(sample['url'])
-            if not sample['title']:
-                error += 'Sample at "{}" has an empty title'.format(sample['url'])
-            if error:
-                flash(error, 'sample-error')
-                errors += 1
-            else:
-                sample_list.append(sample)
-        if len(sample_list) > 0:
-            record['samples'] = sample_list
-        identifier_list = list()
-        if not version:
-            identifier_list.append({'id': 'msc:m{}'.format(number),\
-                'scheme': 'RDA-MSCWG'})
-        ids = formDictList('identifier', ['id', 'scheme'])
-        for id in ids:
-            error = ''
-            if not id['id']:
-                error += 'Identifier with scheme "{}" is blank.'.format(id['scheme'])
-            if error:
-                flash(error, 'identifier-error')
-                errors += 1
-            else:
-                identifier_list.append(id)
-        if len(identifier_list) > 0:
-            record['identifiers'] = identifier_list
-        # Next, fields that are lists of values in the form but lists of dictionaries in the record
-        relation_roles = [ 'parent scheme', 'maintainer', 'funder', 'user' ]
-        related_entities = list()
-        for role in relation_roles:
-            if role in request.form:
-                for id in request.form.getlist(role):
-                    instance = dict()
-                    instance['id'] = id
-                    instance['role'] = role
-                    related_entities.append(instance)
-        if len(related_entities) > 0:
-            record['relatedEntities'] = related_entities
-        # Versions have to be dealt with carefully as they are split between two forms.
-        if not version:
-            # This is the top level form
-            version_list = list()
-            version_fields =  ['number', 'number-old', 'issued', 'available',\
-                'valid-from', 'valid-to']
-            vns = formDictList('version', version_fields)
-            for vn in vns:
-                version_dict = dict()
-                # Copy overriding data from existing record
-                if vn['number-old']:
-                    for release in element['versions']:
-                        if str(release['number']) == str(vn['number-old']):
-                            version_dict = {k: v for k, v in release.items()\
-                                if k not in ['number', 'available', 'issued', 'valid']}
-                            break
-                # Add in data from form
-                if vn['number']:
-                    version_dict['number'] = str(vn['number'])
-                for k, v in {'available': 'date of release as draft/proposal', 'issued': 'date of publication'}.items():
-                    if vn[k]:
-                        if isValidDate(vn[k]):
-                            version_dict[k] = vn[k]
-                        else:
-                            flash('"{}" is not a valid {}.'.format(vn[k], v), 'date-error')
-                            errors += 1
-                if vn['valid-from']:
-                    valid = ''
-                    if isValidDate(vn['valid-from']):
-                        valid = vn['valid-from']
-                        if vn['valid-to']:
-                            if isValidDate(vn['valid-to']):
-                                valid += '/'
-                                valid += vn['valid-to']
-                            else:
-                                flash('"{}" is not a valid date to which to be considered current.'.format(vn['valid-to']), 'date-error')
-                                errors += 1
-                    else:
-                        flash('"{}" is not a valid date from which to be considered current.'.format(vn['valid-from']), 'date-error')
-                        errors += 1
-                    if valid:
-                        version_dict['valid'] = valid
-                if len(version_dict) > 0:
-                    version_list.append(version_dict)
-            if len(version_list) > 0:
-                record['versions'] = version_list
-            # Add other hidden fields from original record
-            if element and 'slug' in element:
-                record['slug'] = element['slug']
-            elif record['title']:
-                record['slug'] = toFileSlug(record['title'])
-
-        # Handle any errors
-        if errors > 0:
-            flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(errors)), 'error')
-            return render_template('edit-scheme.html', record=record, eid=number,\
-                version=version, subjects=subject_list, dataTypes=type_list,\
-                locationTypes=location_type_list, idSchemes=id_scheme_list,\
-                schemes=scheme_list, organizations=organization_list)
-
-        # Otherwise, apply changes
-        # TODO: apply logging and version control
-        if version:
-            if element and 'versions' in element:
-                version_list = element['versions']
-                for index, item in enumerate(version_list):
-                    if str(item['number']) == str(version):
-                        version_dict = {k: v for k, v in item.items()\
-                            if k in ['number', 'available', 'issued', 'valid']}
-                        version_dict.update(record)
-                        version_list[index] = version_dict
-                        Scheme = Query()
-                        Version = Query()
-                        schemes.update({'versions': version_list},\
-                            Scheme.versions.any(Version.number == version),\
-                            eids=[number])
-                        flash('Successfully updated record for version {}.'.format(version), 'success')
-                        break
-                else:
-                    # This version does not yet exist in the standard
-                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
-            else:
-                # This version does not yet exist in the standard, or the standard is unknown
-                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
-            return redirect('{}?version={}'.format(url_for('edit_scheme', number=number), version))
-        else:
-            if element:
-                # Existing record
-                for key in element.copy():
-                    schemes.update(delete(key), eids=[number])
-                schemes.update(record, eids=[number])
-            else:
-                # New record
-                number = schemes.insert(record)
-            flash('Successfully updated record.', 'success')
-            return redirect(url_for('edit_scheme', number=number))
-    else:
-        version = request.args.get('version')
-        if version:
-            flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
-            record = dict()
-            for release in element['versions']:
-                if 'number' in release and str(release['number']) == str(version):
-                    record = release
-                    break
-        elif element:
-            record = element
-        else:
-            flash('You can add a new record using the form below.')
-            record = dict()
-        return render_template('edit-scheme.html', record=record, eid=number,\
-            version=version, subjects=subject_list, dataTypes=type_list,\
-            locationTypes=location_type_list, idSchemes=id_scheme_list,\
-            schemes=scheme_list, organizations=organization_list)
+### Editing screens
 
 # Utility functions for WTForms implementation
 
@@ -1751,6 +1497,10 @@ class FreeLocationForm(Form):
     type = StringField('Type', validators=[RequiredIf('url'),\
         validators.Regexp(allowed_locations, message=type_help)])
 
+class SampleForm(Form):
+    title = StringField('Title', validators=[RequiredIf('url')])
+    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+
 class IdentifierForm(Form):
     id = StringField('ID')
     scheme = StringField('ID scheme')
@@ -1777,6 +1527,136 @@ class CreatorForm(Form):
     fullName = StringField('Full name')
     givenName = StringField('Given name(s)')
     familyName = StringField('Family name')
+
+# Editing metadata schemes
+
+class SchemeForm(FlaskForm):
+    schemes = db.table('metadata-schemes')
+    scheme_choices = list()
+    for scheme in schemes.all():
+        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+    scheme_choices.sort(key=lambda k: k[1].lower())
+    organizations = db.table('organizations')
+    organization_choices = list()
+    for organization in organizations.all():
+        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+    organization_choices.sort(key=lambda k: k[1].lower())
+
+    title = StringField('Name of metadata scheme')
+    description = TextAreaField('Description')
+    keywords = FieldList(StringField('Subject area'), 'Subject areas', min_entries=1)
+    dataTypes = FieldList(StringField('URL or term'), 'Data types', min_entries=1)
+    parent_schemes = SelectMultipleField('Parent metadata scheme(s)', choices=scheme_choices)
+    maintainers = SelectMultipleField('Organizations that maintain this scheme', choices=organization_choices)
+    funders = SelectMultipleField('Organizations that funded this scheme', choices=organization_choices)
+    users = SelectMultipleField('Organizations that use this scheme', choices=organization_choices)
+    locations = FieldList(FormField(LocationForm), 'Relevant links', min_entries=1)
+    samples = FieldList(FormField(SampleForm), 'Sample records conforming to this scheme', min_entries=1)
+    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this scheme', min_entries=1)
+    versions = FieldList(FormField(VersionForm), 'Version history', min_entries=1)
+
+@app.route('/edit/m<int:number>', methods=['GET', 'POST'])
+def edit_scheme(number):
+    if g.user is None:
+        flash('You must sign in before making any changes.', 'error')
+        return redirect(url_for('login'))
+    schemes = db.table('metadata-schemes')
+    organizations = db.table('organizations')
+    element = schemes.get(eid=number)
+    version = request.values.get('version')
+    if version and request.referrer == request.base_url:
+        # This is the version screen, opened from the main screen
+        flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
+    # Subject help
+    all_keyword_uris = set()
+    for generator in [thesaurus.subjects(RDF.type, UNO.Domain),\
+        thesaurus.subjects(RDF.type, UNO.MicroThesaurus),\
+        thesaurus.subjects(RDF.type, SKOS.Concept)]:
+        for uri in generator:
+            all_keyword_uris.add(uri)
+    subject_set = set()
+    for uri in all_keyword_uris:
+        subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
+    subject_set.add('Multidisciplinary')
+    subject_list = list(subject_set)
+    subject_list.sort()
+    # Data type help
+    type_set = set()
+    for scheme in schemes.all():
+        if 'dataTypes' in scheme:
+            for type in scheme['dataTypes']:
+                type_set.add(type)
+    type_list = list(type_set)
+    type_list.sort(key=lambda k: k.lower())
+    if element:
+        # Translate from internal data model to form data
+        if version:
+            for release in element['versions']:
+                if 'number' in release and str(release['number']) == str(version):
+                    form = SchemeForm(request.form, data=msc_to_form(release))
+                    break
+            else:
+                form = SchemeForm(request.form)
+            del form['versions']
+        else:
+            form = SchemeForm(request.form, data=msc_to_form(element))
+    else:
+        if number != 0:
+            return redirect(url_for('edit_tool', number=0))
+        form = SchemeForm(request.form)
+    for f in form.locations:
+        f['type'].choices = [('', ''),
+                ('document', 'document'), ('website', 'website'),
+                ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
+                ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
+        f['type'].validators = [validators.Optional()]
+    # Processing the request
+    if request.method == 'POST' and form.validate():
+        # TODO: apply logging and version control
+        # Translate form data into internal data model
+        msc_data = form_to_msc(form.data, element)
+        if version:
+            # Editing the version-specific overrides
+            if element and 'versions' in element:
+                version_list = element['versions']
+                for index, item in enumerate(version_list):
+                    if str(item['number']) == str(version):
+                        version_dict = {k: v for k, v in item.items()\
+                            if k in ['number', 'available', 'issued', 'valid']}
+                        version_dict.update(msc_data)
+                        version_list[index] = version_dict
+                        Scheme = Query()
+                        Version = Query()
+                        schemes.update({'versions': version_list},\
+                            Scheme.versions.any(Version.number == version),\
+                            eids=[number])
+                        flash('Successfully updated record for version {}.'.format(version), 'success')
+                        break
+                else:
+                    # This version is not in the list
+                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+            else:
+                # The version list or the main record is missing
+                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+            return redirect('{}?version={}'.format(url_for('edit_scheme', number=number), version))
+        elif element:
+            # Editing an existing record
+            msc_data = fix_slug(msc_data, 'm')
+            for key in element:
+                schemes.update(delete(key), eids=[number])
+            schemes.update(msc_data, eids=[number])
+            flash('Successfully updated record.', 'success')
+        else:
+            # Adding a new record
+            msc_data = fix_slug(msc_data, 'm')
+            number = schemes.insert(msc_data)
+            flash('Successfully added record.', 'success')
+        return redirect(url_for('edit_scheme', number=number))
+    if form.errors:
+        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
+    return render_template('edit-scheme.html', form=form, eid=number,\
+        version=version, subjects=subject_list, dataTypes=type_list,\
+        idSchemes=id_scheme_list)
 
 # Editing organizations
 
@@ -1815,7 +1695,7 @@ def edit_organization(number):
     if request.method == 'POST' and form.validate():
         # Translate form data into internal data model
         msc_data = form_to_msc(form.data, element)
-        msc_data = fix_slug(msc_data, 'e')
+        msc_data = fix_slug(msc_data, 'g')
         # TODO: apply logging and version control
         if element:
             # Existing record
@@ -1849,7 +1729,7 @@ class ToolForm(FlaskForm):
 
     title = StringField('Name of tool')
     description = TextAreaField('Description')
-    supported_schemes = SelectMultipleField('Input metadata scheme(s)', choices=scheme_choices)
+    supported_schemes = SelectMultipleField('Metadata scheme(s) supported by this tool', choices=scheme_choices)
     # Regex for types allowed for mappings
     allowed_types = r'(terminal \([^)]+\)|graphical \([^)]+\)|web service|web application|^$)'
     type_help = 'Must be one of "terminal (<platform>)", "graphical (<platform>)", "web service", "web application".'

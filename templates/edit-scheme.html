@@ -1,13 +1,12 @@
 {% extends "base.html" %}
+{% from "macros-forms.html" import state, errors %}
 {% block title %}{% if eid == 0 %}Add new metadata scheme{% else %}Edit record msc:m{{ eid }}{% endif %}{% if version %}, version {{ version }}{% endif %}{% endblock %}
 {% block main %}
   <form action="{{ url_for('edit_scheme', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
-    {% if version %}
-    <input type="hidden" name="version" value="{{ version }}">
-    {% endif %}
+    {{ form.hidden_tag() }}
     <div class="form-group">
-      <label for="title" class="control-label">Name of scheme</label>
-      <input id="title" name="title" {% if 'title' in record %}value="{{ record['title'] }}"{% endif %} placeholder="Name of scheme" class="form-control">
+      {{ form.title.label(class="control-label") }}
+      {{ form.title(placeholder="Name of scheme", class="form-control") }}
       <ul class="help-block">
         <li>If the scheme is known by an abbreviation, put this at the start of
           the name, then give the expanded form in parentheses, e.g. “SDMX
@@ -19,10 +18,8 @@
       </ul>
     </div>
     <div class="form-group">
-      <label for="description" class="control-label">Description</label>
-      <textarea id="description" name="description" class="form-control">
-      {%- if 'description' in record %}{{ record['description'] }}{% endif -%}
-      </textarea>
+      {{ form.description.label(class="control-label") }}
+      {{ form.description(class="form-control") }}
       <ul class="help-block">
         <li>This could indicate if the scheme is used to create standalone metadata
           records, or insert metadata into data files, or is in fact a data format
@@ -39,26 +36,18 @@
       </ul>
     </div>
     <div class="form-group">
-      <label for="keyword" class="control-label">Subject areas</label>
-      {% with messages = get_flashed_messages(category_filter=['keyword-error']) %}
-      {% for message in messages %}
-      <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <p>{{ message|safe }}</p>
-      </div>
-      {% endfor %}
-      {% endwith %}
+      {{ form.keywords.label(class="control-label") }}
       <datalist id="keyword-list">
         {% for item in subjects %}
         <option>{{ item }}</option>
         {% endfor %}
       </datalist>
       <div class="form-inline">
-        {% for item in record['keywords'] %}
-        <input id="keyword{{ loop.index }}" name="keywords" list="keyword-list" value="{{ item }}" class="form-control form-control-narrow">
+        {% for f in form.keywords %}
+        <span class="{{ state(f) }}">{{ f(list="keyword-list", class="form-control form-control-narrow") }}</span>
         {% endfor %}
-        <input id="keyword" name="keywords" list="keyword-list" placeholder="Subject area" class="form-control form-control-narrow">
       </div>
+      {{ errors(form.keywords) }}
       <ul class="help-block">
         <li>Use domains, micro-thesaurus names or concepts from the
           <a href="http://vocabularies.unesco.org/browser/thesaurus/en/" target="_blank">UNESCO Thesaurus</a>.</li>
@@ -66,17 +55,16 @@
       </ul>
     </div>
     <div class="form-group">
-      <label for="dataType" class="control-label">Data types</label>
+      {{ form.dataTypes.label(class="control-label") }}
       <datalist id="dataType-list">
         {% for item in dataTypes %}
         <option>{{ item }}</option>
         {% endfor %}
       </datalist>
       <div class="form-inline">
-        {% for item in record['dataTypes'] %}
-        <input id="dataType{{ loop.index }}" name="dataTypes" list="dataType-list" value="{{ item }}" class="form-control form-control-narrow">
+        {% for f in form.dataTypes %}
+        {{ f(list="dataType-list", class="form-control form-control-narrow") }}
         {% endfor %}
-        <input id="dataType" name="dataTypes" list="dataType-list" placeholder="URL or term" class="form-control form-control-narrow">
       </div>
       <ul class="help-block">
         <li>Provide types of data which this scheme is usually used to describe.</li>
@@ -85,107 +73,83 @@
       </ul>
     </div>
     <div class="form-group">
-      <label for="location-url" class="control-label">Locations</label>
-      {% with messages = get_flashed_messages(category_filter=['location-error']) %}
-      {% for message in messages %}
-      <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <p>{{ message|safe }}</p>
-      </div>
-      {% endfor %}
-      {% endwith %}
+      {{ form.parent_schemes.label(class="control-label") }}
+      {{ form.parent_schemes(class="form-control", style="width:auto;") }}
+    </div>
+    <div class="form-group">
+      {{ form.maintainers.label(class="control-label") }}
+      {{ form.maintainers(class="form-control", style="width:auto;") }}
+    </div>
+    <div class="form-group">
+      {{ form.funders.label(class="control-label") }}
+      {{ form.funders(class="form-control", style="width:auto;") }}
+    </div>
+    <div class="form-group">
+      {{ form.users.label(class="control-label") }}
+      {{ form.users(class="form-control", style="width:auto;") }}
+    </div>
+    <fieldset>
+    <legend>{{ form.locations.label.text }}</legend>
       <ol class="form-list">
-        {% for location in record['locations'] %}
+        {% for f in form.locations %}
         <li>
-          <label for="location-url{{ loop.index }}" class="control-label">URL</label>
-          <input id="location-url{{ loop.index }}" name="location-url{{ loop.index }}" value="{{ location['url'] }}" size="37" class="form-control">
-          <label for="location-type{{ loop.index }}" class="control-label">Type</label>
-          <select id="location-type{{ loop.index }}" name="location-type{{ loop.index }}" class="form-control" style="width:auto;">
-            <option value=""></option>
-            {% for type in locationTypes %}
-            <option
-              {%- if location['type'] == type %} selected
-              {%- endif %}>{{ type }}</option>
-            {% endfor %}
-          </select>
+          <div class="{{ state(f.url) }}">
+          {{ f.url.label(class="control-label") }}
+          {{ f.url(placeholder="URL e.g. https://www...", class="form-control") }}
+          {{ errors(f.url) }}
+          </div>
+          <div class="{{ state(f['type']) }}">
+          {{ f['type'].label(class="control-label") }}
+          {{ f['type'](class="form-control", style="width:auto;") }}
+          {{ errors(f['type']) }}
+          </div>
         </li>
         {% endfor %}
-        <li>
-          <label for="location-url" class="control-label">URL</label>
-          <input id="location-url" name="location-url" placeholder="URL e.g. https://www..." size="37" class="form-control">
-          <label for="location-type" class="control-label">Type</label>
-          <select id="location-type" name="location-type" class="form-control" style="width:auto;">
-            <option value=""></option>
-            {% for type in locationTypes %}
-            <option>{{ type }}</option>
-            {% endfor %}
-          </select>
-        </li>
       </ol>
       <ul class="help-block">
         <li>To give several locations, save after adding each one.</li>
       </ul>
     </div>
-    <div class="form-group">
-      <label for="sample-title" class="control-label">Samples</label>
-      {% with messages = get_flashed_messages(category_filter=['sample-error']) %}
-      {% for message in messages %}
-      <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <p>{{ message|safe }}</p>
-      </div>
-      {% endfor %}
-      {% endwith %}
+    </fieldset>
+    <fieldset>
+    <legend>{{ form.samples.label.text }}</legend>
       <ol class="form-list">
-        {% for location in record['samples'] %}
-        <li class="form-inline">
-          <label for="sample-title{{ loop.index }}" class="control-label">Title</label>
-          <input id="sample-title{{ loop.index }}" name="sample-title{{ loop.index }}" value="{{ sample['title'] }}" class="form-control">
-          <label for="sample-url{{ loop.index }}" class="control-label">URL</label>
-          <input id="sample-url{{ loop.index }}" name="sample-url{{ loop.index }}" value="{{ sample['url'] }}" class="form-control">
-        </li>
-        {% endfor %}
+      {% for f in form.samples %}
         <li>
-          <label for="sample-title" class="control-label">Title</label>
-          <input id="sample-title" name="sample-title" class="form-control">
-          <label for="sample-url" class="control-label">URL</label>
-          <input id="sample-url" name="sample-url" placeholder="URL e.g. https://www..." class="form-control">
+          <div>
+          {{ f.title.label(class="control-label") }}
+          {{ f.title(class="form-control") }}
+          </div>
+          <div class="{{ state(f.url) }}">
+          {{ f.url.label(class="control-label") }}
+          {{ f.url(placeholder="URL e.g. https://www...", class="form-control") }}
+          {{ errors(f.url) }}
+          </div>
         </li>
+      {% endfor %}
       </ol>
       <ul class="help-block">
         <li>To give several locations, save after adding each one.</li>
       </ul>
     </div>
-    <div class="form-group">
-      <label for="identifier-id" class="control-label">Identifiers</label>
-      {% with messages = get_flashed_messages(category_filter=['identifier-error']) %}
-      {% for message in messages %}
-      <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <p>{{ message|safe }}</p>
-      </div>
+    </fieldset>
+    <fieldset>
+    <legend>{{ form.identifiers.label.text }}</legend>
+    <datalist id="id-schemes">
+      {% for idScheme in idSchemes %}
+      <option>{{ idScheme }}</option>
       {% endfor %}
-      {% endwith %}
-      <datalist id="id-schemes">
-        {% for idScheme in idSchemes %}
-        <option>{{ idScheme }}</option>
-        {% endfor %}
-      </datalist>
+    </datalist>
+    <div class="form-group">
       <ol class="form-list">
-        {% for identifier in record['identifiers'] if not identifier['scheme'] == 'RDA-MSCWG' %}
+      {% for f in form.identifiers %}
         <li>
-          <label for="identifier-id{{ loop.index }}" class="control-label">ID</label>
-          <input id="identifier-id{{ loop.index }}" name="identifier-id{{ loop.index }}" value="{{ identifier['id'] }}" class="form-control">
-          <label for="identifier-scheme{{ loop.index }}" class="control-label">ID scheme</label>
-          <input id="identifier-scheme{{ loop.index }}" name="identifier-scheme{{ loop.index }}" list="id-schemes" value="{{ identifier['scheme'] }}" class="form-control" style="width:auto;">
+        {{ f['id'].label(class="control-label") }}
+        {{ f['id'](placeholder="e.g. 10.001/1234", class="form-control") }}
+        {{ f.scheme.label(class="control-label") }}
+        {{ f.scheme(class="form-control", list="id-schemes", style="width:auto;") }}
         </li>
-        {% endfor %}
-        <li>
-          <label for="identifier-id" class="control-label">ID</label>
-          <input id="identifier-id" name="identifier-id" placeholder="e.g. 10.001/1234" class="form-control">
-          <label for="identifier-scheme" class="control-label">Scheme</label>
-          <input id="identifier-scheme" name="identifier-scheme" list="id-schemes" class="form-control" style="width:auto;">
-        </li>
+      {% endfor %}
       </ol>
       <ul class="help-block">
         {% if version %}
@@ -199,75 +163,72 @@
         <li>To give several identifiers, save after adding each one.</li>
       </ul>
     </div>
-    {% if not version %}
+    </fieldset>
+    {% if version %}
+    <input type="hidden" name="version" value="{{ version }}">
+    {% else %}
+    <fieldset>
+    <legend>{{ form.versions.label.text }}</legend>
     <div class="form-group">
-      <label for="version-number" class="control-label">Versions</label>
-      {% with messages = get_flashed_messages(category_filter=['date-error']) %}
-      {% for message in messages %}
-      <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <p>{{ message|safe }}</p>
-      </div>
-      {% endfor %}
-      {% endwith %}
       <ol class="form-list">
-        {% for release in record['versions'] %}
+      {% for f in form.versions %}
         <li>
-          <label for="version-number{{ loop.index }}" class="control-label">Number</label>
-          <div class="form-inline"><div class="form-group">
-            <input id="version-number{{ loop.index }}" name="version-number{{ loop.index }}" {% if 'number' in release -%}
-              value="{{ release['number'] }}"
-            {%- else -%}
-              placeholder="e.g. 3.1"
-            {%- endif %} class="form-control">
-            {% if 'number' in release %}
-            <input type="hidden" name="version-number-old{{ loop.index }}" value="{{ release['number'] }}">
-            <a href="{{ url_for('edit_scheme', number=eid) }}?version={{ release['number'] }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
+          <div class="form-group{{ state(f.number) }}">
+            {{ f.number.label(class="control-label") }}
+            <div class="form-inline">
+              {{ f.number(class="form-control", style="width:auto;") }}
+              {% if f.number_old.data %}
+              {{ f.number_old() }}
+              <a href="{{ url_for('edit_scheme', number=eid) }}?version={{ f.number_old.data }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
+              {% endif %}
+            </div>
+            {{ errors(f.number) }}
+            {% if loop.last %}
+            <ul class="help-block">
+              <li>Do not preface the version number with "version" or "v".</li>
+            </ul>
             {% endif %}
-          </div></div>
-          <label for="version-issued{{ loop.index }}" class="control-label">Date published</label>
-          <input type="date" id="version-issued{{ loop.index }}" name="version-issued{{ loop.index }}" {% if 'issued' in release -%}
-            value="{{ release['issued'] }}"
-          {%- endif %} class="form-control" style="width:auto;">
-          <label for="version-available{{ loop.index }}" class="control-label">Date released as draft/proposal</label>
-          <input type="date" id="version-available{{ loop.index }}" name="version-available{{ loop.index }}" {% if 'available' in release -%}
-            value="{{ release['available'] }}"
-          {%- endif %} class="form-control" style="width:auto;">
-          <label for="version-valid-from{{ loop.index }}" class="control-label">Date considered current</label>
-          <div class="form-inline"><div class="form-group">
-            <label for="version-valid-from{{ loop.index }}" class="control-label">from</label>
-            <input type="date" id="version-valid-from{{ loop.index }}" name="version-valid-from{{ loop.index }}" {% if 'valid' in release -%}
-              value="{{ parseDateRange(release['valid'])[0] }}"
-            {%- endif %} class="form-control">
-            <label for="version-valid-to{{ loop.index }}" class="control-label">until</label>
-            <input type="date" id="version-valid-to{{ loop.index }}" name="version-valid-to{{ loop.index }}" {% if 'valid' in release and parseDateRange(release['valid'])[1] -%}
-              value="{{ parseDateRange(release['valid'])[1] }}"
-            {%- endif %} class="form-control">
-          </div></div>
+          </div>
+          <div class="form-group{{ state(f.issued) }}">
+            {{ f.issued.label(class="control-label") }}
+            {{ f.issued(class="form-control", style="width:auto;") }}
+            {{ errors(f.issued) }}
+            {% if loop.last %}
+            <ul class="help-block">
+              <li>In most cases, the only date you need to provide is "date published".</li>
+            </ul>
+            {% endif %}
+          </div>
+          <div class="form-group{{ state(f.available) }}">
+            {{ f.available.label(class="control-label") }}
+            {{ f.available(class="form-control", style="width:auto;") }}
+            {{ errors(f.available) }}
+            {% if loop.last %}
+            <ul class="help-block">
+              <li>If the version has not been released in its final version,
+              please provide the date when the draft was first released. You do not need to
+              remove this information when the final version is published.</li>
+            </ul>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <span class="{{ state(f.valid_from) }}">{{ f.valid_from.label(class="control-label") }}</span>
+            <div class="form-inline">
+              <span class="{{ state(f.valid_from) }}">{{ f.valid_from(class="form-control") }}</span>
+              <span class="{{ state(f.valid_to) }}">{{ f.valid_to.label(class="control-label") }}
+              {{ f.valid_to(class="form-control") }}</span>
+            </div>
+            {{ errors(f.valid_from) }}
+            {{ errors(f.valid_to) }}
+            {% if loop.last %}
+            <ul class="help-block">
+              <li>Use "date considered current" only for cases where two or
+            more versions are considered current at the same time.</li>
+            </ul>
+            {% endif %}
+          </div>
         </li>
         {% endfor %}
-        <li>
-          <label for="version-number" class="control-label">Number</label>
-          <input id="version-number" name="version-number" placeholder="e.g. 3.1" class="form-control" style="width:auto;">
-          <p class="help-block">Do not preface the version number with 'version' or 'v'.</p>
-          <label for="version-issued" class="control-label">Date published</label>
-          <input type="date" id="version-issued" name="version-issued" class="form-control" style="width:auto;">
-          <p class="help-block">In most cases, the only date you need to provide is 'date published'.</p>
-          <label for="version-available" class="control-label">Date released as draft/proposal</label>
-          <input type="date" id="version-available" name="version-available" class="form-control" style="width:auto;">
-          <p class="help-block">If the version has not been released in its final version,
-            please provide the date when the draft was first released. You do not need to
-            remove this information when the final version is published.</p>
-          <label for="version-valid-from" class="control-label">Date considered current</label>
-          <div class="form-inline"><div class="form-group">
-            <label for="version-valid-from" class="control-label">from</label>
-            <input type="date" id="version-valid-from" name="version-valid-from" class="form-control">
-            <label for="version-valid-to" class="control-label">until</label>
-            <input type="date" id="version-valid-to" name="version-valid-to" class="form-control">
-          </div></div>
-          <p class="help-block">Use 'date considered current' only for cases where two or
-            more versions are considered current at the same time.</p>
-        </li>
       </ol>
       <ul class="help-block">
         <li>To give several versions, save after adding each one.</li>
@@ -275,48 +236,8 @@
           overrides to the other information given on this page.</li>
       </ul>
     </div>
+    </fieldset>
     {% endif %}
-    <h2>Relationships to other records</h2>
-    <div class="form-group">
-      <label for="parent-scheme" class="control-label">Parent schemes</label>
-      <select id="parent-scheme" name="parent-scheme" multiple class="form-control">
-        {% for scheme in schemes %}
-        <option value="{{ scheme['id'] }}"
-          {%- if scheme['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'parent scheme')|map(attribute='id') %} selected
-          {%- endif %}>{{ scheme['title'] }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="maintainer" class="control-label">Maintainers</label>
-      <select id="maintainer" name="maintainer" multiple class="form-control">
-        {% for group in organizations %}
-        <option value="{{ group['id'] }}"
-          {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'maintainer')|map(attribute='id') %} selected
-          {%- endif %}>{{ group['name'] }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="funder" class="control-label">Funders</label>
-      <select id="funder" name="funder" multiple class="form-control">
-        {% for group in organizations %}
-        <option value="{{ group['id'] }}"
-          {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'funder')|map(attribute='id') %} selected
-          {%- endif %}>{{ group['name'] }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="user" class="control-label">Users</label>
-      <select id="user" name="user" multiple class="form-control">
-        {% for group in organizations %}
-        <option value="{{ group['id'] }}"
-          {%- if group['id'] in record['relatedEntities']|selectattr('role', 'equalto', 'user')|map(attribute='id') %} selected
-          {%- endif %}>{{ group['name'] }}</option>
-        {% endfor %}
-      </select>
-    </div>
     <div class="form-group">
       <button class="btn btn-primary">Save changes</button>
       {% if version %}
