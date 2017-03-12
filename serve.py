@@ -1469,107 +1469,6 @@ def edit_scheme(number):
             locationTypes=location_type_list, idSchemes=id_scheme_list,\
             schemes=scheme_list, organizations=organization_list)
 
-@app.route('/edit/g<int:number>', methods=['GET', 'POST'])
-def edit_organization(number):
-    if g.user is None:
-        flash('You must sign in before making any changes.', 'error')
-        return redirect(url_for('login'))
-    organizations = db.table('organizations')
-    element = organizations.get(eid=number)
-    # Types and ID schemes
-    id_scheme_list = [ 'DOI' ]
-    organization_type_list = ['standards body', 'archive', 'professional group',\
-        'coordination group']
-    location_type_list = ['website', 'email']
-    # Processing the request
-    if request.method == 'POST':
-        record = dict()
-        errors = 0
-        # Compile the response into a record
-        # We start with single-value fields
-        form_fields = ['name', 'description']
-        for property in form_fields:
-            value = request.form[property]
-            if value:
-                record[property] = value.strip()
-        # Next, fields that take lists of values
-        type_list = list()
-        for type in request.form.getlist('types'):
-            if type:
-                if type in organization_type_list:
-                    type_list.append(type)
-        if len(type_list) > 0:
-            record['types'] = type_list
-        # Next, fields that are lists of dictionaries
-        location_list = list()
-        locations = formDictList('location', ['url', 'type'])
-        for location in locations:
-            error = ''
-            if not isValidURL(location['url']):
-                error += 'Location "{}" is not a valid URL. '.format(location['url'])
-            if not location['type'] in location_type_list:
-                if location['type']:
-                    error += '"{}" is not a valid location type.'.format(location['type'])
-                else:
-                    error += 'You must provide a location type.'
-            if error:
-                flash(error, 'location-error')
-                errors += 1
-            else:
-                location_list.append(location)
-        if len(location_list) > 0:
-            record['locations'] = location_list
-        identifier_list = list()
-        identifier_list.append({'id': 'msc:g{}'.format(number),\
-            'scheme': 'RDA-MSCWG'})
-        ids = formDictList('identifier', ['id', 'scheme'])
-        for id in ids:
-            error = ''
-            if not id['id']:
-                error += 'Identifier with scheme "{}" is blank.'.format(id['scheme'])
-            if error:
-                flash(error, 'identifier-error')
-                errors += 1
-            else:
-                identifier_list.append(id)
-        if len(identifier_list) > 0:
-            record['identifiers'] = identifier_list
-        # Add other hidden fields from original record
-        if element and 'slug' in element:
-            record['slug'] = element['slug']
-        elif record['name']:
-            record['slug'] = toFileSlug(record['name'])
-
-        # Handle any errors
-        if errors > 0:
-            flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(errors)), 'error')
-            return render_template('edit-organization.html', record=record, eid=number,\
-                organizationTypes=organization_type_list, locationTypes=location_type_list,\
-                idSchemes=id_scheme_list)
-
-        # Otherwise, apply changes
-        # TODO: apply logging and version control
-        if element:
-            # Existing record
-            for key in element.copy():
-                organizations.update(delete(key), eids=[number])
-            organizations.update(record, eids=[number])
-            flash('Successfully updated record.', 'success')
-        else:
-            # New record
-            number = organizations.insert(record)
-            flash('Successfully added record.', 'success')
-        return redirect(url_for('edit_organization', number=number))
-    else:
-        if element:
-            record = element
-        else:
-            flash('You can add a new record using the form below.')
-            record = dict()
-        return render_template('edit-organization.html', record=record, eid=number,\
-            organizationTypes=organization_type_list, locationTypes=location_type_list,\
-            idSchemes=id_scheme_list)
-
 # Utility functions for WTForms implementation
 
 def clean_dict(data):
@@ -1879,6 +1778,59 @@ class CreatorForm(Form):
     givenName = StringField('Given name(s)')
     familyName = StringField('Family name')
 
+# Editing organizations
+
+class OrganizationForm(FlaskForm):
+    organization_choices = [('standards body', 'standards body'),
+            ('archive', 'archive'),
+            ('professional group', 'professional group'),
+            ('coordination group', 'coordination group')]
+
+    name = StringField('Name of organization')
+    description = TextAreaField('Description')
+    types = SelectMultipleField('Type of organization', choices=organization_choices)
+    locations = FieldList(FormField(LocationForm), 'Relevant links', min_entries=1)
+    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this organization', min_entries=1)
+
+@app.route('/edit/g<int:number>', methods=['GET', 'POST'])
+def edit_organization(number):
+    if g.user is None:
+        flash('You must sign in before making any changes.', 'error')
+        return redirect(url_for('login'))
+    organizations = db.table('organizations')
+    element = organizations.get(eid=number)
+    # Types and ID schemes
+    location_type_list = ['website', 'email']
+    if element:
+        # Translate from internal data model to form data
+        form = OrganizationForm(request.form, data=msc_to_form(element))
+    else:
+        form = OrganizationForm(request.form)
+    for f in form.locations:
+        f['type'].choices = [('', ''), ('website', 'website'), ('email', 'email address')]
+        f['type'].validators = [validators.Optional()]
+    # Processing the request
+    if request.method == 'POST' and form.validate():
+        # Translate form data into internal data model
+        msc_data = form_to_msc(form.data, element)
+        msc_data = fix_slug(msc_data, 'e')
+        # TODO: apply logging and version control
+        if element:
+            # Existing record
+            for key in element:
+                organizations.update(delete(key), eids=[number])
+            organizations.update(msc_data, eids=[number])
+            flash('Successfully updated record.', 'success')
+        else:
+            # New record
+            number = organizations.insert(msc_data)
+            flash('Successfully added record.', 'success')
+        return redirect(url_for('edit_organization', number=number))
+    if form.errors:
+        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
+    return render_template('edit-organization.html', form=form, eid=number,\
+        idSchemes=id_scheme_list)
+
 # Editing tools
 
 class ToolForm(FlaskForm):
@@ -1910,6 +1862,9 @@ class ToolForm(FlaskForm):
 
 @app.route('/edit/t<int:number>', methods=['GET', 'POST'])
 def edit_tool(number):
+    if g.user is None:
+        flash('You must sign in before making any changes.', 'error')
+        return redirect(url_for('login'))
     tools = db.table('tools')
     element = tools.get(eid=number)
     version = request.values.get('version')
@@ -2010,6 +1965,9 @@ class MappingForm(FlaskForm):
 
 @app.route('/edit/c<int:number>', methods=['GET', 'POST'])
 def edit_mapping(number):
+    if g.user is None:
+        flash('You must sign in before making any changes.', 'error')
+        return redirect(url_for('login'))
     mappings = db.table('mappings')
     element = mappings.get(eid=number)
     version = request.values.get('version')
@@ -2101,6 +2059,9 @@ class EndorsementForm(FlaskForm):
 
 @app.route('/edit/e<int:number>', methods=['GET', 'POST'])
 def edit_endorsement(number):
+    if g.user is None:
+        flash('You must sign in before making any changes.', 'error')
+        return redirect(url_for('login'))
     endorsements = db.table('endorsements')
     element = endorsements.get(eid=number)
     if element:
