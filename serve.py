@@ -1805,6 +1805,8 @@ def edit_organization(number):
         # Translate from internal data model to form data
         form = OrganizationForm(request.form, data=msc_to_form(element))
     else:
+        if number != 0:
+            return redirect(url_for('edit_organization', number=0))
         form = OrganizationForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('website', 'website'), ('email', 'email address')]
@@ -1888,6 +1890,8 @@ def edit_tool(number):
         else:
             form = ToolForm(request.form, data=msc_to_form(element))
     else:
+        if number != 0:
+            return redirect(url_for('edit_tool', number=0))
         form = ToolForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('document', 'document'), ('website', 'website'),\
@@ -1992,6 +1996,8 @@ def edit_mapping(number):
         else:
             form = MappingForm(request.form, data=msc_to_form(element))
     else:
+        if number != 0:
+            return redirect(url_for('edit_mapping', number=0))
         form = MappingForm(request.form)
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
@@ -2068,6 +2074,8 @@ def edit_endorsement(number):
         # Translate from internal data model to form data
         form = EndorsementForm(request.form, data=msc_to_form(element))
     else:
+        if number != 0:
+            return redirect(url_for('edit_endorsement', number=0))
         form = EndorsementForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('document', 'document')]
