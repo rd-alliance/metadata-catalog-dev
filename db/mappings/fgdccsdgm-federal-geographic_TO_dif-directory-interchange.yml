@@ -7,7 +7,7 @@ locations:
 - type: document
   url: http://gcmd.nasa.gov/Aboutus/standards/fgdc_to_dif.html
 relatedEntities:
-- id: msc:m17
-  role: input scheme
 - id: msc:m14
   role: output scheme
+- id: msc:m17
+  role: input scheme

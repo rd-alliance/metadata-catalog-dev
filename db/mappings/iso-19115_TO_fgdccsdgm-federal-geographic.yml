@@ -7,7 +7,7 @@ locations:
 - type: document
   url: http://www.ncddc.noaa.gov/metadata-standards/metadata-xml/
 relatedEntities:
-- id: msc:m22
-  role: input scheme
 - id: msc:m17
   role: output scheme
+- id: msc:m22
+  role: input scheme

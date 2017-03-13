@@ -43,3 +43,10 @@ relatedEntities:
 - id: msc:g91
   role: user
 title: DDI (Data Documentation Initiative)
+versions:
+- number: '2.5'
+  title: DDI Codebook
+  valid: '2012-01-17'
+- number: '3.2'
+  title: DDI Lifecycle
+  valid: '2014-03-12'

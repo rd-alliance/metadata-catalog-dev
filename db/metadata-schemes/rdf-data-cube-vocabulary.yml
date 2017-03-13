@@ -15,8 +15,8 @@ locations:
 relatedEntities:
 - id: msc:g65
   role: user
-- id: msc:g107
-  role: maintainer
 - id: msc:g106
+  role: maintainer
+- id: msc:g107
   role: maintainer
 title: RDF Data Cube Vocabulary

@@ -6,7 +6,7 @@ locations:
 - type: document
   url: http://www.spase-group.org/tools/stylesheet/oai/
 relatedEntities:
-- id: msc:m39
-  role: input scheme
 - id: msc:m15
   role: output scheme
+- id: msc:m39
+  role: input scheme

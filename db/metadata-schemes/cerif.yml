@@ -19,5 +19,5 @@ relatedEntities:
   role: maintainer
 title: CERIF (Common European Research Information Format)
 versions:
-- issued: 2013-07-25
-  number: 1.6
+- available: '2013-07-25'
+  number: '1.6'

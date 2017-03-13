@@ -6,7 +6,7 @@ locations:
 - type: document
   url: http://rs.tdwg.org/dwc/terms/history/dwctoabcd/index.htm
 relatedEntities:
-- id: msc:m9
-  role: input scheme
 - id: msc:m1
   role: output scheme
+- id: msc:m9
+  role: input scheme

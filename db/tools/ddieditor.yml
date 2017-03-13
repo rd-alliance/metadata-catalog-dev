@@ -10,3 +10,8 @@ relatedEntities:
 - id: msc:m13
   role: supported scheme
 title: DdiEditor
+types:
+- graphical (cross-platform)
+versions:
+- issued: '2012-10-20'
+  number: 1.7.1

@@ -10,3 +10,6 @@ relatedEntities:
   role: input scheme
 - id: msc:m92
   role: output scheme
+versions:
+- issued: '2013-07-15'
+  number: 2.0.2

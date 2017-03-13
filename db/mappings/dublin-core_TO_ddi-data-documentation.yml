@@ -6,7 +6,7 @@ locations:
 - type: document
   url: http://www.ddialliance.org/resources/tools/dc
 relatedEntities:
-- id: msc:m15
-  role: input scheme
 - id: msc:m13
   role: output scheme
+- id: msc:m15
+  role: input scheme

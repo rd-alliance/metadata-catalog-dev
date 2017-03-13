@@ -7,7 +7,7 @@ locations:
 - type: document
   url: http://schema.datacite.org/meta/kernel-2.1/doc/DataCite-MetadataKernel_v2.1.pdf
 relatedEntities:
-- id: msc:m13
-  role: input scheme
 - id: msc:m11
   role: output scheme
+- id: msc:m13
+  role: input scheme
