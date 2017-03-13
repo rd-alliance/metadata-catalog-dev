@@ -28,6 +28,10 @@ ol ol {
 	margin-bottom: 11px;
 }
 
+div.types {
+	padding-top: 16px;
+}
+
 /* Displaying certain lists of links as series of buttons */
 
 div.keywords p,
@@ -37,7 +41,8 @@ div.dataTypes p {
 
 @media (min-width: 768px) {
 	div.keywords p,
-	div.dataTypes p {
+	div.dataTypes p,
+	div.types p {
 		padding: 13px 4px;
 		text-align: right;
 	}

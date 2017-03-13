@@ -431,12 +431,10 @@ def scheme(number, field=None):
     versions = None
     if 'versions' in element:
         versions = list()
-        raw_versions = element['versions']
-        for v in raw_versions:
-            this_version = dict()
+        for v in element['versions']:
             if not 'number' in v:
                 continue
-            this_version['number'] = v['number']
+            this_version = v
             this_version['status'] = ''
             if 'issued' in v:
                 this_version['date'] = v['issued']
@@ -520,7 +518,7 @@ def scheme(number, field=None):
 
     Endorsement = Query()
     Relation = Query()
-    related_endorsements = endorsements.search(Endorsement.relatedEntities.any(Relation['id'].matches == 'msc:m{}(#.*)?'.format(number)))
+    related_endorsements = endorsements.search(Endorsement.relatedEntities.any(Relation['id'].matches('msc:m{}(#v.*)?'.format(number))))
     for entity in related_endorsements:
         entity_id = 'msc:e{}'.format(entity.eid)
         if not entity_id in endorsement_ids:
@@ -611,12 +609,12 @@ def tool(number, field=None):
     versions = None
     if 'versions' in element:
         versions = list()
-        raw_versions = element['versions']
-        for v in raw_versions:
+        for v in element['versions']:
             if not 'number' in v:
                 continue
-            if not 'date' in v:
+            if not 'issued' in v:
                 continue
+            v['date'] = v['issued']
             versions.append(v)
         versions.sort(key=lambda k: k['date'], reverse=True)
 
@@ -1002,8 +1000,10 @@ def search():
         type_set = set()
         for scheme in all_schemes:
             title_set.add(scheme['title'])
-            for identifier in scheme['identifiers']:
-                id_set.add(identifier['id'])
+            id_set.add('msc:m{}'.format(scheme.eid))
+            if 'identifiers' in scheme:
+                for identifier in scheme['identifiers']:
+                    id_set.add(identifier['id'])
             if 'dataTypes' in scheme:
                 for type in scheme['dataTypes']:
                     type_set.add(type)
@@ -1286,7 +1286,7 @@ def msc_to_form(msc_data):
                 mapped_role = relations_msc_form[role]
                 if mapped_role not in form_data:
                     form_data[mapped_role] = list()
-                id_tuple = entity['id'].partition('#')
+                id_tuple = entity['id'].partition('#v')
                 if mapped_role == 'endorsed_schemes':
                     form_data[mapped_role].append({'id': id_tuple[0], 'version': id_tuple[2]})
                 else:
@@ -1352,7 +1352,7 @@ def form_to_msc(form_data, element):
             for item in v:
                 if isinstance(item, dict):
                     if 'version' in item:
-                        id_string = '{}#{}'.format(item['id'], item['version'])
+                        id_string = '{}#v{}'.format(item['id'], item['version'])
                     else:
                         id_string = item['id']
                 else:

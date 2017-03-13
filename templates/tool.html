@@ -6,26 +6,27 @@
   {% endif %}
   {% if 'types' in record %}
   <div class="types">
-    <ul>
-    {% for type in record['types'] %}
-      <li>{{ type }}</li>
-    {% endfor %}
-    </ul>
+    <dl class="dl-horizontal">
+      <dt>Tool type</dt>
+      {% for type in record['types'] %}
+      <dd>{{ type }}</dd>
+      {% endfor %}
+    </dl>
   </div>
   {% endif %}
   {% if 'locations' in record %}
   <div class="locations">
-    <h2>Documentation</h2>
-    <ul class="locations">
+    <h2>Links and documentation</h2>
+    <ul class="locations list-inline">
     {% for location in record['locations'] %}
       {% if location['type'] == 'website' %}
-      <li><a href="{{ location['url'] }}">Visit website</a></li>
+      <li><a class="btn btn-default" href="{{ location['url'] }}">Visit website</a></li>
       {% elif location['type'] == 'document' %}
-      <li><a href="{{ location['url'] }}">View documentation</a></li>
+      <li><a class="btn btn-default" href="{{ location['url'] }}">View documentation</a></li>
       {% elif location['type'] == 'application' %}
-      <li><a href="{{ location['url'] }}">Use tool online</a></li>
+      <li><a class="btn btn-default" href="{{ location['url'] }}">Use tool online</a></li>
       {% elif location['type'] == 'service' %}
-      <li><a href="{{ location['url'] }}">Service endpoint</a></li>
+      <li><a class="btn btn-default" href="{{ location['url'] }}">Service endpoint</a></li>
       {% endif %}
     {% endfor %}
     </ul>
@@ -69,29 +70,62 @@
   {% endif %}
   <div class="identifiers">
     <h2>Identifiers</h2>
-    <ul>
-      <li>Internal MSC ID: <a href="{{ url_for('scheme', number=record.eid) }}">msc:t{{ record.eid }}</a></li>
+    <dl class="dl-horizontal">
+      <dt>Internal MSC ID</dt><dd><a href="{{ url_for('scheme', number=record.eid) }}">msc:t{{ record.eid }}</a></dd>
     {% for identifier in record['identifiers'] %}
       {% if identifier['scheme'] == 'DOI' %}
-      <li>DOI: <a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></li>
+      <dt>DOI</dt><dd><a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></dd>
       {% elif identifier['scheme'] %}
-      <li>{{ identifier['scheme'] }}: {{ identifier['id'] }}</li>
+      <dt>{{ identifier['scheme'] }}</dt><dd>{{ identifier['id'] }}</dd>
       {% else %}
-      <li>{{ identifier['id'] }}</li>
+      <dt>Other identifier</dt><dd>{{ identifier['id'] }}</dd>
       {% endif %}
     {% endfor %}
-    </ul>
+    </dl>
   </div>
   {% if versions %}
   <div class="versions">
     <h2>Version history</h2>
-    <ul>
+    <dl class="dl-horizontal">
     {% for version in versions %}
-      <li>
-        <p>{{ version['date'] }}: version {{ version['number'] }}</p>
-      </li>
+      <dt id="v{{ version['number'] }}">{{ version['date'] }}</dt>
+      <dd>
+        <p>version {{ version['number'] }}
+          {%- if 'title' in version %} &ndash; {{ version['title'] }}{% endif %}</p>
+        {% if 'description' in version %}
+        <div class="description">{{ version['description']|safe }}</div>
+        {% endif %}
+        {% if 'identifiers' in version %}
+        <dl class="dl-horizontal">
+        {% for identifier in version['identifiers'] %}
+          {% if identifier['scheme'] == 'DOI' %}
+          <dt>DOI</dt><dd><a href="https://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></dd>
+          {% elif identifier['scheme'] %}
+          <dt>{{ identifier['scheme'] }}</dt><dd>{{ identifier['id'] }}</dd>
+          {% else %}
+          <dt>Other identifier</dt><dd>{{ identifier['id'] }}</dd>
+          {% endif %}
+          {% if 'locations' in version %}
+          <ul class="locations list-inline">
+          {% for location in version['locations'] %}
+            {% if location['type'] == 'website' %}
+            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">Visit website</a></li>
+            {% elif location['type'] == 'document' %}
+            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">View documentation</a></li>
+            {% elif location['type'] == 'application' %}
+            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">Use tool online</a></li>
+            {% elif location['type'] == 'service' %}
+            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">Service endpoint</a></li>
+            {% endif %}
+          {% endfor %}
+          </ul>
+          {% endif %}
+        {% endfor %}
+        </dl>
+        {% endif %}
+      </dd>
     {% endfor %}
-    </ul>
+    </dl>
   </div>
   {% endif %}
   {% if 'supported schemes' in relations %}
