@@ -1301,7 +1301,7 @@ def msc_to_form(msc_data):
                 mapped_version = dict()
                 for key, value in version.items():
                     if key == 'valid':
-                        valid_tuple = v.partition('/')
+                        valid_tuple = value.partition('/')
                         mapped_version['valid_from'] = valid_tuple[0]
                         mapped_version['valid_to'] = valid_tuple[2]
                     else:
@@ -1378,8 +1378,8 @@ def form_to_msc(form_data, element):
                         if element and 'versions' in element:
                             for release in element['versions']:
                                 if 'number' in release and str(release['number']) == str(value):
-                                    overrides = {k: v for k, v in release.items()\
-                                        if k not in ['number', 'available', 'issued', 'valid']}
+                                    overrides = {i: j for i, j in release.items()\
+                                        if i not in ['number', 'available', 'issued', 'valid']}
                                     mapped_version.update(overrides)
                                     break
                     else:
