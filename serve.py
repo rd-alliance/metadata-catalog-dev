@@ -1312,7 +1312,7 @@ def msc_to_form(msc_data):
         else:
             form_data[k] = v
     # Ensure there is a blank entry at the end of the following lists
-    for l in ['types']:
+    for l in ['keywords', 'dataTypes', 'types']:
         if l in form_data:
             form_data[l].append('')
     if 'locations' in form_data:
@@ -1499,7 +1499,7 @@ class FreeLocationForm(Form):
 
 class SampleForm(Form):
     title = StringField('Title', validators=[RequiredIf('url')])
-    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+    url = StringField('URL', validators=[RequiredIf('title'), EmailOrURL])
 
 class IdentifierForm(Form):
     id = StringField('ID')
@@ -1609,7 +1609,8 @@ def edit_scheme(number):
                 ('document', 'document'), ('website', 'website'),
                 ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
                 ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
-        f['type'].validators = [validators.Optional()]
+    for f in form.keywords:
+        f.validators = [validators.Optional(), validators.AnyOf(subject_list, 'Value must match an English preferred label in the {}.'.format(thesaurus_link))]
     # Processing the request
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
@@ -1690,7 +1691,6 @@ def edit_organization(number):
         form = OrganizationForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('website', 'website'), ('email', 'email address')]
-        f['type'].validators = [validators.Optional()]
     # Processing the request
     if request.method == 'POST' and form.validate():
         # Translate form data into internal data model
@@ -1776,7 +1776,6 @@ def edit_tool(number):
     for f in form.locations:
         f['type'].choices = [('', ''), ('document', 'document'), ('website', 'website'),\
             ('application', 'application'), ('service', 'service endpoint')]
-        f['type'].validators = [validators.Optional()]
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
         # Translate form data into internal data model
@@ -1959,7 +1958,6 @@ def edit_endorsement(number):
         form = EndorsementForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('document', 'document')]
-        f['type'].validators = [validators.Optional()]
     if request.method == 'POST' and form.validate():
         for f in form.locations:
             if f.url:

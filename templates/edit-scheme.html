@@ -47,7 +47,9 @@
         <span class="{{ state(f) }}">{{ f(list="keyword-list", class="form-control form-control-narrow") }}</span>
         {% endfor %}
       </div>
-      {{ errors(form.keywords) }}
+      {% for f in form.keywords %}
+      {{ errors(f) }}
+      {% endfor %}
       <ul class="help-block">
         <li>Use domains, micro-thesaurus names or concepts from the
           <a href="http://vocabularies.unesco.org/browser/thesaurus/en/" target="_blank">UNESCO Thesaurus</a>.</li>
@@ -72,9 +74,19 @@
         <li>To give several terms, save after adding each one.</li>
       </ul>
     </div>
+    <fieldset>
+    <legend>Relationships to other records</legend>
+    <p class="help-block">
+      If the scheme or organization you need is not listed, you can add it using
+      the following links.
+    </p>
+    <div class="form-group">
+      <a href="{{ url_for('edit_scheme', number=0) }}" target="_blank" class="btn btn-warning">Add scheme</a>
+      <a href="{{ url_for('edit_organization', number=0) }}" target="_blank" class="btn btn-warning">Add organization</a>
+    </div>
     <div class="form-group">
       {{ form.parent_schemes.label(class="control-label") }}
-      {{ form.parent_schemes(class="form-control", style="width:auto;") }}
+      {{ form.parent_schemes(class="form-control") }}
     </div>
     <div class="form-group">
       {{ form.maintainers.label(class="control-label") }}
@@ -88,6 +100,18 @@
       {{ form.users.label(class="control-label") }}
       {{ form.users(class="form-control", style="width:auto;") }}
     </div>
+    {% if eid != 0 %}
+    <p class="help-block">
+      For some other relationships, you need to add them from a different
+      record.
+    </p>
+    <div class="form-group">
+      <a href="{{ url_for('edit_tool', number=0) }}" target="_blank" class="btn btn-warning">Add tool</a>
+      <a href="{{ url_for('edit_mapping', number=0) }}" target="_blank" class="btn btn-warning">Add mapping between schemes</a>
+      <a href="{{ url_for('edit_endorsement', number=0) }}" target="_blank" class="btn btn-warning">Add endorsement</a>
+    </div>
+    {% endif %}
+    </fieldset>
     <fieldset>
     <legend>{{ form.locations.label.text }}</legend>
       <ol class="form-list">

@@ -105,4 +105,11 @@
     </ul>
   </div>
   {% endif %}
+  {% if g.user %}
+  <aside>
+    <p>
+      <a href="{{ url_for('edit_tool', number=record.eid) }}" class="btn btn-default">Edit this record</a>
+    </p>
+  </aside>
+  {% endif %}
 {% endblock %}
