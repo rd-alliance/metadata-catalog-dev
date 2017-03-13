@@ -519,7 +519,8 @@ def scheme(number, field=None):
                     endorsement_ids.append(entity['id'])
 
     Endorsement = Query()
-    related_endorsements = endorsements.search(Endorsement.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    Relation = Query()
+    related_endorsements = endorsements.search(Endorsement.relatedEntities.any(Relation['id'].matches == 'msc:m{}(#.*)?'.format(number)))
     for entity in related_endorsements:
         entity_id = 'msc:e{}'.format(entity.eid)
         if not entity_id in endorsement_ids:
