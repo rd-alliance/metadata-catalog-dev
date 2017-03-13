@@ -44,7 +44,7 @@ subfolders = {'endorsements': 'e',
 parser = argparse.ArgumentParser(description='''
 Converts a collection of YAML files into TinyDB database or vice versa. The
 YAML files should be arranged in subfolders according to type, i.e. {}.'''.format(\
-    ', '.join(subfolders.keys().sort())))
+    ', '.join(sorted(subfolders))))
 parser.add_argument('-f', '--folder'\
     ,help='location of YAML data file collection (default: ./db/)'\
     ,action='store'\
@@ -110,7 +110,10 @@ def dbCompile(args):
                     id_number = id_string[5:]
                 else:
                     id_list.append(identifier)
-            record['identifiers'] = id_list
+            if len(id_list) > 0:
+                record['identifiers'] = id_list
+            else:
+                del record['identifiers']
             db[folder][id_number] = record
 
         isCompiled = True
@@ -141,7 +144,7 @@ def dbDump(args):
         print('Do you wish to erase it, back it up, or keep it? [e(rase)/(b)ackup/K(eep)]')
         reply = input("> ")
         if reply[:1].lower() == 'e':
-            for folder in subfolders.keys().sort():
+            for folder in sorted(subfolders):
                 folder_path = os.path.join(args.folder, folder)
                 if not os.path.isdir(folder_path):
                     continue
@@ -154,6 +157,7 @@ def dbDump(args):
                 i += 1
             else:
                 os.rename(args.folder, args.folder + str(i))
+                os.makedirs(args.folder)
                 os.rename(os.path.join(args.folder + str(i), 'README.md'),\
                     os.path.join(args.folder, 'README.md'))
         else:
@@ -162,7 +166,7 @@ def dbDump(args):
 
     db = TinyDB(args.file)
 
-    for folder, series in subfolders:
+    for folder, series in subfolders.items():
         folder_path = os.path.join(args.folder, folder)
         if not os.path.isdir(folder_path):
             os.makedirs(folder_path)
@@ -170,6 +174,9 @@ def dbDump(args):
         records = tbl.all()
         for record in records:
             slug = record['slug']
+            del record['slug']
+            if 'relatedEntities' in record:
+                record['relatedEntities'].sort(key=lambda k: k['id'][:5] + k['id'][5:].zfill(5))
             if 'identifiers' not in record:
                 record['identifiers'] = list()
             record['identifiers'].insert(0,\
@@ -177,7 +184,8 @@ def dbDump(args):
                     'scheme': 'RDA-MSCWG'})
             dumped_record = os.path.join(folder_path, slug + '.yml')
             with open(dumped_record, 'w') as r:
-                yaml.safe_dump(dict(record), r, default_flow_style=False)
+                yaml.safe_dump(dict(record), r, default_flow_style=False,
+                               allow_unicode=True)
 
 parser_dump.set_defaults(func=dbDump)
 
