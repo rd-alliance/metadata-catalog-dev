@@ -1,10 +1,16 @@
-description: A mapping from Darwin Core to ABCD (Access to Biological Collection Data).
+description: <p>This document lists the elements in Darwin Core (DwC) v1.2,
+  the OBIS extension to DwC 1.2, DwC 1.21, DwC 1.4 (draft), DwC 1.4 Curatorial
+  Extension, DwC 1.4 Geospatial Extension, DwC 1.4 Paleontology Extension, and
+  Standard DwC, and recommends equivalent elements in ABCD v2.06.</p>
 identifiers:
 - id: msc:c5
   scheme: RDA-MSCWG
+versions:
+- number: "2015-06-02"
+  issued: "2015-06-02"
 locations:
 - type: document
-  url: http://rs.tdwg.org/dwc/terms/history/dwctoabcd/index.htm
+  url: http://rs.tdwg.org/dwc/terms/history/dwctoabcd/
 relatedEntities:
 - id: msc:m1
   role: output scheme
