@@ -1959,12 +1959,18 @@ def edit_endorsement(number):
         form = EndorsementForm(request.form)
     for f in form.locations:
         f['type'].choices = [('', ''), ('document', 'document')]
+        f.url.validators = [validators.Optional()]
+        f['type'].validators = [validators.Optional()]
     if request.method == 'POST' and form.validate():
+        form_data = form.data
+        filtered_locations = list()
         for f in form.locations:
-            if f.url:
-                f['type'].data = 'document'
+            if f.url.data:
+                location = {'url': f.url.data, 'type': 'document'}
+                filtered_locations.append(location)
+        form_data['locations'] = filtered_locations
         # Translate form data into internal data model
-        msc_data = form_to_msc(form.data, element)
+        msc_data = form_to_msc(form_data, element)
         msc_data = fix_slug(msc_data, 'e')
         # TODO: apply logging and version control
         if element:
