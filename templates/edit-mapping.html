@@ -18,6 +18,13 @@
           mapping in order to improve results.</li>
       </ul>
     </div>
+    <p class="help-block">
+      If the scheme you need is not listed, you can add it using
+      the following link.
+    </p>
+    <div class="form-group">
+      <a href="{{ url_for('edit_scheme', number=0) }}" target="_blank" class="btn btn-warning">Add scheme</a>
+    </div>
     <div class="form-group">
       {{ form.input_schemes.label(class="control-label") }}
       {{ form.input_schemes(class="form-control") }}
@@ -57,6 +64,13 @@
       </ul>
     </div>
     </fieldset>
+    <p class="help-block">
+      If the organization you need is not listed, you can add it using
+      the following link.
+    </p>
+    <div class="form-group">
+      <a href="{{ url_for('edit_organization', number=0) }}" target="_blank" class="btn btn-warning">Add organization</a>
+    </div>
     <div class="form-group">
       {{ form.maintainers.label(class="control-label") }}
       {{ form.maintainers(class="form-control", style="width:auto;") }}
