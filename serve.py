@@ -12,7 +12,7 @@ import os, sys, re, urllib, json, unicodedata
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo -H pip3 install flask
-from flask import Flask, request, url_for, render_template, flash, redirect, jsonify, g, session
+from flask import Flask, request, url_for, render_template, flash, redirect, abort, jsonify, g, session
 
 # See https://pythonhosted.org/Flask-OpenID/
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
@@ -413,6 +413,8 @@ def hello():
 def scheme(number, field=None):
     schemes = db.table('metadata-schemes')
     element = schemes.get(eid=number)
+    if not element:
+        abort(404)
 
     if request_wants_json():
         if 'identifiers' not in element:
@@ -591,6 +593,8 @@ def scheme(number, field=None):
 def tool(number, field=None):
     tools = db.table('tools')
     element = tools.get(eid=number)
+    if not element:
+        abort(404)
 
     if request_wants_json():
         if 'identifiers' not in element:
@@ -658,6 +662,8 @@ def tool(number, field=None):
 def organization(number, field=None):
     organizations = db.table('organizations')
     element = organizations.get(eid=number)
+    if not element:
+        abort(404)
 
     if request_wants_json():
         if 'identifiers' not in element:
@@ -682,6 +688,8 @@ def organization(number, field=None):
 def mapping(number, field=None):
     mappings = db.table('mappings')
     element = mappings.get(eid=number)
+    if not element:
+        abort(404)
 
     if request_wants_json():
         if 'identifiers' not in element:
@@ -706,6 +714,8 @@ def mapping(number, field=None):
 def endorsement(number, field=None):
     endorsements = db.table('endorsements')
     element = endorsements.get(eid=number)
+    if not element:
+        abort(404)
 
     if request_wants_json():
         if 'identifiers' not in element:
