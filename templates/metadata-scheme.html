@@ -9,7 +9,7 @@
     <p class="col-md-2">Used in</p>
     <ul class="col-md-10 list-inline">
     {% for keyword in record['keywords'] %}
-      <li><a class="btn btn-default" href="{{ url_for('subject', subject=toURLSlug(keyword)) }}">{{ keyword }}</a></li>
+      <li><a class="btn btn-special" href="{{ url_for('subject', subject=toURLSlug(keyword)) }}">{{ keyword }}</a></li>
     {% endfor %}
     </ul>
   </div>
@@ -19,7 +19,7 @@
     <p class="col-md-2">Used for</p>
     <ul class="col-md-10 list-inline">
     {% for type in record['dataTypes'] %}
-      <li><a class="btn btn-default" href="{{ url_for('dataType', dataType=toURLSlug(type)) }}">{{ type }}</a></li>
+      <li><a class="btn btn-special" href="{{ url_for('dataType', dataType=toURLSlug(type)) }}">{{ type }}</a></li>
     {% endfor %}
     </ul>
   </div>
@@ -30,11 +30,11 @@
     <ul class="locations list-inline">
     {% for location in record['locations'] %}
       {% if location['type'] == 'website' %}
-      <li><a class="btn btn-default" href="{{ location['url'] }}">Visit website</a></li>
+      <li><a class="btn btn-special" href="{{ location['url'] }}">Visit website</a></li>
       {% elif location['type'] == 'document' %}
-      <li><a class="btn btn-default" href="{{ location['url'] }}">View specification</a></li>
+      <li><a class="btn btn-special" href="{{ location['url'] }}">View specification</a></li>
       {% else %}
-      <li><a class="btn btn-default" href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
+      <li><a class="btn btn-special" href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
       {% endif %}
     {% endfor %}
     </ul>
@@ -50,8 +50,11 @@
       {% if 'locations' in org %}
         <ul class="locations list-inline">
         {% for location in org['locations'] %}
-          <li><a class="btn btn-default" href="{% if location['type'] == 'email' %}mailto:{% endif %}{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+          <li><a class="btn btn-special" href="{% if location['type'] == 'email' %}mailto:{% endif %}{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
+        {% if g.user %}
+          <li><a class="btn btn-default" href="{{ url_for('edit_organization', number=org.eid) }}">Edit record</a></li>
+        {% endif %}
         </ul>
       {% endif %}
       </li>
@@ -62,8 +65,11 @@
       {% if 'locations' in org %}
         <ul class="locations list-inline">
         {% for location in org['locations'] %}
-          <li><a class="btn btn-default" href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+          <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
+        {% if g.user %}
+          <li><a class="btn btn-default" href="{{ url_for('edit_organization', number=org.eid) }}">Edit record</a></li>
+        {% endif %}
         </ul>
       {% endif %}
       </li>
@@ -120,11 +126,11 @@
           <ul class="locations list-inline">
           {% for location in version['locations'] %}
             {% if location['type'] == 'website' %}
-            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">Visit website</a></li>
+            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">Visit website</a></li>
             {% elif location['type'] == 'document' %}
-            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">View specification</a></li>
+            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">View specification</a></li>
             {% else %}
-            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
+            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
             {% endif %}
           {% endfor %}
           </ul>
@@ -156,8 +162,11 @@
         {% if 'locations' in mapping %}
         <ul class="locations list-inline">
         {% for location in mapping['locations'] %}
-          <li><a class="btn btn-default" href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
+          <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}
+        {% if g.user %}
+          <li><a class="btn btn-default" href="{{ url_for('edit_mapping', number=mapping.eid) }}">Edit record</a></li>
+        {% endif %}
         </ul>
         {% endif %}
     {% endfor %}
@@ -170,8 +179,11 @@
         {% if 'locations' in mapping %}
         <ul class="locations list-inline">
         {% for location in mapping['locations'] %}
-          <li><a class="btn btn-default" href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
+          <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}
+        {% if g.user %}
+          <li><a class="btn btn-default" href="{{ url_for('edit_mapping', number=mapping.eid) }}">Edit record</a></li>
+        {% endif %}
         </ul>
         {% endif %}
     {% endfor %}
@@ -206,8 +218,11 @@
         {% if 'locations' in user %}
         <ul class="locations list-inline">
         {% for location in user['locations'] %}
-          <li><a class="btn btn-default" href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
+          <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
+        {% if g.user %}
+          <li><a class="btn btn-default" href="{{ url_for('edit_organization', number=user.eid) }}">Edit record</a></li>
+        {% endif %}
         </ul>
       {% endif %}
       </li>
@@ -233,9 +248,12 @@
         {% endif %}
         {% if 'locations' in endorsement %}
         <ul class="locations list-inline">
-        {% for location in mapping['locations'] %}
-          <li><a class="btn btn-default" href="{{ location['url'] }}">View endorsement</a></li>
+        {% for location in endorsement['locations'] %}
+          <li><a class="btn btn-special" href="{{ location['url'] }}">View endorsement</a></li>
         {% endfor %}
+        {% if g.user %}
+          <li><a class="btn btn-default" href="{{ url_for('edit_endorsement', number=endorsement.eid) }}">Edit record</a></li>
+        {% endif %}
         </ul>
         {% endif %}
       </li>

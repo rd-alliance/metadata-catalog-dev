@@ -13,4 +13,14 @@
   <ul>
     <li><a href="{{ url_for('tool_index') }}">Browse by tool name</a></li>
   </ul>
+  {% if g.user %}
+  <h2>Make changes</h2>
+  <ul>
+    <li><a href="{{ url_for('edit_scheme', number=0) }}">Add metadata scheme</a></li>
+    <li><a href="{{ url_for('edit_mapping', number=0) }}">Add mapping between schemes</a></li>
+    <li><a href="{{ url_for('edit_tool', number=0) }}">Add metadata-related tool</a></li>
+    <li><a href="{{ url_for('edit_organization', number=0) }}">Add organization</a></li>
+    <li><a href="{{ url_for('edit_endorsement', number=0) }}">Add endorsement</a></li>
+  </ul>
+  {% endif %}
 {% endblock %}

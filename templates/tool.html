@@ -20,13 +20,13 @@
     <ul class="locations list-inline">
     {% for location in record['locations'] %}
       {% if location['type'] == 'website' %}
-      <li><a class="btn btn-default" href="{{ location['url'] }}">Visit website</a></li>
+      <li><a class="btn btn-special" href="{{ location['url'] }}">Visit website</a></li>
       {% elif location['type'] == 'document' %}
-      <li><a class="btn btn-default" href="{{ location['url'] }}">View documentation</a></li>
+      <li><a class="btn btn-special" href="{{ location['url'] }}">View documentation</a></li>
       {% elif location['type'] == 'application' %}
-      <li><a class="btn btn-default" href="{{ location['url'] }}">Use tool online</a></li>
+      <li><a class="btn btn-special" href="{{ location['url'] }}">Use tool online</a></li>
       {% elif location['type'] == 'service' %}
-      <li><a class="btn btn-default" href="{{ location['url'] }}">Service endpoint</a></li>
+      <li><a class="btn btn-special" href="{{ location['url'] }}">Service endpoint</a></li>
       {% endif %}
     {% endfor %}
     </ul>
@@ -109,13 +109,13 @@
           <ul class="locations list-inline">
           {% for location in version['locations'] %}
             {% if location['type'] == 'website' %}
-            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">Visit website</a></li>
+            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">Visit website</a></li>
             {% elif location['type'] == 'document' %}
-            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">View documentation</a></li>
+            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">View documentation</a></li>
             {% elif location['type'] == 'application' %}
-            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">Use tool online</a></li>
+            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">Use tool online</a></li>
             {% elif location['type'] == 'service' %}
-            <li><a class="btn btn-sm btn-default" href="{{ location['url'] }}">Service endpoint</a></li>
+            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">Service endpoint</a></li>
             {% endif %}
           {% endfor %}
           </ul>

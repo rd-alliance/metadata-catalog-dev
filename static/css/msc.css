@@ -53,19 +53,40 @@ ul.locations li a {
 	padding: 8px 16px;
 	margin: 4px 0px;
 }
-div.keywords li a {
+div.keywords li a.btn-special {
 	border: 1px solid #BCAAA4;
 	background-color: #D7CCC8;
 	color: black;
 }
-div.dataTypes li a {
+div.keywords li a.btn-special:active,
+div.keywords li a.btn-special:hover,
+div.keywords li a.btn-special:focus {
+	border: 1px solid #A1887F;
+	background-color: #BCAAA4;
+	color: black;
+}
+div.dataTypes li a.btn-special {
 	border: 1px solid #FFE082;
 	background-color: #FFECB3;
 	color: white;
 }
-ul.locations li a {
+div.dataTypes li a.btn-special:active,
+div.dataTypes li a.btn-special:hover,
+div.dataTypes li a.btn-special:focus {
+	border: 1px solid #FFD54F;
+	background-color: #FFE082;
+	color: white;
+}
+ul.locations li a.btn-special {
 	border: 1px solid #90CAF9;
 	background-color: #BBDEFB;
+	color: black;
+}
+ul.locations li a.btn-special:active,
+ul.locations li a.btn-special:hover,
+ul.locations li a.btn-special:focus {
+	border: 1px solid #64B5F6;
+	background-color: #90CAF9;
 	color: black;
 }
 
