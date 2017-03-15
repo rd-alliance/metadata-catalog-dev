@@ -2,9 +2,14 @@ description: A mapping from DataCite Metadata Schema to DDI (Data Documentation 
 identifiers:
 - id: msc:c6
   scheme: RDA-MSCWG
+- id: "10.5438/0005"
+  scheme: DOI
 locations:
 - type: document
-  url: http://schema.datacite.org/meta/kernel-2.1/doc/DataCite-MetadataKernel_v2.1.pdf
+  url: http://schema.datacite.org/meta/kernel-2.2/doc/DataCite-MetadataKernel_v2.2.pdf
+versions:
+- number: 2.2
+  issued: 2011-07
 relatedEntities:
 - id: msc:m11
   role: input scheme
