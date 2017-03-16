@@ -1,10 +1,20 @@
-description: A mapping from DataCite Metadata Schema to Dublin Core.
+description: <p>An appendix to the documentation of the DataCite Metadata Schema
+  v2.x matches elements in the DataCite schema to corresponding Dublin Core
+  elements and Dublin Core terms. Later versions of the documentation do not
+  contain this mapping, but do include a suggested mapping of the DataCite
+  controlled vocabulary terms for general resource types to the DCMI Type
+  Vocabulary.</p>
 identifiers:
 - id: msc:c7
   scheme: RDA-MSCWG
+- id: "10.5438/0005"
+  scheme: DOI
 locations:
 - type: document
-  url: http://schema.datacite.org/meta/kernel-2.1/doc/DataCite-MetadataKernel_v2.1.pdf
+  url: http://schema.datacite.org/meta/kernel-2.2/doc/DataCite-MetadataKernel_v2.2.pdf
+versions:
+- number: 2.2
+  issued: 2011-07
 relatedEntities:
 - id: msc:m11
   role: input scheme

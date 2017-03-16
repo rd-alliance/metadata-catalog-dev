@@ -1,4 +1,6 @@
-description: A mapping from DataCite Metadata Schema to DDI (Data Documentation Initiative).
+description: <p>An appendix to the documentation of the DataCite Metadata Schema
+  v2.x maps elements in the DataCite schema to corresponding elements in the DDI
+  v3.1 set of schemas.</p>
 identifiers:
 - id: msc:c6
   scheme: RDA-MSCWG
