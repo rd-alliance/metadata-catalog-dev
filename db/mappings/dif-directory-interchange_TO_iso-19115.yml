@@ -1,4 +1,5 @@
-description: A mapping from DIF (Directory Interchange Format) to ISO 19115.
+description: <p>This document provides a detailed mapping from DIF to ISO
+  19115.</p>
 identifiers:
 - id: msc:c12
   scheme: RDA-MSCWG

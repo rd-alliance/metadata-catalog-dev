@@ -1,11 +1,11 @@
-description: A mapping from FGDC/CSDGM (Federal Geographic Data Committee Content
-  Standard for Digital Geospatial Metadata) to DIF (Directory Interchange Format).
+description: <p>This document describes how to map from FGDC/CSDGM to DIF,
+  including a comparison of their respective mandatory fields</p>.
 identifiers:
 - id: msc:c19
   scheme: RDA-MSCWG
 locations:
 - type: document
-  url: http://gcmd.nasa.gov/Aboutus/standards/fgdc_to_dif.html
+  url: http://gcmd.nasa.gov/add/standards/fgdc_to_dif.html
 relatedEntities:
 - id: msc:m14
   role: output scheme
