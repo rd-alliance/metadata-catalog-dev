@@ -1,10 +1,11 @@
-description: A mapping from DDI (Data Documentation Initiative) to Dublin Core.
+description: <p>This document identifies which elements in the DDI v2.x Codebook
+  DTD correspond to the 15 Dublin Core elements, and maps between them.
 identifiers:
 - id: msc:c11
   scheme: RDA-MSCWG
 locations:
 - type: document
-  url: http://www.ddialliance.org/resources/tools/dc
+  url: http://www.ddialliance.org/resources/ddi-profiles/dc
 relatedEntities:
 - id: msc:m13
   role: input scheme

@@ -1,10 +1,31 @@
-description: A mapping from Dublin Core to PROV.
+description: <p>This document describes a detailed crosswalk from Dublin Core
+  terms to the PROV-O OWL2 ontology. The associated <a
+  href="http://www.w3.org/ns/prov-dc-directmappings.ttl">direct mappings</a>
+  and <a href="http://www.w3.org/ns/prov-dc-refinements.ttl">PROV-O
+  refinemements for Dublin Core</a> are available as Turtle (Terse RDF Triple
+  Language) files.
 identifiers:
 - id: msc:c16
   scheme: RDA-MSCWG
+versions:
+- number: 2013-04
+  issued: 2013-04-30
+  locations:
+  - type: document
+    url: http://www.w3.org/TR/2013/NOTE-prov-dc-20130430/
+- number: 2013-WD
+  issued: 2013-03-12
+  locations:
+  - type: document
+    url: http://www.w3.org/TR/2013/WD-prov-dc-20130312/
+- number: 2012-WD
+  issued: 2012-12-11
+  locations:
+  - type: document
+    url: http://www.w3.org/TR/2013/WD-prov-dc-20121211/
 locations:
 - type: document
-  url: http://www.w3.org/TR/2012/WD-prov-dc-20121211/
+  url: http://www.w3.org/TR/prov-dc/
 relatedEntities:
 - id: msc:m15
   role: input scheme

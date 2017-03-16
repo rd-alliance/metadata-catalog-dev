@@ -1,0 +1,14 @@
+description: <p>Although described as a mapping from the 15 Dublin Core elements
+  to DIF, this document is more easily implemented in the opposite direction,
+  from DIF to Dublin Core.</p>
+identifiers:
+- id: msc:c10
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://gcmd.nasa.gov/add/standards/dublin_to_dif.html
+relatedEntities:
+- id: msc:m14
+  role: input scheme
+- id: msc:m15
+  role: output scheme

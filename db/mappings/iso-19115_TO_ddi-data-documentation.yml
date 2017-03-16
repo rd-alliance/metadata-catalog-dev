@@ -1,0 +1,15 @@
+description: <p>This document provides a mapping from UK AGMAP and ISO 19115
+  to DDI v2.x Codebook.</p>
+identifiers:
+- id: msc:c17
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://web.archive.org/web/20110523210427/http://www.gogeo.ac.uk/files/GoGeo%20to%20DDI%20to%20ISO%20mapping.pdf
+relatedEntities:
+- id: msc:m13
+  role: output scheme
+- id: msc:m22
+  role: input scheme
+- id: msc:m79
+  role: input scheme

@@ -1,0 +1,22 @@
+description: <p>This document provides a crosswalk from core MARC 21
+  bibliographic data elements to Dublin Core elements and terms. It includes a
+  mapping from Leader/06 and Leader/07 codes to the DMCI Type Vocabulary.</p>
+identifiers:
+- id: msc:c14
+  scheme: RDA-MSCWG
+versions:
+- number: 2008
+  issued: 2008-04-24
+- number: 2001
+  issued: 2001-02
+  locations:
+  - type: document
+    url: http://www.loc.gov/marc/marc2dc-2001.html
+locations:
+- type: document
+  url: http://www.loc.gov/marc/marc2dc.html
+relatedEntities:
+- id: msc:m15
+  role: output scheme
+- id: msc:m89
+  role: input scheme
