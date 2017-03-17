@@ -1,7 +1,7 @@
-description: <p>This document provides a mapping from UK AGMAP and ISO 19115
-  to DDI v2.x Codebook.</p>
+description: <p>This document provides a mapping from UK AGMAP and ISO 19115 to DDI
+  v2.x Codebook.</p>
 identifiers:
-- id: msc:c17
+- id: msc:c20
   scheme: RDA-MSCWG
 locations:
 - type: document

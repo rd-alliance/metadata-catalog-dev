@@ -1,19 +1,8 @@
-description: <p>An XML Stylesheet for transforming EML XML files into ISO 19139
-  XML files, compliant with the ISO 19115 metadata standard.</p>
+description: <p>An XML Stylesheet for transforming EML XML files into ISO 19139 XML
+  files, compliant with the ISO 19115 metadata standard.</p>
 identifiers:
-- id: msc:c18
+- id: msc:c13
   scheme: RDA-MSCWG
-versions:
-- number: 1.1
-  issued: 2016-10-25
-  locations:
-  - type: library (XML)
-    url: http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml2iso19139.xsl
-- number: 1.0.2
-  issued: 2015-02-13
-  locations:
-  - type: library (XML)
-    url: http://rs.gbif.org/schema/eml-gbif-profile/1.0.2/eml2iso19139.xsl
 locations:
 - type: library (XML)
   url: https://github.com/gbif/eml-profile/raw/master/eml2iso19139.xsl
@@ -22,3 +11,14 @@ relatedEntities:
   role: input scheme
 - id: msc:m22
   role: output scheme
+versions:
+- issued: 2016-10-25
+  locations:
+  - type: library (XML)
+    url: http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml2iso19139.xsl
+  number: 1.1
+- issued: 2015-02-13
+  locations:
+  - type: library (XML)
+    url: http://rs.gbif.org/schema/eml-gbif-profile/1.0.2/eml2iso19139.xsl
+  number: 1.0.2

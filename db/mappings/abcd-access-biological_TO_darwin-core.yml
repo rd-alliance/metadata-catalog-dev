@@ -1,16 +1,13 @@
-description: <p>This document matches comparable elements between ABCD v2.06b
-  and Darwin Core (DwC) v1.4, DwC v1.4 Geospatial Extension, DwC v1.4 Curatorial
-  Extension, and the OBIS Schema v1.1 extension to DwC 1.2. It also notes any
-  issues with mapping in either direction.</p>
-identifiers:
-- id: msc:c1
-  scheme: RDA-MSCWG
 creators:
 - familyName: Berendsohn
   givenName: Walter
-versions:
-- issued: "2007-06-09"
-  number: "2007-06-09"
+description: <p>This document matches comparable elements between ABCD v2.06b and
+  Darwin Core (DwC) v1.4, DwC v1.4 Geospatial Extension, DwC v1.4 Curatorial Extension,
+  and the OBIS Schema v1.1 extension to DwC 1.2. It also notes any issues with mapping
+  in either direction.</p>
+identifiers:
+- id: msc:c1
+  scheme: RDA-MSCWG
 locations:
 - type: document
   url: http://www.bgbm.org/tdwg/CODATA/Schema/Mappings/DwCAndExtensions.htm
@@ -19,3 +16,6 @@ relatedEntities:
   role: input scheme
 - id: msc:m9
   role: output scheme
+versions:
+- issued: '2007-06-09'
+  number: '2007-06-09'

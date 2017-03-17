@@ -1,20 +1,20 @@
-description: <p>An appendix to the documentation of the DataCite Metadata Schema
-  v2.x matches elements in the DataCite schema to corresponding elements in the
-  IDF (International DOI Foundation) Metadata Kernel. It is mainly provided for
-  DataCite’s own administrative purposes.</p>
+description: <p>An appendix to the documentation of the DataCite Metadata Schema v2.x
+  matches elements in the DataCite schema to corresponding elements in the IDF (International
+  DOI Foundation) Metadata Kernel. It is mainly provided for DataCite’s own administrative
+  purposes.</p>
 identifiers:
-- id: msc:c8
+- id: msc:c6
   scheme: RDA-MSCWG
-- id: "10.5438/0005"
+- id: 10.5438/0005
   scheme: DOI
 locations:
 - type: document
   url: http://schema.datacite.org/meta/kernel-2.2/doc/DataCite-MetadataKernel_v2.2.pdf
-versions:
-- number: 2.2
-  issued: 2011-07
 relatedEntities:
 - id: msc:m11
   role: input scheme
-- id: msc:m87
+- id: msc:m88
   role: output scheme
+versions:
+- issued: 2011-07
+  number: 2.2

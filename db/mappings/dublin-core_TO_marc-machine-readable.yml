@@ -1,27 +1,27 @@
-description: <p>This document provides a crosswalk from Dublin Core elements and
-  Dublin Core terms to MARC 21 bibliographic data elements. It includes a
-  mapping from the DMCI Type Vocabulary to Leader/06 codes.</p>
+description: <p>This document provides a crosswalk from Dublin Core elements and Dublin
+  Core terms to MARC 21 bibliographic data elements. It includes a mapping from the
+  DMCI Type Vocabulary to Leader/06 codes.</p>
 identifiers:
-- id: msc:c15
+- id: msc:c11
   scheme: RDA-MSCWG
-versions:
-- number: 2008
-  issued: 2008-04-23
-- number: 2001
-  issued: 2001-03-12
-  locations:
-  - type: document
-    url: http://www.loc.gov/marc/dccross_20010312.html
-- number: 1999
-  issued: 1999-11-19
-  locations:
-  - type: document
-    url: http://www.loc.gov/marc/dccross_199911.html
 locations:
 - type: document
   url: http://www.loc.gov/marc/dccross.html
 relatedEntities:
 - id: msc:m15
   role: input scheme
-- id: msc:m89
+- id: msc:m91
   role: output scheme
+versions:
+- issued: 2008-04-23
+  number: 2008
+- issued: 2001-03-12
+  locations:
+  - type: document
+    url: http://www.loc.gov/marc/dccross_20010312.html
+  number: 2001
+- issued: 1999-11-19
+  locations:
+  - type: document
+    url: http://www.loc.gov/marc/dccross_199911.html
+  number: 1999

@@ -1,13 +1,10 @@
-description: '<p>This crosswalk indicates how to transform FGDC CSDGM to ISO
-  19115. It provides comments for suggested best practices and incorporates
-  feature catalogs (ISO 19110) and coordinate reference systems (ISO 19111). An
-  XML Stylesheet is provided for implementing the transformation. This is one of
-  a set of <a
-  href="http://www.ncddc.noaa.gov/metadata-standards/metadata-xml/">FGDC XML
-  transformations</a> produced by NOAA (National Oceanic and Atmospheric
-  Administration).</p>'
+description: <p>This crosswalk indicates how to transform FGDC CSDGM to ISO 19115.
+  It provides comments for suggested best practices and incorporates feature catalogs
+  (ISO 19110) and coordinate reference systems (ISO 19111). An XML Stylesheet is provided
+  for implementing the transformation. This is one of a set of <a href="http://www.ncddc.noaa.gov/metadata-standards/metadata-xml/">FGDC
+  XML transformations</a> produced by NOAA (National Oceanic and Atmospheric Administration).</p>
 identifiers:
-- id: msc:c20
+- id: msc:c17
   scheme: RDA-MSCWG
 locations:
 - type: document

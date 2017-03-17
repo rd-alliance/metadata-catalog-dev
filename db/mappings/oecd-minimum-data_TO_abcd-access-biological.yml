@@ -1,20 +1,20 @@
-description: <p>This document describes how to convert metadata conforming with
-  the OECD Minimum Data Set (MSD) for describing BRCS and the domain of Microbes
-  into ABCD v1.3.</p>
-identifiers:
-- id: msc:c4
-  scheme: RDA-MSCWG
 creators:
 - familyName: Berendsohn
   givenName: Walter
-versions:
-- issued: "2004-01-28"
-  number: "2004-01-28"
+description: <p>This document describes how to convert metadata conforming with the
+  OECD Minimum Data Set (MSD) for describing BRCS and the domain of Microbes into
+  ABCD v1.3.</p>
+identifiers:
+- id: msc:c23
+  scheme: RDA-MSCWG
 locations:
 - type: document
   url: http://www.bgbm.org/tdwg/codata/Schema/ABCD_1.30/OECD-MDS-2-ABCD130.pdf
 relatedEntities:
-- id: msc:m86
+- id: msc:m90
   role: input scheme
 - id: msc:m1
   role: output scheme
+versions:
+- issued: '2004-01-28'
+  number: '2004-01-28'

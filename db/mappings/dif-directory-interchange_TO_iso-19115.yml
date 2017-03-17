@@ -1,7 +1,6 @@
-description: <p>This document provides a detailed mapping from DIF to ISO
-  19115.</p>
+description: <p>This document provides a detailed mapping from DIF to ISO 19115.</p>
 identifiers:
-- id: msc:c12
+- id: msc:c10
   scheme: RDA-MSCWG
 locations:
 - type: document

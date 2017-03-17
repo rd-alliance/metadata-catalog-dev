@@ -1,7 +1,7 @@
-description: <p>This document identifies which elements in the DDI v2.x Codebook
-  DTD correspond to the 15 Dublin Core elements, and maps between them.
+description: <p>This document identifies which elements in the DDI v2.x Codebook DTD
+  correspond to the 15 Dublin Core elements, and maps between them.
 identifiers:
-- id: msc:c11
+- id: msc:c8
   scheme: RDA-MSCWG
 locations:
 - type: document

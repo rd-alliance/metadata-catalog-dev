@@ -1,6 +1,6 @@
 description: A mapping from ISA-Tab to MAGE-TAB.
 identifiers:
-- id: msc:c21
+- id: msc:c19
   scheme: RDA-MSCWG
 locations:
 - type: document
@@ -8,5 +8,5 @@ locations:
 relatedEntities:
 - id: msc:m21
   role: input scheme
-- id: msc:m91
+- id: msc:m86
   role: output scheme

@@ -1,8 +1,8 @@
-description: <p>This document provides a simple mapping from theSPASE Data Model
-  to the OAI-PMH profile of Dublin Core. The mapping is also available as an
-  XML Stylesheet transformation.</p>
+description: <p>This document provides a simple mapping from theSPASE Data Model to
+  the OAI-PMH profile of Dublin Core. The mapping is also available as an XML Stylesheet
+  transformation.</p>
 identifiers:
-- id: msc:c26
+- id: msc:c24
   scheme: RDA-MSCWG
 locations:
 - type: document
