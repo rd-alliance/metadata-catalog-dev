@@ -3,7 +3,7 @@ description: <p>This document describes how to convert a HISPID3 metatadata file
 identifiers:
 - id: msc:c3
   scheme: RDA-MSCWG
-creators
+creators:
 - familyName: Berendsohn
   givenName: Walter
 versions:

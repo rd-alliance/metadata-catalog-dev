@@ -4,7 +4,7 @@ description: <p>This document describes how to convert metadata conforming with
 identifiers:
 - id: msc:c4
   scheme: RDA-MSCWG
-creators
+creators:
 - familyName: Berendsohn
   givenName: Walter
 versions:

@@ -5,7 +5,7 @@ description: <p>This document describes how to map from the EURISCO Descriptors
 identifiers:
 - id: msc:c2
   scheme: RDA-MSCWG
-creators
+creators:
 - familyName: Berendsohn
   givenName: Walter
 versions:

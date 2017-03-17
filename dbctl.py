@@ -56,6 +56,7 @@ parser.add_argument('-d', '--db'\
     ,default=default_file\
     ,dest='file')
 subparsers = parser.add_subparsers(title='subcommands', help='perform database operation')
+parser_checkids = subparsers.add_parser('check-ids', help='check for empty/missing IDs in sequence')
 parser_compile = subparsers.add_parser('compile', help='compile YAML files to TinyDB database')
 parser_dump = subparsers.add_parser('dump', help='dump TinyDB database to YAML files')
 parser_vocab = subparsers.add_parser('vocab', help='fetch and optimise UNESCO Vocabulary')
@@ -71,6 +72,55 @@ def json_serial(obj):
         serial = obj.isoformat()
         return serial
     raise TypeError ("Type not serializable")
+
+def dbCheckids(args):
+    if not os.path.isdir(args.folder):
+        print('Cannot find YAML files; please check folder location and try again.')
+        sys.exit(1)
+
+    isFine = True
+
+    for folder in subfolders:
+        folder_path = os.path.join(args.folder, folder)
+        if not os.path.isdir(folder_path):
+            print('WARNING: Expected to find {} folder but it is missing.'.format(folder))
+            continue
+
+        highest_eid = 0
+        eid_list = list()
+
+        for entry in os.listdir(folder_path):
+            name_tuple = os.path.splitext(entry)
+            if (name_tuple[1] != '.yml'):
+                continue
+
+            slug = name_tuple[0]
+            id_number = ''
+            with open(os.path.join(folder_path, entry), 'r') as r:
+                record = yaml.safe_load(r)
+            id_list = list()
+            for identifier in record['identifiers']:
+                if identifier['scheme'] == 'RDA-MSCWG':
+                    id_string = identifier['id']
+                    id_number = id_string[5:]
+            if not id_number:
+                print('WARNING: {}/{} has no identifier.'.format(folder, slug))
+                continue
+            eid = int(id_number)
+            if eid > highest_eid:
+                highest_eid = eid
+            eid_list.append(eid)
+
+        series = subfolders[folder]
+        for eid in range(1, highest_eid):
+            if eid not in eid_list:
+                print('Identifier msc:{}{} is missing from the sequence.'.format(series, eid))
+                isFine = False
+
+    if isFine:
+        print('All identifiers are in sequence. It is safe to compile the database.')
+
+parser_checkids.set_defaults(func=dbCheckids)
 
 def dbCompile(args):
     if not os.path.isdir(args.folder):
