@@ -1,0 +1,21 @@
+description: '<p>This crosswalk indicates how to transform FGDC CSDGM Biological
+  Data Profile metadata to ISO 19115. It provides comments for suggested best 
+  practices and incorporates feature catalogs (ISO 19110) and coordinate 
+  reference systems (ISO 19111). An XML Stylesheet is provided for implementing 
+  the transformation. This is one of a set of <a
+  href="http://www.ncddc.noaa.gov/metadata-standards/metadata-xml/">FGDC XML
+  transformations</a> produced by NOAA (National Oceanic and Atmospheric
+  Administration).</p>'
+identifiers:
+- id: msc:c22
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: https://service.ncddc.noaa.gov/rdn/www/metadata-standards/metadata-xml/documents/Biological-to-ISO-Crosswalk-V1.xls
+- type: library (XML)
+  url: https://service.ncddc.noaa.gov/rdn/www/metadata-standards/metadata-xml/documents/bio2iso19115-2.xslt
+relatedEntities:
+- id: msc:m59
+  role: input scheme
+- id: msc:m22
+  role: output scheme

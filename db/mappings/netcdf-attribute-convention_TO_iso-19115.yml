@@ -1,0 +1,30 @@
+description: <p>This document provides a mapping from the NetCDF Attribute
+  Convention for Dataset Discovery to ISO 19115. The most up-to-date version is
+  available as an XML Stylesheet transformation from the Unidata threddsISO Code
+  Repository.</p>
+identifiers:
+- id: msc:c24
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_Mappings
+- type: library (XML)
+  url: https://github.com/Unidata/threddsIso/raw/master/src/main/resources/xsl/nciso/UnidataDD2MI.xsl
+relatedEntities:
+- id: msc:m22
+  role: output scheme
+- id: msc:m92
+  role: input scheme
+versions:
+- issued: '2016-02-10'
+  number: 2.2.8
+- issued: '2015-08-31'
+  number: 2.2.7
+- issued: '2015-05-14'
+  number: 2.2.5
+- issued: '2015-01-26'
+  number: 2.2.4
+- issued: '2012-06-06'
+  number: 2.2.2
+- issued: '2012-06-06'
+  number: 2.0.2

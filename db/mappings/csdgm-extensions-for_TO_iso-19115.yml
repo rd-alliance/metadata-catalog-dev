@@ -1,0 +1,16 @@
+description: '<p>This XML Stylesheet transforms FGDC CSDGM Extensions for
+  Remote Sensing metadata to ISO 19115. This is one of a set of <a
+  href="http://www.ncddc.noaa.gov/metadata-standards/metadata-xml/">FGDC XML
+  transformations</a> produced by NOAA (National Oceanic and Atmospheric
+  Administration).</p>'
+identifiers:
+- id: msc:c23
+  scheme: RDA-MSCWG
+locations:
+- type: library (XML)
+  url: https://service.ncddc.noaa.gov/rdn/www/metadata-standards/metadata-xml/documents/fgdcrse2iso19115-2.xslt
+relatedEntities:
+- id: msc:m53
+  role: input scheme
+- id: msc:m22
+  role: output scheme
