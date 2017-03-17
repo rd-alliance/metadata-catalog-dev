@@ -832,6 +832,7 @@ def scheme_index():
     Scheme = Query()
     Entity = Query()
     parent_schemes = schemes.search(Scheme.relatedEntities.all(Entity.role != 'parent scheme'))
+    parent_schemes.extend(schemes.search(~ Scheme.relatedEntities.exists()))
     scheme_tree = list()
     for scheme in parent_schemes:
         scheme_tree.append( getDBNode(schemes, scheme.eid, 'scheme') )
