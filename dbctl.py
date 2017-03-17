@@ -53,9 +53,9 @@ subfolders = {
 # ----------------------
 
 parser = argparse.ArgumentParser(
-    description='Converts a collection of YAML files into TinyDB database or '
-                'vice versa. The YAML files should be arranged in subfolders '
-                'according to type, i.e. {}.'
+    description='Converts a collection of YAML files into TinyDB database or'
+                ' vice versa. The YAML files should be arranged in subfolders'
+                ' according to type, i.e. {}.'
                 ''.format(', '.join(sorted(subfolders))))
 parser.add_argument(
     '-f', '--folder',
@@ -74,7 +74,7 @@ subparsers = parser.add_subparsers(
     help='perform database operation')
 parser_checkids = subparsers.add_parser(
     'check-ids',
-    help='check for empty/missing IDs in sequence')
+    help='check for and fix empty/missing IDs in sequence')
 parser_compile = subparsers.add_parser(
     'compile',
     help='compile YAML files to TinyDB database')
@@ -100,8 +100,8 @@ def json_serial(obj):
 
 def scan_ids(args):
     if not os.path.isdir(args.folder):
-        print('Cannot find YAML files; please check folder location and try '
-              'again.')
+        print('Cannot find YAML files; please check folder location and try'
+              ' again.')
         sys.exit(1)
 
     missing_ids = list()
@@ -147,7 +147,7 @@ def scan_ids(args):
 
 
 def fix_ids(args, missing_ids):
-    if len(missing_ids) == 0:
+    if not missing_ids:
         return None
 
     # Create list of folders with non-sequential IDs.
@@ -260,7 +260,7 @@ def fix_ids(args, missing_ids):
 def dbCheckids(args):
     missing_ids = scan_ids(args)
 
-    if len(missing_ids) > 0:
+    if missing_ids:
         for id_string in missing_ids:
             print('Identifier {} is missing from the sequence.'
                   ''.format(id_string))
@@ -271,8 +271,8 @@ def dbCheckids(args):
             sys.exit(0)
         fix_ids(args, missing_ids)
     else:
-        print('All identifiers are in sequence. It is safe to compile the '
-              'database.')
+        print('All identifiers are in sequence. It is safe to compile the'
+              ' database.')
 
 parser_checkids.set_defaults(func=dbCheckids)
 
@@ -282,12 +282,12 @@ parser_checkids.set_defaults(func=dbCheckids)
 
 def dbCompile(args):
     if not os.path.isdir(args.folder):
-        print('Cannot find YAML files; please check folder location and try '
-              'again.')
+        print('Cannot find YAML files; please check folder location and try'
+              ' again.')
         sys.exit(1)
 
     missing_ids = scan_ids(args)
-    if len(missing_ids) > 0:
+    if missing_ids:
         print('Database has missing IDs. Run "{}" to fix problem.'
               ''.format(parser_checkids.prog))
         sys.exit(1)
@@ -324,7 +324,7 @@ def dbCompile(args):
                     id_number = id_string[5:]
                 else:
                     id_list.append(identifier)
-            if len(id_list) > 0:
+            if id_list:
                 record['identifiers'] = id_list
             else:
                 del record['identifiers']
@@ -361,14 +361,14 @@ def createSlug(string):
 
 def dbDump(args):
     if not os.path.isfile(args.file):
-        print('Cannot find database file; please check location and try '
-              'again.')
+        print('Cannot find database file; please check location and try'
+              ' again.')
         sys.exit(1)
 
     if os.path.isdir(args.folder):
         print('Database folder already exists at {}.'.format(args.file))
-        print('Do you wish to erase it, back it up, or keep it? '
-              '[e(rase)/(b)ackup/K(eep)]')
+        print('Do you wish to erase it, back it up, or keep it?'
+              ' [e(rase)/(b)ackup/K(eep)]')
         reply = input("> ")
         if reply[:1].lower() == 'e':
             for folder in sorted(subfolders):

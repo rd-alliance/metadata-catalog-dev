@@ -253,7 +253,7 @@ for record in standards:
                 else:
                     log += ('Found unsupported discipline {} in standard {}.\n'
                             ''.format(discipline, slug))
-            if len(keywords) == 0:
+            if not keywords:
                 keywords.append('Multidisciplinary')
             dest_record['keywords'] = keywords
         locations = list()
@@ -267,7 +267,7 @@ for record in standards:
                 'url': source_record['website'],
                 'type': 'website'}
             locations.append(location)
-        if len(locations) > 0:
+        if locations:
             dest_record['locations'] = locations
         # The following will be implemented as relations at the end.
         if 'mappings' in source_record:
@@ -336,14 +336,14 @@ for record in profiles:
                 else:
                     log += ('Found unsupported discipline {} in extension {}.'
                             '\n'.format(discipline, slug))
-            if len(keywords) == 0:
+            if not keywords:
                 keywords.append('Multidisciplinary')
             dest_record['keywords'] = keywords
         locations = list()
         if 'website' in source_record:
             location = {'url': source_record['website'], 'type': 'website'}
             locations.append(location)
-        if len(locations) > 0:
+        if locations:
             dest_record['locations'] = locations
         dest_record['relatedEntities'] = list()
         if 'standards' in source_record:
@@ -393,7 +393,7 @@ for record in tools:
         if 'website' in source_record:
             location = {'url': source_record['website'], 'type': 'website'}
             locations.append(location)
-        if len(locations) > 0:
+        if locations:
             dest_record['locations'] = locations
         dest_record['relatedEntities'] = list()
         if 'standards' in source_record:
@@ -445,7 +445,7 @@ for record in users:
         if 'website' in source_record:
             location = {'url': source_record['website'], 'type': 'website'}
             locations.append(location)
-        if len(locations) > 0:
+        if locations:
             dest_record['locations'] = locations
         if 'standards' in source_record:
             for standard in source_record['standards']:
@@ -762,7 +762,7 @@ if log:
     with open(log_file, 'w') as l:
         l.write(log)
 
-if len(used_keywords) > 0:
+if used_keywords:
     with open(kw_file, 'w') as k:
         kw_list = list(used_keywords)
         kw_list.sort()

@@ -148,14 +148,14 @@ def getTermNode(uri, filter=list()):
     result['url'] = url_for('subject', subject=slug)
     narrower_ids = thesaurus.objects(uri, SKOS.narrower)
     children = list()
-    if len(filter) > 0:
+    if filter:
         for narrower_id in narrower_ids:
             if narrower_id in filter:
                 children.append( getTermNode(narrower_id, filter=filter) )
     else:
         for narrower_id in narrower_ids:
             children.append( getTermNode(narrower_id, filter=filter) )
-    if len(children) > 0:
+    if children:
         children.sort(key=lambda k: k['name'])
         result['children'] = children
     return result
@@ -211,7 +211,7 @@ def getDBNode(table, id, type):
         Main = Query()
         Related = Query()
         child_schemes = table.search(Main.relatedEntities.any( (Related.role == 'parent scheme') & (Related.id == 'msc:m{}'.format(id)) ))
-        if len(child_schemes) > 0:
+        if child_schemes:
             children = list()
             for child_scheme in child_schemes:
                 children.append( getDBNode(table, child_scheme.eid, type) )
@@ -525,7 +525,7 @@ def scheme(number, field=None):
         entity_id = 'msc:e{}'.format(entity.eid)
         if not entity_id in endorsement_ids:
             endorsement_ids.append(entity_id)
-    if len(endorsement_ids) > 0:
+    if endorsement_ids:
         relations['endorsements'] = list()
         for endorsement_id in endorsement_ids:
             entity_number = int(endorsement_id[5:])
@@ -549,13 +549,13 @@ def scheme(number, field=None):
     Scheme = Query()
     # This optimization relies on schemes only pointing to parent schemes
     child_schemes = schemes.search(Scheme.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
-    if len(child_schemes) > 0:
+    if child_schemes:
         relations['children'] = child_schemes
         hasRelatedSchemes = True
 
     Tool = Query()
     related_tools = tools.search(Tool.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
-    if len(related_tools) > 0:
+    if related_tools:
         relations['tools'] = related_tools
 
     Mapping = Query()
@@ -577,10 +577,10 @@ def scheme(number, field=None):
             mappings_from.append(related_mapping)
         elif 'input scheme' in related_mapping:
             mappings_to.append(related_mapping)
-    if len(mappings_from) > 0:
+    if mappings_from:
         relations['mappings from'] = mappings_from
         hasRelatedSchemes = True
-    if len(mappings_to) > 0:
+    if mappings_to:
         relations['mappings to'] = mappings_to
         hasRelatedSchemes = True
     return render_template('metadata-scheme.html', record=element,\
@@ -764,11 +764,11 @@ def subject(subject):
     Scheme = Query()
     results = schemes.search(Scheme.keywords.any(term_list))
     no_of_hits = len(results)
-    if no_of_hits == 0:
-        flash('Found 0 schemes.', 'error')
-    else:
+    if no_of_hits:
         flash('Found {:N scheme/s}.'.format(Pluralizer(no_of_hits)))
         results.sort(key=lambda k: k['title'].lower())
+    else:
+        flash('Found 0 schemes.', 'error')
     return render_template('search-results.html', title=query_string, results=results)
 
 ### Per-funder/maintainer lists of standards
@@ -802,7 +802,7 @@ def group(funder=None, maintainer=None, user=None):
     results = schemes.search(Scheme.relatedEntities.any(\
         (Relation.role == role) & (Relation.id == 'msc:g{}'.format(id)) ))
     no_of_hits = len(results)
-    if no_of_hits > 0:
+    if no_of_hits:
         flash('Found {:N scheme/s} {} by this organization.'.format(\
             Pluralizer(no_of_hits), verb))
     else:
@@ -817,7 +817,7 @@ def dataType(dataType):
     Scheme = Query()
     results = schemes.search(Scheme.dataTypes.any([ query_string ]))
     no_of_hits = len(results)
-    if no_of_hits > 0:
+    if no_of_hits:
         flash('Found {:N scheme/s} used for this type of data.'.format(\
             Pluralizer(no_of_hits)))
     else:
@@ -888,7 +888,7 @@ def search():
             title_query = wild2regex(request.form['title'])
             title_search = schemes.search(Scheme.title.search(title_query))
             no_of_hits = len(title_search)
-            if no_of_hits > 0:
+            if no_of_hits:
                 flash('Found {:N scheme/s} with title "{}". '.format(\
                     Pluralizer(no_of_hits), request.form['title']))
                 results.extend(title_search)
@@ -918,7 +918,7 @@ def search():
             # Search for matching schemes
             subject_search = schemes.search(Scheme.keywords.any(term_list))
             no_of_hits = len(subject_search)
-            if no_of_hits > 0:
+            if no_of_hits:
                 flash('Found {:N scheme/s} related to {}. '.format(\
                     Pluralizer(no_of_hits), request.form['keyword']))
                 results.extend(subject_search)
@@ -934,7 +934,7 @@ def search():
                 Identifier = Query()
                 id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
             no_of_hits = len(id_search)
-            if no_of_hits > 0:
+            if no_of_hits:
                 flash('Found {:N scheme/s} with identifier "{}". '.format(\
                     Pluralizer(no_of_hits), request.form['id']))
                 results.extend(id_search)
@@ -951,7 +951,7 @@ def search():
             funder_search = organizations.search(Funder.name.search(funder_query))
             for funder in funder_search:
                 matching_funders.append('msc:g{}'.format(funder.eid))
-            if len(matching_funders) == 0:
+            if not matching_funders:
                 flash('No funders found called "{}" .'.format(\
                     request.form['funder']), 'error')
             else:
@@ -962,7 +962,7 @@ def search():
                         Scheme.relatedEntities.any(\
                             (Relation.role == 'funder') & (Relation.id == funder_id) )))
                 no_of_hits = len(with_funder)
-                if no_of_hits > 0:
+                if no_of_hits:
                     flash('Found {:N scheme/s} with funder "{}". '.format(\
                         Pluralizer(no_of_hits), request.form['funder']))
                     results.extend(with_funder)
@@ -974,7 +974,7 @@ def search():
             no_of_queries += 1
             type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
             no_of_hits = len(type_search)
-            if no_of_hits > 0:
+            if no_of_hits:
                 flash('Found {:N scheme/s} associated with {}. '.format(\
                     Pluralizer(no_of_hits), request.form['dataType']))
                 results.extend(type_search)
@@ -1064,7 +1064,7 @@ def scheme_query():
     if 'title' in request.form and request.form['title'] != '':
         title_search = schemes.search(Scheme.title.search(request.form['title']))
         no_of_hits = len(title_search)
-        if no_of_hits > 0:
+        if no_of_hits:
             results.extend(title_search)
 
     if 'keyword' in request.form and request.form['keyword'] != '' :
@@ -1085,7 +1085,7 @@ def scheme_query():
         # Search for matching schemes
         subject_search = schemes.search(Scheme.keywords.any(term_list))
         no_of_hits = len(subject_search)
-        if no_of_hits > 0:
+        if no_of_hits:
             results.extend(subject_search)
 
     if 'keyword-id' in request.form and request.form['keyword-id'] != '' :
@@ -1095,7 +1095,7 @@ def scheme_query():
         # Translate into keywords
         for term_uri in term_uri_list:
             label_pairs = thesaurus.preferredLabel(term_uri, lang='en')
-            if len(label_pairs) > 0:
+            if label_pairs:
                 term = str(label_pairs[0][1])
                 if not term in term_list:
                     term_list.append(term)
@@ -1103,7 +1103,7 @@ def scheme_query():
         # Search for matching schemes
         subject_search = schemes.search(Scheme.keywords.any(term_list))
         no_of_hits = len(subject_search)
-        if no_of_hits > 0:
+        if no_of_hits:
             results.extend(subject_search)
 
     if 'id' in request.form and request.form['id'] != '':
@@ -1113,7 +1113,7 @@ def scheme_query():
             Identifier = Query()
             id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
         no_of_hits = len(id_search)
-        if no_of_hits > 0:
+        if no_of_hits:
             results.extend(id_search)
 
     if 'funder' in request.form and request.form['funder'] != '':
@@ -1123,7 +1123,7 @@ def scheme_query():
         funder_search = organizations.search(Funder.name.search(request.form['funder']))
         for funder in funder_search:
             matching_funders.append('msc:g{}'.format(funder.eid))
-        if len(matching_funders) > 0:
+        if matching_funders:
             Relation = Query()
             with_funder = list()
             for funder_id in matching_funders:
@@ -1131,7 +1131,7 @@ def scheme_query():
                     schemes.search(Scheme.relatedEntities.any(\
                         (Relation.role == 'funder') & (Relation.id == funder_id) )))
             no_of_hits = len(with_funder)
-            if no_of_hits > 0:
+            if no_of_hits:
                 results.extend(with_funder)
 
     if 'funder-id' in request.form and request.form['funder-id'] != '':
@@ -1143,7 +1143,7 @@ def scheme_query():
             Funder.identifiers.any(Identifier.id == request.form['funder-id']))
         for funder in funder_search:
             matching_funders.append('msc:g{}'.format(funder.eid))
-        if len(matching_funders) > 0:
+        if matching_funders:
             Relation = Query()
             with_funder = list()
             for funder_id in matching_funders:
@@ -1151,13 +1151,13 @@ def scheme_query():
                     Scheme.relatedEntities.any(\
                         (Relation.role == 'funder') & (Relation.id == funder_id) )))
             no_of_hits = len(with_funder)
-            if no_of_hits > 0:
+            if no_of_hits:
                 results.extend(with_funder)
 
     if 'dataType' in request.form and request.form['dataType'] != '':
         type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
         no_of_hits = len(type_search)
-        if no_of_hits > 0:
+        if no_of_hits:
             results.extend(type_search)
 
     # We just want the IDs
@@ -1232,32 +1232,32 @@ def logout():
 def clean_dict(data):
     """Takes dictionary and recursively removes fields where the value is (a)
     an empty string, (b) an empty list, (c) a dictionary wherein all the values
-    are empty, (d) null.
+    are empty, (d) null. Values of 0 are not removed.
     """
     for key, value in data.copy().items():
         if isinstance(value, dict):
             new_value = clean_dict(value)
-            if len(new_value) == 0:
+            if not new_value:
                 del data[key]
             else:
                 data[key] = new_value
         elif isinstance(value, list):
-            if len(value) == 0:
+            if not value:
                 del data[key]
             else:
                 clean_list = list()
                 for item in value:
                     if isinstance(item, dict):
                         new_item = clean_dict(item)
-                        if len(new_item) > 0:
+                        if new_item:
                             clean_list.append(new_item)
                     elif item:
                         clean_list.append(item)
-                if len(clean_list) > 0:
+                if clean_list:
                     data[key] = clean_list
                 else:
                     del data[key]
-        elif value is '':
+        elif value == '':
             del data[key]
         elif value is None:
             del data[key]
@@ -1480,7 +1480,7 @@ def fix_slug(record, series):
     # Ensure uniqueness then apply
     table = db.table(tables[series])
     i = ''
-    while len(table.search(Query().slug == (slug + str(i)))) > 0:
+    while table.search(Query().slug == (slug + str(i))):
         if i == '':
             i = 1
         else:
