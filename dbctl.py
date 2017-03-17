@@ -90,7 +90,7 @@ parser_vocab = subparsers.add_parser(
 
 
 def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
+    """JSON serializer for objects not serializable by default json code."""
 
     if isinstance(obj, date):
         serial = obj.isoformat()
@@ -98,15 +98,15 @@ def json_serial(obj):
     raise TypeError("Type not serializable")
 
 
-def dbCheckids(args):
+def scan_ids(args):
     if not os.path.isdir(args.folder):
         print('Cannot find YAML files; please check folder location and try '
               'again.')
         sys.exit(1)
 
-    isFine = True
+    missing_ids = list()
 
-    for folder in subfolders:
+    for folder in sorted(subfolders):
         folder_path = os.path.join(args.folder, folder)
         if not os.path.isdir(folder_path):
             print('WARNING: Expected to find {} folder but it is missing.'
@@ -141,11 +141,136 @@ def dbCheckids(args):
         series = subfolders[folder]
         for eid in range(1, highest_eid):
             if eid not in eid_list:
-                print('Identifier msc:{}{} is missing from the sequence.'
-                      ''.format(series, eid))
-                isFine = False
+                missing_ids.append('msc:{}{}'.format(series, eid))
 
-    if isFine:
+    return missing_ids
+
+
+def fix_ids(args, missing_ids):
+    if len(missing_ids) == 0:
+        return None
+
+    # Create list of folders with non-sequential IDs.
+    series_map = {v: k for k, v in subfolders.items()}
+    bad_folders = set()
+    for id_string in missing_ids:
+        series = id_string[4:5]
+        id_number = id_string[5:]
+        bad_folders.add(series_map[series])
+
+    # Populate database using slugs as unique keys.
+    db = dict()
+    for folder in sorted(subfolders):
+        folder_path = os.path.join(args.folder, folder)
+        if not os.path.isdir(folder_path):
+            continue
+
+        db[folder] = dict()
+
+        for entry in os.listdir(folder_path):
+            name_tuple = os.path.splitext(entry)
+            if (name_tuple[1] != '.yml'):
+                continue
+            slug = name_tuple[0]
+
+            with open(os.path.join(folder_path, entry), 'r') as r:
+                record = yaml.safe_load(r)
+
+            db[folder][slug] = record
+
+    # Create mappings from old (non-sequential) IDs to new (sequential) IDs.
+    id_map = dict()
+    for folder in bad_folders:
+        folder_path = os.path.join(args.folder, folder)
+        records = db[folder]
+
+        # Put slugs in the order in which they will be assigned IDs.
+        slugs = list()
+        if folder == 'metadata-schemes':
+            standards = list()
+            profiles = list()
+            stubs = list()
+            for slug, record in records.items():
+                if 'relatedEntities' in record:
+                    for entity in record['relatedEntities']:
+                        if entity['role'] == 'parent scheme':
+                            profiles.append(slug)
+                            break
+                    else:
+                        standards.append(slug)
+                elif 'description' not in record:
+                    stubs.append(slug)
+                else:
+                    standards.append(slug)
+            standards.sort()
+            profiles.sort()
+            stubs.sort()
+            slugs.extend(standards)
+            slugs.extend(profiles)
+            slugs.extend(stubs)
+        else:
+            slugs = sorted(db[folder])
+            slugs.sort()
+
+        # For each slug, discover current ID, and change and map to new ID.
+        i = 0
+        for slug in slugs:
+            i += 1
+            record = records[slug]
+            id_list = list()
+            for identifier in record['identifiers']:
+                if identifier['scheme'] == 'RDA-MSCWG':
+                    current_id = identifier['id']
+                    new_id = 'msc:{}{}'.format(subfolders[folder], i)
+                    if current_id != new_id:
+                        id_map[current_id] = new_id
+                        identifier['id'] = new_id
+                id_list.append(identifier)
+            db[folder][slug]['identifiers'] = id_list
+
+    # Now the ID map is finalized, go through *every* record and apply it
+    # to relatedEntities cross-references, then write to disk.
+    for folder in sorted(subfolders):
+        folder_path = os.path.join(args.folder, folder)
+        if not os.path.isdir(folder_path):
+            continue
+
+        # Go through the records in turn and change IDs wherever found
+        if folder != 'organizations':
+            # Organization records do not have relatedEntities
+            records = db[folder]
+            for slug, record in records.items():
+                if 'relatedEntities' in record:
+                    entity_list = list()
+                    for entity in record['relatedEntities']:
+                        if entity['id'] in id_map:
+                            entity['id'] = id_map[entity['id']]
+                        entity_list.append(entity)
+                    db[folder][slug]['relatedEntities'] = entity_list
+
+        # Now go through again and write to files
+        for slug, record in db[folder].items():
+            record_path = os.path.join(folder_path, '{}.yml'.format(slug))
+            with open(record_path, 'w') as r:
+                yaml.safe_dump(
+                    dict(record), r, default_flow_style=False,
+                    allow_unicode=True)
+
+
+def dbCheckids(args):
+    missing_ids = scan_ids(args)
+
+    if len(missing_ids) > 0:
+        for id_string in missing_ids:
+            print('Identifier {} is missing from the sequence.'
+                  ''.format(id_string))
+        print('Do you wish to correct these issues? [y/N]')
+        reply = input("> ")
+        if reply[:1].lower() != 'y':
+            print('Okay. I will leave things alone.')
+            sys.exit(0)
+        fix_ids(args, missing_ids)
+    else:
         print('All identifiers are in sequence. It is safe to compile the '
               'database.')
 
@@ -159,6 +284,12 @@ def dbCompile(args):
     if not os.path.isdir(args.folder):
         print('Cannot find YAML files; please check folder location and try '
               'again.')
+        sys.exit(1)
+
+    missing_ids = scan_ids(args)
+    if len(missing_ids) > 0:
+        print('Database has missing IDs. Run "{}" to fix problem.'
+              ''.format(parser_checkids.prog))
         sys.exit(1)
 
     if os.path.isfile(args.file):
@@ -175,8 +306,6 @@ def dbCompile(args):
     for folder in subfolders:
         folder_path = os.path.join(args.folder, folder)
         if not os.path.isdir(folder_path):
-            print('WARNING: Expected to find {} folder but it is missing.'
-                  ''.format(folder))
             continue
 
         db[folder] = dict()
