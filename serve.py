@@ -1402,6 +1402,13 @@ def form_to_msc(form_data, element):
                     else:
                         mapped_version['valid'] = version['valid_from']
                 msc_data[k].append(mapped_version)
+        elif k in ['keywords', 'dataTypes']:
+            term_set = set()
+            for term in v:
+                term_set.add(term)
+            terms = list(term_set)
+            terms.sort()
+            msc_data[k] = terms
         else:
             msc_data[k] = v
         if has_tl_valid_from:

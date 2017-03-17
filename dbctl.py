@@ -328,6 +328,14 @@ def dbCompile(args):
                 record['identifiers'] = id_list
             else:
                 del record['identifiers']
+            for key in ['keywords', 'dataTypes']:
+                if key in record:
+                    term_set = set()
+                    for term in record[key]:
+                        term_set.add(term)
+                    terms = list(term_set)
+                    terms.sort()
+                    record[key] = terms
             db[folder][id_number] = record
 
         isCompiled = True
