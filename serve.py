@@ -1483,9 +1483,10 @@ def fix_slug(record, series):
 
 computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
 
-# Top 10 languages according to http://www.langpop.com/ in 2013
+# Top 10 languages according to http://www.langpop.com/ in 2013.
+# Though not really belonging here, 'XML' added for XSL tranformations.
 programming_languages = [ 'C', 'Java', 'PHP', 'JavaScript', 'C++', 'Python',
-    'Shell', 'Ruby', 'Objective-C', 'C#' ]
+    'Shell', 'Ruby', 'Objective-C', 'C#', 'XML' ]
 programming_languages.sort()
 
 id_scheme_list = [ 'DOI' ]
