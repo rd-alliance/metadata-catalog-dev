@@ -5,7 +5,6 @@
 
 # Standard
 # --------
-
 import argparse
 import os
 import sys
@@ -14,7 +13,6 @@ import datetime
 
 # Non-standard
 # ------------
-
 import yaml
 
 # Initializing
@@ -22,7 +20,6 @@ import yaml
 
 # Calculate defaults
 # ------------------
-
 script_dir = os.path.dirname(sys.argv[0])
 
 default_source = os.path.realpath(
@@ -35,7 +32,6 @@ kw_file = os.path.realpath(os.path.join(script_dir, 'disciplines.yml'))
 
 # Command-line arguments
 # ----------------------
-
 parser = argparse.ArgumentParser(
     description='Converts RDA metadata standards directory data into the new'
                 ' RDA metadata standards catalog data model, ready for'
@@ -63,7 +59,7 @@ args = parser.parse_args()
 
 # Utility variables
 # -----------------
-
+#
 # Lookup for slug -> new ID
 m_index = dict()
 g_index = dict()
@@ -92,10 +88,9 @@ used_keywords = set()
 with open(args.map, 'r') as r:
     kw_map = yaml.safe_load(r)
 
+
 # Utility functions
 # -----------------
-
-
 def get_mscid(path):
     if os.path.isfile(path):
         with open(path, 'r') as r:
@@ -147,7 +142,6 @@ def create_slug(string):
 
 # Locating data files
 # -------------------
-
 print('Scanning {} for data files...'.format(args.source))
 
 
@@ -203,9 +197,8 @@ for series, folder in {
 
 # Parsing data files
 # ------------------
-
+#
 # Parsing standards
-
 db_standards = dict()
 print('Converting standards to MSC data model...')
 for record in standards:
@@ -730,8 +723,8 @@ if isNewLog:
     log += '\n'
     isNewLog = False
 
-## Writing migrated data to files
-
+# Writing migrated data to files
+# ------------------------------
 print('Writing out new records...')
 for slug, dest_record in db_standards.items():
     new_record = os.path.join(args.dest, 'metadata-schemes', slug + '.yml')

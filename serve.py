@@ -1,13 +1,20 @@
 #! /usr/bin/python3
 
-### Dependencies
+# Dependencies
+# ============
 
-## Standard
+# Standard
+# --------
+import os
+import sys
+import re
+import urllib
+import json
+import unicodedata
 
-import os, sys, re, urllib, json, unicodedata
-
-## Non-standard
-
+# Non-standard
+# ------------
+#
 # See http://flask.pocoo.org/docs/0.10/
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
@@ -37,9 +44,9 @@ import rdflib
 from rdflib import Literal, Namespace
 from rdflib.namespace import SKOS, RDF
 
-### Basic setup
-
-app = Flask (__name__)
+# Basic setup
+# ===========
+app = Flask(__name__)
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
@@ -57,8 +64,9 @@ thesaurus_link = '<a href="http://vocabularies.unesco.org/browser/thesaurus/en/"
 
 oid = OpenID(app, os.path.join(script_dir, 'open-id'))
 
-### Utility functions
 
+# Utility functions
+# =================
 def request_wants_json():
     """Returns True if request is for JSON instead of HTML, False otherwise.
 
@@ -69,6 +77,7 @@ def request_wants_json():
     return best == 'application/json' and \
         request.accept_mimetypes[best] > \
         request.accept_mimetypes['text/html']
+
 
 def getTermList(uri, broader=True, narrower=True):
     """Recursively finds broader or narrower (or both) terms in the thesaurus.
@@ -86,14 +95,15 @@ def getTermList(uri, broader=True, narrower=True):
     if broader:
         broader_terms = thesaurus.objects(uri, SKOS.broader)
         for broader_term in broader_terms:
-            if not broader_term in terms:
+            if broader_term not in terms:
                 terms = getTermList(broader_term, narrower=False) + terms
     if narrower:
         narrower_terms = thesaurus.objects(uri, SKOS.narrower)
         for narrower_term in narrower_terms:
-            if not narrower_term in terms:
+            if narrower_term not in terms:
                 terms += getTermList(narrower_term, broader=False)
     return terms
+
 
 def getTermURI(term):
     """Translates a string into the URI of the broadest term in the thesaurus
@@ -121,6 +131,7 @@ def getTermURI(term):
             concept_id = uri
             priority = 1
     return concept_id
+
 
 def getTermNode(uri, filter=list()):
     """Recursively transforms the URI of a term in the thesaurus to a dictionary
@@ -151,14 +162,15 @@ def getTermNode(uri, filter=list()):
     if filter:
         for narrower_id in narrower_ids:
             if narrower_id in filter:
-                children.append( getTermNode(narrower_id, filter=filter) )
+                children.append(getTermNode(narrower_id, filter=filter))
     else:
         for narrower_id in narrower_ids:
-            children.append( getTermNode(narrower_id, filter=filter) )
+            children.append(getTermNode(narrower_id, filter=filter))
     if children:
         children.sort(key=lambda k: k['name'])
         result['children'] = children
     return result
+
 
 def getAllTermURIs():
     """Returns a deduplicated list of URIs corresponding to the subject keywords
@@ -177,7 +189,7 @@ def getAllTermURIs():
     for keyword in keyword_set:
         uri = getTermURI(keyword)
         if uri:
-            keyword_uris.add( uri )
+            keyword_uris.add(uri)
     # Get ancestor terms of all these
     full_keyword_uris = set()
     for keyword_uri in keyword_uris:
@@ -186,6 +198,7 @@ def getAllTermURIs():
         keyword_uri_list = getTermList(keyword_uri, narrower=False)
         full_keyword_uris.update(keyword_uri_list)
     return full_keyword_uris
+
 
 def getDBNode(table, id, type):
     """Recursively transforms the internal ID of a record in the database to a
@@ -210,14 +223,17 @@ def getDBNode(table, id, type):
     if type == 'scheme':
         Main = Query()
         Related = Query()
-        child_schemes = table.search(Main.relatedEntities.any( (Related.role == 'parent scheme') & (Related.id == 'msc:m{}'.format(id)) ))
+        child_schemes = table.search(Main.relatedEntities.any(
+            (Related.role == 'parent scheme') &
+            (Related.id == 'msc:m{}'.format(id))))
         if child_schemes:
             children = list()
             for child_scheme in child_schemes:
-                children.append( getDBNode(table, child_scheme.eid, type) )
+                children.append(getDBNode(table, child_scheme.eid, type))
             children.sort(key=lambda k: k['name'])
             result['children'] = children
     return result
+
 
 class Pluralizer:
     """Class for pluralizing nouns. Example uses:
@@ -238,6 +254,7 @@ class Pluralizer:
 
         return "{}{}".format(start, singular if self.value == 1 else plural)
 
+
 def toFileSlug(string):
     """Transforms string into slug for use when decomposing the database to
     individual files.
@@ -256,28 +273,33 @@ def toFileSlug(string):
     slug = slug[:71]
     return slug
 
+
 def toURLSlug(string):
     """Transforms string into URL-safe slug."""
     slug = urllib.parse.quote_plus(string)
     return slug
+
 
 def fromURLSlug(slug):
     """Transforms URL-safe slug back into regular string."""
     string = urllib.parse.unquote_plus(slug)
     return string
 
+
 def wild2regex(string):
     """Transforms wildcard searches to regular expressions."""
     regex = re.escape(string)
-    regex = regex.replace('\*','.*')
-    regex = regex.replace('\?','.?')
+    regex = regex.replace('\*', '.*')
+    regex = regex.replace('\?', '.?')
     return regex
+
 
 def parseDateRange(string):
     date_split = string.partition('/')
     if date_split[2]:
         return (date_split[0], date_split[2])
     return (string, None)
+
 
 def formDictList(prefix, fields):
     """Processes families of form elements named according to the scheme
@@ -300,7 +322,8 @@ def formDictList(prefix, fields):
         instance = dict()
         isWorthKeeping = False
         for field in fields:
-            instance[field] = request.form.get('{}-{}{}'.format(prefix, field, i))
+            instance[field] = request.form.get(
+                '{}-{}{}'.format(prefix, field, i))
             if instance[field]:
                 isWorthKeeping = True
         if isWorthKeeping:
@@ -316,6 +339,7 @@ def formDictList(prefix, fields):
         current_list.append(instance)
     return current_list
 
+
 def isValidURL(url):
     """Test whether a URL/email address is well-formed."""
     result = urllib.parse.urlparse(url)
@@ -327,17 +351,21 @@ def isValidURL(url):
             return True
     return False
 
+
 def EmailOrURL(form, field):
     """Raise error if URL/email address is not well-formed."""
     result = urllib.parse.urlparse(field.data)
     if result.scheme == 'mailto':
         if not re.match(r'[^@\s]+@[^@\s\.]+\.[^@\s]+', result.path):
-            raise ValidationError('That email address does not look quite right.')
+            raise ValidationError(
+                'That email address does not look quite right.')
     else:
         if not result.scheme:
-            raise ValidationError('Please provide the protocol (e.g. "http://", "mailto:").')
+            raise ValidationError(
+                'Please provide the protocol (e.g. "http://", "mailto:").')
         if not result.netloc:
             return ValidationError('That URL does not look quite right.')
+
 
 class RequiredIf(object):
     """A validator which makes a field required if another field is set and has
@@ -356,7 +384,8 @@ class RequiredIf(object):
     def __call__(self, form, field):
         other_field = form._fields.get(self.other_field_name)
         if other_field is None:
-            raise Exception('No field named "{}" in form'.format(self.other_field_name))
+            raise Exception(
+                'No field named "{}" in form'.format(self.other_field_name))
         if bool(other_field.data):
             self.field_flags = ('required', )
             if not field.raw_data or not field.raw_data[0]:
@@ -366,32 +395,40 @@ class RequiredIf(object):
                     message = self.message
                 field.errors[:] = []
                 raise validators.StopValidation(message)
-        elif not field.raw_data or isinstance(field.raw_data[0], string_types) and not self.string_check(field.raw_data[0]):
+        elif (not field.raw_data) or (
+                isinstance(field.raw_data[0], string_types) and
+                not self.string_check(field.raw_data[0])):
             field.errors[:] = []
             raise validators.StopValidation()
 
 w3cdate = re.compile(r'^\d{4}(-\d{2}){0,2}$')
+
+
 def isValidDate(date):
     """Test whether a string is a valid W3C-formatted date."""
     if w3cdate.search(date) is None:
         return False
     return True
 
+
 def W3CDate(form, field):
     """Test whether a string is a valid W3C-formatted date."""
     if w3cdate.search(field.data) is None:
         raise ValidationError('Please provide the date in yyyy-mm-dd format.')
 
-### Functions made available to templates
 
+# Functions made available to templates
+# -------------------------------------
 @app.context_processor
 def utility_processor():
-    return { 'toURLSlug': toURLSlug,\
-        'fromURLSlug': fromURLSlug,\
-        'parseDateRange': parseDateRange }
+    return {
+        'toURLSlug': toURLSlug,
+        'fromURLSlug': fromURLSlug,
+        'parseDateRange': parseDateRange}
 
-### User handling
 
+# User handling
+# =============
 @app.before_request
 def lookup_current_user():
     g.user = None

@@ -5,7 +5,6 @@
 
 # Standard
 # --------
-
 import argparse
 import os
 import sys
@@ -15,7 +14,6 @@ from datetime import date
 
 # Non-standard
 # ------------
-
 import yaml
 
 # See http://tinydb.readthedocs.io/en/latest/intro.html
@@ -36,7 +34,6 @@ from rdflib.namespace import SKOS, RDF
 
 # Calculate defaults
 # ------------------
-
 script_dir = os.path.dirname(sys.argv[0])
 
 default_folder = os.path.realpath(os.path.join(script_dir, 'db'))
@@ -51,7 +48,6 @@ subfolders = {
 
 # Command-line arguments
 # ----------------------
-
 parser = argparse.ArgumentParser(
     description='Converts a collection of YAML files into TinyDB database or'
                 ' vice versa. The YAML files should be arranged in subfolders'
@@ -85,10 +81,9 @@ parser_vocab = subparsers.add_parser(
     'vocab',
     help='fetch and optimise UNESCO Vocabulary')
 
+
 # Operations
 # ==========
-
-
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code."""
 
@@ -276,10 +271,9 @@ def dbCheckids(args):
 
 parser_checkids.set_defaults(func=dbCheckids)
 
+
 # Compilation
 # -----------
-
-
 def dbCompile(args):
     if not os.path.isdir(args.folder):
         print('Cannot find YAML files; please check folder location and try'
@@ -348,10 +342,9 @@ def dbCompile(args):
 
 parser_compile.set_defaults(func=dbCompile)
 
+
 # Dump to files
 # -------------
-
-
 def createSlug(string):
     output = string.strip().lower().replace(' ', '-')
     output = re.sub(r'-+', '-', output)
@@ -417,10 +410,9 @@ def dbDump(args):
 
 parser_dump.set_defaults(func=dbDump)
 
+
 # Vocabulary generation
 # ---------------------
-
-
 def dbVocab(args):
     thesaurus = rdflib.Graph()
     if os.path.isfile(os.path.join(script_dir, 'unesco-thesaurus.ttl')):
@@ -466,6 +458,5 @@ parser_vocab.set_defaults(func=dbVocab)
 
 # Processing
 # ==========
-
 args = parser.parse_args()
 args.func(args)
