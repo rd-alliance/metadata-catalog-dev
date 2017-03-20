@@ -19,7 +19,8 @@ import unicodedata
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-flask
 #   - latest version: sudo -H pip3 install flask
-from flask import Flask, request, url_for, render_template, flash, redirect, abort, jsonify, g, session
+from flask import Flask, request, url_for, render_template, flash, redirect,\
+    abort, jsonify, g, session
 
 # See https://pythonhosted.org/Flask-OpenID/
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
@@ -28,7 +29,9 @@ from flask.ext.openid import OpenID
 # See https://flask-wtf.readthedocs.io/en/stable/quickstart.html
 # Install from PyPi: sudo -H pip3 install Flask-WTF
 from flask_wtf import FlaskForm
-from wtforms import validators, widgets, Form, FormField, FieldList, StringField, TextAreaField, SelectField, SelectMultipleField, HiddenField, ValidationError
+from wtforms import validators, widgets, Form, FormField, FieldList,\
+    StringField, TextAreaField, SelectField, SelectMultipleField, HiddenField,\
+    ValidationError
 from wtforms.compat import string_types
 
 # See http://tinydb.readthedocs.io/
@@ -60,7 +63,8 @@ user_db = TinyDB(os.path.realpath(os.path.join(script_dir, 'users.json')))
 thesaurus = rdflib.Graph()
 thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
 UNO = Namespace('http://vocabularies.unesco.org/ontology#')
-thesaurus_link = '<a href="http://vocabularies.unesco.org/browser/thesaurus/en/">UNESCO Thesaurus</a>'
+thesaurus_link = ('<a href="http://vocabularies.unesco.org/browser/thesaurus/'
+                  'en/">UNESCO Thesaurus</a>')
 
 oid = OpenID(app, os.path.join(script_dir, 'open-id'))
 
@@ -75,8 +79,7 @@ def request_wants_json():
     best = request.accept_mimetypes \
         .best_match(['application/json', 'text/html'])
     return best == 'application/json' and \
-        request.accept_mimetypes[best] > \
-        request.accept_mimetypes['text/html']
+        request.accept_mimetypes[best] > request.accept_mimetypes['text/html']
 
 
 def getTermList(uri, broader=True, narrower=True):
@@ -84,8 +87,10 @@ def getTermList(uri, broader=True, narrower=True):
 
     Arguments:
         uri (str): URI of term in thesaurus
-        broader (Boolean): Whether to search for broader terms (default: True)
-        narrower (Boolean): Whether to search for narrower terms (default: True)
+        broader (Boolean): Whether to search for broader terms
+            (default: True)
+        narrower (Boolean): Whether to search for narrower terms
+            (default: True)
 
     Returns:
         list: Given URI plus those of broader/narrower terms
@@ -304,8 +309,8 @@ def parseDateRange(string):
 def formDictList(prefix, fields):
     """Processes families of form elements named according to the scheme
     'prefix-field' or 'prefix-field1'. Numbered fields are processed first,
-    then unnumbered fields. The fields are assembled into a list of dictionaries
-    where, in each dictionary, the fields form the keys.
+    then unnumbered fields. The fields are assembled into a list of
+    dictionaries where, in each dictionary, the fields form the keys.
 
     Arguments:
         prefix (str): common first element of form input names
@@ -401,6 +406,7 @@ class RequiredIf(object):
             field.errors[:] = []
             raise validators.StopValidation()
 
+
 w3cdate = re.compile(r'^\d{4}(-\d{2}){0,2}$')
 
 
@@ -437,14 +443,16 @@ def lookup_current_user():
         User = Query()
         g.user = user_db.get(User.openid == openid)
 
-### Front page
 
+# Front page
+# ==========
 @app.route('/')
 def hello():
     return render_template('home.html')
 
-### Display metadata scheme
 
+# Display metadata scheme
+# =======================
 @app.route('/msc/m<int:number>')
 @app.route('/msc/m<int:number>/<field>')
 def scheme(number, field=None):
@@ -456,11 +464,11 @@ def scheme(number, field=None):
     if request_wants_json():
         if 'identifiers' not in element:
             element['identifiers'] = list()
-        element['identifiers'].insert(0,\
-            {'id': 'msc:m{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
+        element['identifiers'].insert(
+            0, {'id': 'msc:m{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
-                return jsonify({ field: element[field] })
+                return jsonify({field: element[field]})
             else:
                 return jsonify()
         else:
@@ -471,7 +479,7 @@ def scheme(number, field=None):
     if 'versions' in element:
         versions = list()
         for v in element['versions']:
-            if not 'number' in v:
+            if 'number' not in v:
                 continue
             this_version = v
             this_version['status'] = ''
@@ -480,14 +488,16 @@ def scheme(number, field=None):
                 if 'valid' in v:
                     date_range = parseDateRange(v['valid'])
                     if date_range[1]:
-                        this_version['status'] = 'deprecated on '.format(date_range[1])
+                        this_version['status'] = (
+                            'deprecated on '.format(date_range[1]))
                     else:
                         this_version['status'] = 'current'
             elif 'valid' in v:
                 date_range = parseDateRange(v['valid'])
                 this_version['date'] = date_range[0]
                 if date_range[1]:
-                    this_version['status'] = 'deprecated on '.format(date_range[1])
+                    this_version['status'] = (
+                        'deprecated on '.format(date_range[1]))
                 else:
                     this_version['status'] = 'current'
             elif 'available' in v:
@@ -497,7 +507,8 @@ def scheme(number, field=None):
         try:
             versions.sort(key=lambda k: k['date'], reverse=True)
         except KeyError:
-            print('WARNING: Scheme msc:m{} has missing version date.'.format(number))
+            print('WARNING: Scheme msc:m{} has missing version date.'
+                  ''.format(number))
             versions.sort(key=lambda k: k['number'], reverse=True)
         for version in versions:
             if version['status'] == 'current':
@@ -519,7 +530,7 @@ def scheme(number, field=None):
     if 'relatedEntities' in element:
         for entity in element['relatedEntities']:
             if entity['role'] == 'parent scheme':
-                if not 'parents' in relations:
+                if 'parents' not in relations:
                     relations['parents'] = list()
                 entity_number = int(entity['id'][5:])
                 element_record = schemes.get(eid=entity_number)
@@ -528,7 +539,7 @@ def scheme(number, field=None):
                     hasRelatedSchemes = True
 
             elif entity['role'] == 'maintainer':
-                if not 'maintainers' in relations:
+                if 'maintainers' not in relations:
                     relations['maintainers'] = list()
                 entity_number = int(entity['id'][5:])
                 element_record = organizations.get(eid=entity_number)
@@ -536,7 +547,7 @@ def scheme(number, field=None):
                     relations['maintainers'].append(element_record)
 
             elif entity['role'] == 'funder':
-                if not 'funders' in relations:
+                if 'funders' not in relations:
                     relations['funders'] = list()
                 entity_number = int(entity['id'][5:])
                 element_record = organizations.get(eid=entity_number)
@@ -544,7 +555,7 @@ def scheme(number, field=None):
                     relations['funders'].append(element_record)
 
             elif entity['role'] == 'user':
-                if not 'users' in relations:
+                if 'users' not in relations:
                     relations['users'] = list()
                 entity_number = int(entity['id'][5:])
                 element_record = organizations.get(eid=entity_number)
@@ -557,10 +568,12 @@ def scheme(number, field=None):
 
     Endorsement = Query()
     Relation = Query()
-    related_endorsements = endorsements.search(Endorsement.relatedEntities.any(Relation['id'].matches('msc:m{}(#v.*)?$'.format(number))))
+    # The following query takes account of id#version syntax
+    related_endorsements = endorsements.search(Endorsement.relatedEntities.any(
+        Relation['id'].matches('msc:m{}(#v.*)?$'.format(number))))
     for entity in related_endorsements:
         entity_id = 'msc:e{}'.format(entity.eid)
-        if not entity_id in endorsement_ids:
+        if entity_id not in endorsement_ids:
             endorsement_ids.append(entity_id)
     if endorsement_ids:
         relations['endorsements'] = list()
@@ -571,8 +584,8 @@ def scheme(number, field=None):
                 if 'relatedEntities' in element_record:
                     for entity in element_record['relatedEntities']:
                         if entity['role'] == 'originator':
-                            org_entity_number = int(entity['id'][5:])
-                            org_record = organizations.get(eid=org_entity_number)
+                            org_eid = int(entity['id'][5:])
+                            org_record = organizations.get(eid=org_eid)
                             element_record['originator'] = org_record['name']
                 if 'valid' in element_record:
                     if '/' in element_record['valid']:
@@ -585,31 +598,38 @@ def scheme(number, field=None):
 
     Scheme = Query()
     # This optimization relies on schemes only pointing to parent schemes
-    child_schemes = schemes.search(Scheme.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    # (If other inter-scheme relations are defined, this will need changing.)
+    child_schemes = schemes.search(Scheme.relatedEntities.any(
+        where('id') == 'msc:m{}'.format(number)))
     if child_schemes:
         relations['children'] = child_schemes
         hasRelatedSchemes = True
 
     Tool = Query()
-    related_tools = tools.search(Tool.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    related_tools = tools.search(Tool.relatedEntities.any(
+        where('id') == 'msc:m{}'.format(number)))
     if related_tools:
         relations['tools'] = related_tools
 
     Mapping = Query()
-    related_mappings = mappings.search(Mapping.relatedEntities.any(where('id') == 'msc:m{}'.format(number)))
+    # If we allow mappings to specify versions, this will need amending.
+    related_mappings = mappings.search(Mapping.relatedEntities.any(
+        where('id') == 'msc:m{}'.format(number)))
     mappings_from = list()
     mappings_to = list()
     for related_mapping in related_mappings:
-        # This assumes the mapping has one input and one output, one of which is
-        # the current scheme, and the other is a different scheme.
+        # This assumes the mapping has one input and one output, one of which
+        # is the current scheme, and the other is a different scheme.
         for relation in related_mapping['relatedEntities']:
             if relation['id'] != 'msc:m{}'.format(number):
                 if relation['role'] == 'input scheme':
                     entity_number = int(relation['id'][5:])
-                    related_mapping['input scheme'] = schemes.get(eid=entity_number)
+                    related_mapping['input scheme'] = schemes.get(
+                        eid=entity_number)
                 elif relation['role'] == 'output scheme':
                     entity_number = int(relation['id'][5:])
-                    related_mapping['output scheme'] = schemes.get(eid=entity_number)
+                    related_mapping['output scheme'] = schemes.get(
+                        eid=entity_number)
         if 'output scheme' in related_mapping:
             mappings_from.append(related_mapping)
         elif 'input scheme' in related_mapping:
@@ -620,11 +640,13 @@ def scheme(number, field=None):
     if mappings_to:
         relations['mappings to'] = mappings_to
         hasRelatedSchemes = True
-    return render_template('metadata-scheme.html', record=element,\
-        versions=versions, relations=relations, hasRelatedSchemes=hasRelatedSchemes)
+    return render_template(
+        'metadata-scheme.html', record=element, versions=versions,
+        relations=relations, hasRelatedSchemes=hasRelatedSchemes)
 
-### Display tool
 
+# Display tool
+# ============
 @app.route('/msc/t<int:number>')
 @app.route('/msc/t<int:number>/<field>')
 def tool(number, field=None):
@@ -636,11 +658,11 @@ def tool(number, field=None):
     if request_wants_json():
         if 'identifiers' not in element:
             element['identifiers'] = list()
-        element['identifiers'].insert(0,\
-            {'id': 'msc:t{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
+        element['identifiers'].insert(
+            0, {'id': 'msc:t{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
-                return jsonify({ field: element[field] })
+                return jsonify({field: element[field]})
             else:
                 return jsonify()
         else:
@@ -651,9 +673,9 @@ def tool(number, field=None):
     if 'versions' in element:
         versions = list()
         for v in element['versions']:
-            if not 'number' in v:
+            if 'number' not in v:
                 continue
-            if not 'issued' in v:
+            if 'issued' not in v:
                 continue
             v['date'] = v['issued']
             versions.append(v)
@@ -666,7 +688,7 @@ def tool(number, field=None):
     if 'relatedEntities' in element:
         for entity in element['relatedEntities']:
             if entity['role'] == 'supported scheme':
-                if not 'supported schemes' in relations:
+                if 'supported schemes' not in relations:
                     relations['supported schemes'] = list()
                 entity_number = int(entity['id'][5:])
                 element_record = schemes.get(eid=entity_number)
@@ -674,7 +696,7 @@ def tool(number, field=None):
                     relations['supported schemes'].append(element_record)
 
             elif entity['role'] == 'maintainer':
-                if not 'maintainers' in relations:
+                if 'maintainers' not in relations:
                     relations['maintainers'] = list()
                 entity_number = int(entity['id'][5:])
                 element_record = organizations.get(eid=entity_number)
@@ -682,17 +704,18 @@ def tool(number, field=None):
                     relations['maintainers'].append(element_record)
 
             elif entity['role'] == 'funder':
-                if not 'funders' in relations:
+                if 'funders' not in relations:
                     relations['funders'] = list()
                 entity_number = int(entity['id'][5:])
                 element_record = organizations.get(eid=entity_number)
                 if element_record:
                     relations['funders'].append(element_record)
 
-    return render_template('tool.html', record=element, versions=versions,\
-        relations=relations)
+    return render_template(
+        'tool.html', record=element, versions=versions, relations=relations)
 
-### Display organization
+
+# Display organization
 
 @app.route('/msc/g<int:number>')
 @app.route('/msc/g<int:number>/<field>')
@@ -705,21 +728,23 @@ def organization(number, field=None):
     if request_wants_json():
         if 'identifiers' not in element:
             element['identifiers'] = list()
-        element['identifiers'].insert(0,\
-            {'id': 'msc:g{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
+        element['identifiers'].insert(
+            0, {'id': 'msc:g{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
-                return jsonify({ field: element[field] })
+                return jsonify({field: element[field]})
             else:
                 return jsonify()
         else:
             return jsonify(element)
     else:
-        flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
+        flash('The URL you requested is part of the Catalog API and has no'
+              ' HTML equivalent.', 'error')
         return redirect(url_for('hello'))
 
-### Display mapping
 
+# Display mapping
+# ===============
 @app.route('/msc/c<int:number>')
 @app.route('/msc/c<int:number>/<field>')
 def mapping(number, field=None):
@@ -731,21 +756,23 @@ def mapping(number, field=None):
     if request_wants_json():
         if 'identifiers' not in element:
             element['identifiers'] = list()
-        element['identifiers'].insert(0,\
-            {'id': 'msc:c{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
+        element['identifiers'].insert(
+            0, {'id': 'msc:c{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
-                return jsonify({ field: element[field] })
+                return jsonify({field: element[field]})
             else:
                 return jsonify()
         else:
             return jsonify(element)
     else:
-        flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
+        flash('The URL you requested is part of the Catalog API and has no'
+              ' HTML equivalent.', 'error')
         return redirect(url_for('hello'))
 
-### Display endorsement
 
+# Display endorsement
+# ===================
 @app.route('/msc/e<int:number>')
 @app.route('/msc/e<int:number>/<field>')
 def endorsement(number, field=None):
@@ -757,24 +784,27 @@ def endorsement(number, field=None):
     if request_wants_json():
         if 'identifiers' not in element:
             element['identifiers'] = list()
-        element['identifiers'].insert(0,\
-            {'id': 'msc:e{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
+        element['identifiers'].insert(
+            0, {'id': 'msc:e{}'.format(element.eid), 'scheme': 'RDA-MSCWG'})
         if field:
             if field in element:
-                return jsonify({ field: element[field] })
+                return jsonify({field: element[field]})
             else:
                 return jsonify()
         else:
             return jsonify(element)
     else:
-        flash('The URL you requested is part of the Catalog API and has no HTML equivalent.', 'error')
+        flash('The URL you requested is part of the Catalog API and has no'
+              ' HTML equivalent.', 'error')
         return redirect(url_for('hello'))
 
-### Per-subject lists of standards
 
+# Per-subject lists of standards
+# ==============================
 @app.route('/subject/<subject>')
 def subject(subject):
-    # If people start using geographical keywords, the following will need more sophistication
+    # If people start using geographical keywords, the following will need more
+    # sophistication
     query_string = fromURLSlug(subject)
     results = list()
 
@@ -783,17 +813,17 @@ def subject(subject):
     if subject == 'Multidisciplinary':
         term_list.append('Multidisciplinary')
     else:
-        # - Translate term into concept ID
+        # Translate term into concept ID
         concept_id = getTermURI(query_string)
         if not concept_id:
-            flash('The subject "{}" was not found in the {}.\n'.format(\
+            flash('The subject "{}" was not found in the {}.\n'.format(
                 query_string, thesaurus_link), 'error')
             return render_template('search-results.html', title=query_string)
-        # - Find list of broader and narrower terms
+        # Find list of broader and narrower terms
         term_uri_list = getTermList(concept_id)
         for term_uri in term_uri_list:
             term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
-            if not term in term_list:
+            if term not in term_list:
                 term_list.append(term)
 
     # Search for matching schemes
@@ -806,10 +836,12 @@ def subject(subject):
         results.sort(key=lambda k: k['title'].lower())
     else:
         flash('Found 0 schemes.', 'error')
-    return render_template('search-results.html', title=query_string, results=results)
+    return render_template(
+        'search-results.html', title=query_string, results=results)
 
-### Per-funder/maintainer lists of standards
 
+# Per-funder/maintainer lists of standards
+# ========================================
 @app.route('/funder/g<int:funder>')
 @app.route('/maintainer/g<int:maintainer>')
 @app.route('/user/g<int:user>')
@@ -836,49 +868,57 @@ def group(funder=None, maintainer=None, user=None):
     schemes = db.table('metadata-schemes')
     Scheme = Query()
     Relation = Query()
-    results = schemes.search(Scheme.relatedEntities.any(\
-        (Relation.role == role) & (Relation.id == 'msc:g{}'.format(id)) ))
+    results = schemes.search(Scheme.relatedEntities.any(
+        (Relation.role == role) & (Relation.id == 'msc:g{}'.format(id))))
     no_of_hits = len(results)
     if no_of_hits:
-        flash('Found {:N scheme/s} {} by this organization.'.format(\
+        flash('Found {:N scheme/s} {} by this organization.'.format(
             Pluralizer(no_of_hits), verb))
     else:
-        flash('No schemes found {} by this organization.'.format(verb), 'error')
+        flash('No schemes found {} by this organization.'.format(verb),
+              'error')
     return render_template('search-results.html', title=title, results=results)
 
-### Per-datatype lists of standards
+
+# Per-datatype lists of standards
+# ===============================
 @app.route('/datatype/<dataType>')
 def dataType(dataType):
     query_string = fromURLSlug(dataType)
     schemes = db.table('metadata-schemes')
     Scheme = Query()
-    results = schemes.search(Scheme.dataTypes.any([ query_string ]))
+    results = schemes.search(Scheme.dataTypes.any([query_string]))
     no_of_hits = len(results)
     if no_of_hits:
-        flash('Found {:N scheme/s} used for this type of data.'.format(\
+        flash('Found {:N scheme/s} used for this type of data.'.format(
             Pluralizer(no_of_hits)))
     else:
-        flash('No schemes have been reported to be used for this type of data.', 'error')
-    return render_template('search-results.html', title=query_string, results=results)
+        flash('No schemes have been reported to be used for this type of'
+              ' data.', 'error')
+    return render_template(
+        'search-results.html', title=query_string, results=results)
 
-### List of standards
 
+# List of standards
+# =================
 @app.route('/scheme-index')
 def scheme_index():
     schemes = db.table('metadata-schemes')
     Scheme = Query()
     Entity = Query()
-    parent_schemes = schemes.search(Scheme.relatedEntities.all(Entity.role != 'parent scheme'))
+    parent_schemes = schemes.search(Scheme.relatedEntities.all(
+        Entity.role != 'parent scheme'))
     parent_schemes.extend(schemes.search(~ Scheme.relatedEntities.exists()))
     scheme_tree = list()
     for scheme in parent_schemes:
-        scheme_tree.append( getDBNode(schemes, scheme.eid, 'scheme') )
+        scheme_tree.append(getDBNode(schemes, scheme.eid, 'scheme'))
     scheme_tree.sort(key=lambda k: k['name'].lower())
-    return render_template('contents.html', title='List of metadata standards',\
-        tree=scheme_tree)
+    return render_template(
+        'contents.html', title='List of metadata standards', tree=scheme_tree)
 
-### List of tools
 
+# List of tools
+# =============
 @app.route('/tool-index')
 def tool_index():
     tools = db.table('tools')
@@ -887,13 +927,14 @@ def tool_index():
     all_tools = tools.all()
     tool_tree = list()
     for tool in all_tools:
-        tool_tree.append( getDBNode(tools, tool.eid, 'tool') )
+        tool_tree.append(getDBNode(tools, tool.eid, 'tool'))
     tool_tree.sort(key=lambda k: k['name'].lower())
-    return render_template('contents.html', title='List of metadata tools',\
-        tree=tool_tree)
+    return render_template(
+        'contents.html', title='List of metadata tools', tree=tool_tree)
 
-### Subject index
 
+# Subject index
+# =============
 @app.route('/subject-index')
 def subject_index():
     full_keyword_uris = getAllTermURIs()
@@ -901,15 +942,17 @@ def subject_index():
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
     for domain in domains:
         if domain in full_keyword_uris:
-            subject_tree.append( getTermNode(domain, filter=full_keyword_uris) )
+            subject_tree.append(getTermNode(domain, filter=full_keyword_uris))
     subject_tree.sort(key=lambda k: k['name'].lower())
-    subject_tree.insert(0, { 'name': 'Multidisciplinary',\
+    subject_tree.insert(0, {
+        'name': 'Multidisciplinary',
         'url': url_for('subject', subject='Multidisciplinary')})
-    return render_template('contents.html', title='Index of subjects',\
-        tree=subject_tree)
+    return render_template(
+        'contents.html', title='Index of subjects', tree=subject_tree)
 
-### Search form
 
+# Search form
+# ===========
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     schemes = db.table('metadata-schemes')
@@ -926,14 +969,14 @@ def search():
             title_search = schemes.search(Scheme.title.search(title_query))
             no_of_hits = len(title_search)
             if no_of_hits:
-                flash('Found {:N scheme/s} with title "{}". '.format(\
+                flash('Found {:N scheme/s} with title "{}". '.format(
                     Pluralizer(no_of_hits), request.form['title']))
                 results.extend(title_search)
             else:
-                flash('No schemes found with title "{}". '.format(\
+                flash('No schemes found with title "{}". '.format(
                     request.form['title']), 'error')
 
-        if request.form['keyword'] != '' :
+        if request.form['keyword'] != '':
             no_of_queries += 1
             # Interpret subject
             term_list = list()
@@ -943,24 +986,25 @@ def search():
                 # - Translate term into concept ID
                 concept_id = getTermURI(request.form['keyword'])
                 if not concept_id:
-                    flash('The subject "{}" was not found in the {}.\n'.format(\
+                    flash('The subject "{}" was not found in the {}.\n'.format(
                         request.form['keyword'], thesaurus_link), 'error')
                 # - Find list of broader and narrower terms
                 term_uri_list = getTermList(concept_id)
                 for term_uri in term_uri_list:
-                    term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
-                    if not term in term_list:
+                    term = str(
+                        thesaurus.preferredLabel(term_uri, lang='en')[0][1])
+                    if term not in term_list:
                         term_list.append(term)
 
             # Search for matching schemes
             subject_search = schemes.search(Scheme.keywords.any(term_list))
             no_of_hits = len(subject_search)
             if no_of_hits:
-                flash('Found {:N scheme/s} related to {}. '.format(\
+                flash('Found {:N scheme/s} related to {}. '.format(
                     Pluralizer(no_of_hits), request.form['keyword']))
                 results.extend(subject_search)
             else:
-                flash('No schemes found related to {}. '.format(\
+                flash('No schemes found related to {}. '.format(
                     request.form['keyword']), 'error')
 
         if request.form['id'] != '':
@@ -969,14 +1013,15 @@ def search():
                 id_search = schemes.get(eid=int(request.form['id'][5:]))
             else:
                 Identifier = Query()
-                id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
+                id_search = schemes.search(Scheme.identifiers.any(
+                    Identifier.id == request.form['id']))
             no_of_hits = len(id_search)
             if no_of_hits:
-                flash('Found {:N scheme/s} with identifier "{}". '.format(\
+                flash('Found {:N scheme/s} with identifier "{}". '.format(
                     Pluralizer(no_of_hits), request.form['id']))
                 results.extend(id_search)
             else:
-                flash('No schemes found with identifier "{}". '.format(\
+                flash('No schemes found with identifier "{}". '.format(
                     request.form['id']), 'error')
 
         if 'funder' in request.form and request.form['funder'] != '':
@@ -985,50 +1030,54 @@ def search():
             Funder = Query()
             matching_funders = list()
             funder_query = wild2regex(request.form['funder'])
-            funder_search = organizations.search(Funder.name.search(funder_query))
+            funder_search = organizations.search(Funder.name.search(
+                funder_query))
             for funder in funder_search:
                 matching_funders.append('msc:g{}'.format(funder.eid))
             if not matching_funders:
-                flash('No funders found called "{}" .'.format(\
+                flash('No funders found called "{}" .'.format(
                     request.form['funder']), 'error')
             else:
                 Relation = Query()
                 with_funder = list()
                 for funder_id in matching_funders:
-                    with_funder.extend(schemes.search(\
-                        Scheme.relatedEntities.any(\
-                            (Relation.role == 'funder') & (Relation.id == funder_id) )))
+                    with_funder.extend(schemes.search(
+                        Scheme.relatedEntities.any(
+                            (Relation.role == 'funder') &
+                            (Relation.id == funder_id))))
                 no_of_hits = len(with_funder)
                 if no_of_hits:
-                    flash('Found {:N scheme/s} with funder "{}". '.format(\
+                    flash('Found {:N scheme/s} with funder "{}". '.format(
                         Pluralizer(no_of_hits), request.form['funder']))
                     results.extend(with_funder)
                 else:
-                    flash('No schemes found with funder "{}". '.format(\
+                    flash('No schemes found with funder "{}". '.format(
                         request.form['funder']), 'error')
 
         if 'dataType' in request.form and request.form['dataType'] != '':
             no_of_queries += 1
-            type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
+            type_search = schemes.search(Scheme.dataTypes.any(
+                [request.form['dataType']]))
             no_of_hits = len(type_search)
             if no_of_hits:
-                flash('Found {:N scheme/s} associated with {}. '.format(\
+                flash('Found {:N scheme/s} associated with {}. '.format(
                     Pluralizer(no_of_hits), request.form['dataType']))
                 results.extend(type_search)
             else:
-                flash('No schemes found associated with {}. '.format(\
+                flash('No schemes found associated with {}. '.format(
                     request.form['dataType']), 'error')
 
         # Are there any duplicates?
         result_eids = list()
         result_list = list()
         for result in results:
-            if not result.eid in result_eids:
+            if result.eid not in result_eids:
                 result_list.append(result)
                 result_eids.append(result.eid)
         no_of_hits = len(result_list)
         if no_of_queries > 1:
-            flash('Found {:N scheme/s} in total. '.format(Pluralizer(no_of_hits)))
+            flash('Found {:N scheme/s} in total. '.format(
+                Pluralizer(no_of_hits)))
         if no_of_hits == 1:
             # Go direct to that page
             result = result_list[0]
@@ -1037,7 +1086,8 @@ def search():
             if no_of_hits > 1:
                 result_list.sort(key=lambda k: k['title'].lower())
             # Show results list
-            return render_template('search-results.html', title=title, results=result_list)
+            return render_template(
+                'search-results.html', title=title, results=result_list)
 
     else:
         # Title, identifier, funder, dataType help
@@ -1063,7 +1113,8 @@ def search():
                         if funder:
                             funder_set.add(funder['name'])
                         else:
-                            print('Could not look up organization with eid {}. '.format(org_id[5:]))
+                            print('Could not look up organization with eid {}.'
+                                  ''.format(org_id[5:]))
         title_list = list(title_set)
         title_list.sort(key=lambda k: k.lower())
         id_list = list(id_set)
@@ -1076,21 +1127,23 @@ def search():
         full_keyword_uris = getAllTermURIs()
         subject_set = set()
         for uri in full_keyword_uris:
-            subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
+            subject_set.add(str(
+                thesaurus.preferredLabel(uri, lang='en')[0][1]))
         subject_set.add('Multidisciplinary')
         subject_list = list(subject_set)
         subject_list.sort()
-        return render_template('search-form.html', titles=title_list,\
-            subjects=subject_list, ids=id_list, funders=funder_list,\
-            dataTypes=type_list)
+        return render_template(
+            'search-form.html', titles=title_list, subjects=subject_list,
+            ids=id_list, funders=funder_list, dataTypes=type_list)
 
-### Corresponding query interface
 
+# Corresponding query interface
+# =============================
 @app.route('/query/schemes', methods=['POST'])
 def scheme_query():
     if not request_wants_json():
-        flash('The URL you requested is part of the Catalog API. ' + \
-            'Please use this search form instead.', 'error')
+        flash('The URL you requested is part of the Catalog API.'
+              ' Please use this search form instead.', 'error')
         return redirect(url_for('search'))
 
     schemes = db.table('metadata-schemes')
@@ -1099,12 +1152,13 @@ def scheme_query():
     Scheme = Query()
 
     if 'title' in request.form and request.form['title'] != '':
-        title_search = schemes.search(Scheme.title.search(request.form['title']))
+        title_search = schemes.search(Scheme.title.search(
+            request.form['title']))
         no_of_hits = len(title_search)
         if no_of_hits:
             results.extend(title_search)
 
-    if 'keyword' in request.form and request.form['keyword'] != '' :
+    if 'keyword' in request.form and request.form['keyword'] != '':
         # Interpret subject
         term_list = list()
         if request.form['keyword'] == 'Multidisciplinary':
@@ -1116,7 +1170,7 @@ def scheme_query():
             term_uri_list = getTermList(concept_id)
             for term_uri in term_uri_list:
                 term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
-                if not term in term_list:
+                if term not in term_list:
                     term_list.append(term)
 
         # Search for matching schemes
@@ -1125,7 +1179,7 @@ def scheme_query():
         if no_of_hits:
             results.extend(subject_search)
 
-    if 'keyword-id' in request.form and request.form['keyword-id'] != '' :
+    if 'keyword-id' in request.form and request.form['keyword-id'] != '':
         term_list = list()
         # Find list of broader and narrower terms
         term_uri_list = getTermList(request.form['keyword-id'])
@@ -1134,7 +1188,7 @@ def scheme_query():
             label_pairs = thesaurus.preferredLabel(term_uri, lang='en')
             if label_pairs:
                 term = str(label_pairs[0][1])
-                if not term in term_list:
+                if term not in term_list:
                     term_list.append(term)
 
         # Search for matching schemes
@@ -1148,7 +1202,8 @@ def scheme_query():
             id_search = schemes.get(eid=int(request.form['id'][5:]))
         else:
             Identifier = Query()
-            id_search = schemes.search(Scheme.identifiers.any(Identifier.id == request.form['id']))
+            id_search = schemes.search(Scheme.identifiers.any(
+                Identifier.id == request.form['id']))
         no_of_hits = len(id_search)
         if no_of_hits:
             results.extend(id_search)
@@ -1157,16 +1212,17 @@ def scheme_query():
         # Interpret search
         Funder = Query()
         matching_funders = list()
-        funder_search = organizations.search(Funder.name.search(request.form['funder']))
+        funder_search = organizations.search(Funder.name.search(
+            request.form['funder']))
         for funder in funder_search:
             matching_funders.append('msc:g{}'.format(funder.eid))
         if matching_funders:
             Relation = Query()
             with_funder = list()
             for funder_id in matching_funders:
-                with_funder.extend(\
-                    schemes.search(Scheme.relatedEntities.any(\
-                        (Relation.role == 'funder') & (Relation.id == funder_id) )))
+                with_funder.extend(schemes.search(Scheme.relatedEntities.any(
+                    (Relation.role == 'funder') &
+                    (Relation.id == funder_id))))
             no_of_hits = len(with_funder)
             if no_of_hits:
                 results.extend(with_funder)
@@ -1176,23 +1232,24 @@ def scheme_query():
         Funder = Query()
         Identifier = Query()
         matching_funders = list()
-        funder_search = organizations.search(\
-            Funder.identifiers.any(Identifier.id == request.form['funder-id']))
+        funder_search = organizations.search(Funder.identifiers.any(
+            Identifier.id == request.form['funder-id']))
         for funder in funder_search:
             matching_funders.append('msc:g{}'.format(funder.eid))
         if matching_funders:
             Relation = Query()
             with_funder = list()
             for funder_id in matching_funders:
-                with_funder.extend(schemes.search(\
-                    Scheme.relatedEntities.any(\
-                        (Relation.role == 'funder') & (Relation.id == funder_id) )))
+                with_funder.extend(schemes.search(Scheme.relatedEntities.any(
+                    (Relation.role == 'funder') &
+                    (Relation.id == funder_id))))
             no_of_hits = len(with_funder)
             if no_of_hits:
                 results.extend(with_funder)
 
     if 'dataType' in request.form and request.form['dataType'] != '':
-        type_search = schemes.search(Scheme.dataTypes.any([ request.form['dataType'] ]))
+        type_search = schemes.search(Scheme.dataTypes.any(
+            [request.form['dataType']]))
         no_of_hits = len(type_search)
         if no_of_hits:
             results.extend(type_search)
@@ -1201,15 +1258,16 @@ def scheme_query():
     result_eids = list()
     result_list = list()
     for result in results:
-        if not result.eid in result_eids:
+        if result.eid not in result_eids:
             result_list.append('msc:m{}'.format(result.eid))
             result_eids.append(result.eid)
     result_list.sort()
     # Show results list
-    return jsonify({ 'ids': result_list })
+    return jsonify({'ids': result_list})
 
-### User login
 
+# User login
+# ==========
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
@@ -1218,12 +1276,14 @@ def login():
     if request.method == 'POST':
         openid = request.form.get('openid')
         if openid:
-            return oid.try_login(openid, ask_for=['email', 'nickname'],\
+            return oid.try_login(
+                openid, ask_for=['email', 'nickname'],
                 ask_for_optional=['fullname'])
     error = oid.fetch_error()
     if error:
         flash(error, 'error')
     return render_template('login.html', next=oid.get_next_url())
+
 
 @oid.after_login
 def create_or_login(resp):
@@ -1234,8 +1294,10 @@ def create_or_login(resp):
         flash('Successfully signed in.')
         g.user = user
         return redirect(oid.get_next_url())
-    return redirect(url_for('create_profile', next=oid.get_next_url(),\
+    return redirect(url_for(
+        'create_profile', next=oid.get_next_url(),
         name=resp.fullname or resp.nickname, email=resp.email))
+
 
 @app.route('/create-profile', methods=['GET', 'POST'])
 def create_profile():
@@ -1251,10 +1313,12 @@ def create_profile():
         elif '@' not in email:
             flash('You must enter a valid email address.', 'error')
         else:
-            user_db.insert({'name': name, 'email': email, 'openid': session['openid']})
+            user_db.insert({
+                'name': name, 'email': email, 'openid': session['openid']})
             flash('Profile successfully created.')
             return redirect(oid.get_next_url())
     return render_template('create-profile.html', next=oid.get_next_url())
+
 
 @app.route('/logout')
 def logout():
@@ -1262,10 +1326,12 @@ def logout():
     flash('You were signed out')
     return redirect(oid.get_next_url())
 
-### Editing screens
 
+# Editing screens
+# ===============
+#
 # Utility functions for WTForms implementation
-
+# --------------------------------------------
 def clean_dict(data):
     """Takes dictionary and recursively removes fields where the value is (a)
     an empty string, (b) an empty list, (c) a dictionary wherein all the values
@@ -1302,19 +1368,21 @@ def clean_dict(data):
             del data[key]
     return data
 
-relations_msc_form = {\
-    'parent scheme': 'parent_schemes',\
-    'maintainer': 'maintainers',\
-    'funder': 'funders',\
-    'user': 'users',\
-    'supported scheme': 'supported_schemes',\
-    'input scheme': 'input_schemes',\
-    'output scheme': 'output_schemes',\
-    'endorsed scheme': 'endorsed_schemes',\
-    'originator': 'originators',\
+
+relations_msc_form = {
+    'parent scheme': 'parent_schemes',
+    'maintainer': 'maintainers',
+    'funder': 'funders',
+    'user': 'users',
+    'supported scheme': 'supported_schemes',
+    'input scheme': 'input_schemes',
+    'output scheme': 'output_schemes',
+    'endorsed scheme': 'endorsed_schemes',
+    'originator': 'originators',
     }
 
 relations_form_msc = {v: k for k, v in relations_msc_form.items()}
+
 
 def msc_to_form(msc_data):
     """Transforms data from MSC database into the data structure used by the
@@ -1336,7 +1404,8 @@ def msc_to_form(msc_data):
                     form_data[mapped_role] = list()
                 id_tuple = entity['id'].partition('#v')
                 if mapped_role == 'endorsed_schemes':
-                    form_data[mapped_role].append({'id': id_tuple[0], 'version': id_tuple[2]})
+                    form_data[mapped_role].append({
+                        'id': id_tuple[0], 'version': id_tuple[2]})
                 else:
                     form_data[mapped_role].append(id_tuple[0])
         elif k == 'valid':
@@ -1365,16 +1434,18 @@ def msc_to_form(msc_data):
         if l in form_data:
             form_data[l].append('')
     if 'locations' in form_data:
-        form_data['locations'].append({'url': '', 'type': '' })
+        form_data['locations'].append({'url': '', 'type': ''})
     if 'identifiers' in form_data:
-        form_data['identifiers'].append({'id': '', 'scheme': '' })
+        form_data['identifiers'].append({'id': '', 'scheme': ''})
     if 'versions' in form_data:
         form_data['versions'].append({'number': '', 'issued': ''})
     if 'creators' in form_data:
-        form_data['creators'].append({'fullName': '', 'givenName': '', 'familyName': ''})
+        form_data['creators'].append({
+            'fullName': '', 'givenName': '', 'familyName': ''})
     if 'endorsed_schemes' in form_data:
-        form_data['endorsed_schemes'].append({'id': '', 'version': '' })
+        form_data['endorsed_schemes'].append({'id': '', 'version': ''})
     return form_data
+
 
 def form_to_msc(form_data, element):
     """Transforms data from web form into the MSC data model, supplemented by
@@ -1400,12 +1471,14 @@ def form_to_msc(form_data, element):
             for item in v:
                 if isinstance(item, dict):
                     if 'version' in item:
-                        id_string = '{}#v{}'.format(item['id'], item['version'])
+                        id_string = '{}#v{}'.format(
+                            item['id'], item['version'])
                     else:
                         id_string = item['id']
                 else:
                     id_string = item
-                msc_data['relatedEntities'].append({'id': id_string, 'role': role})
+                msc_data['relatedEntities'].append({
+                    'id': id_string, 'role': role})
         elif k == 'valid_from':
             has_tl_valid_from = True
         elif k == 'valid_to':
@@ -1426,16 +1499,21 @@ def form_to_msc(form_data, element):
                         # Restore information from existing record
                         if element and 'versions' in element:
                             for release in element['versions']:
-                                if 'number' in release and str(release['number']) == str(value):
-                                    overrides = {i: j for i, j in release.items()\
-                                        if i not in ['number', 'available', 'issued', 'valid']}
+                                if 'number' in release and\
+                                        str(release['number']) == str(value):
+                                    overrides = {
+                                        i: j for i, j in release.items()
+                                        if i not in [
+                                            'number', 'available', 'issued',
+                                            'valid']}
                                     mapped_version.update(overrides)
                                     break
                     else:
                         mapped_version[key] = value
                 if has_vn_valid_from:
                     if has_vn_valid_to:
-                        mapped_version['valid'] = '{}/{}'.format(version['valid_from'], version['valid_to'])
+                        mapped_version['valid'] = '{}/{}'.format(
+                            version['valid_from'], version['valid_to'])
                     else:
                         mapped_version['valid'] = version['valid_from']
                 msc_data[k].append(mapped_version)
@@ -1450,7 +1528,8 @@ def form_to_msc(form_data, element):
             msc_data[k] = v
         if has_tl_valid_from:
             if has_tl_valid_to:
-                msc_data['valid'] = '{}/{}'.format(clean_data['valid_from'], clean_data['valid_to'])
+                msc_data['valid'] = '{}/{}'.format(
+                    clean_data['valid_from'], clean_data['valid_to'])
             else:
                 msc_data['valid'] = clean_data['valid_from']
     # Restore other data that never appears in the form
@@ -1458,6 +1537,7 @@ def form_to_msc(form_data, element):
         if element and k in element:
             msc_data[k] = element[k]
     return msc_data
+
 
 def fix_slug(record, series):
     """If the given record does not have a slug value, attempts to generate one.
@@ -1474,12 +1554,12 @@ def fix_slug(record, series):
     if 'slug' in record:
         return record
     # Otherwise attempt to generate from existing data
-    tables = {\
-        'm': 'metadata-schemes',\
-        'g': 'organizations',\
-        't': 'tools',\
-        'c': 'mappings',\
-        'e': 'endorsements' }
+    tables = {
+        'm': 'metadata-schemes',
+        'g': 'organizations',
+        't': 'tools',
+        'c': 'mappings',
+        'e': 'endorsements'}
     slug = None
     if series == 'm' or series == 't':
         if 'title' in record:
@@ -1510,7 +1590,8 @@ def fix_slug(record, series):
                 slug += '_TO_'
                 slug += '-'.join(slug_to.split('-')[:3])
     else:
-        raise Exception('Unrecognized record series "{}"; cannot fix slug.'.format(series))
+        raise Exception('Unrecognized record series "{}"; cannot fix slug.'
+                        ''.format(series))
     # Exit if this didn't work
     if not slug:
         return record
@@ -1526,91 +1607,121 @@ def fix_slug(record, series):
         record['slug'] = slug
     return record
 
+
 computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
 
 # Top 10 languages according to http://www.langpop.com/ in 2013.
 # Though not really belonging here, 'XML' added for XSL tranformations.
-programming_languages = [ 'C', 'Java', 'PHP', 'JavaScript', 'C++', 'Python',
-    'Shell', 'Ruby', 'Objective-C', 'C#', 'XML' ]
+programming_languages = [
+    'C', 'Java', 'PHP', 'JavaScript', 'C++', 'Python', 'Shell', 'Ruby',
+    'Objective-C', 'C#', 'XML']
 programming_languages.sort()
 
-id_scheme_list = [ 'DOI' ]
+id_scheme_list = ['DOI']
+
 
 # Common form snippets
-
+# --------------------
 class NativeDateField(StringField):
     widget = widgets.Input(input_type='date')
     validators = [validators.Optional(), W3CDate]
+
 
 class LocationForm(Form):
     url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
     type = SelectField('Type', validators=[RequiredIf('url')])
 
+
 class FreeLocationForm(Form):
     url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
     # Regex for location types allowed for mappings
     allowed_locations = r'(document|library \([^)]+\)|executable \([^)]+\))'
-    type_help = 'Must be one of "document", "library (<language>)", "executable (<platform>)".'
-    type = StringField('Type', validators=[RequiredIf('url'),\
+    type_help = ('Must be one of "document", "library (<language>)",'
+                 ' "executable (<platform>)".')
+    type = StringField('Type', validators=[
+        RequiredIf('url'),
         validators.Regexp(allowed_locations, message=type_help)])
+
 
 class SampleForm(Form):
     title = StringField('Title', validators=[RequiredIf('url')])
     url = StringField('URL', validators=[RequiredIf('title'), EmailOrURL])
 
+
 class IdentifierForm(Form):
     id = StringField('ID')
     scheme = StringField('ID scheme')
 
+
 class VersionForm(Form):
-    number = StringField('Version number', validators=[RequiredIf('issued'), RequiredIf('available'), RequiredIf('valid_from'), validators.Length(max=20)])
+    number = StringField('Version number', validators=[
+        RequiredIf('issued'), RequiredIf('available'),
+        RequiredIf('valid_from'), validators.Length(max=20)])
     number_old = HiddenField(validators=[validators.Length(max=20)])
     issued = NativeDateField('Date published')
     available = NativeDateField('Date released as draft/proposal')
     valid_from = NativeDateField('Date considered current')
     valid_to = NativeDateField('until')
 
+
 class SchemeVersionForm(Form):
     schemes = db.table('metadata-schemes')
     scheme_choices = [('', '')]
     for scheme in schemes.all():
-        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
     scheme_choices.sort(key=lambda k: k[1].lower())
 
     id = SelectField('Metadata scheme', choices=scheme_choices)
     version = StringField('Version')
+
 
 class CreatorForm(Form):
     fullName = StringField('Full name')
     givenName = StringField('Given name(s)')
     familyName = StringField('Family name')
 
-# Editing metadata schemes
 
+# Editing metadata schemes
+# ------------------------
 class SchemeForm(FlaskForm):
     schemes = db.table('metadata-schemes')
     scheme_choices = list()
     for scheme in schemes.all():
-        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
     scheme_choices.sort(key=lambda k: k[1].lower())
     organizations = db.table('organizations')
     organization_choices = list()
     for organization in organizations.all():
-        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+        organization_choices.append((
+            'msc:g{}'.format(organization.eid), organization['name']))
     organization_choices.sort(key=lambda k: k[1].lower())
 
     title = StringField('Name of metadata scheme')
     description = TextAreaField('Description')
-    keywords = FieldList(StringField('Subject area'), 'Subject areas', min_entries=1)
-    dataTypes = FieldList(StringField('URL or term'), 'Data types', min_entries=1)
-    parent_schemes = SelectMultipleField('Parent metadata scheme(s)', choices=scheme_choices)
-    maintainers = SelectMultipleField('Organizations that maintain this scheme', choices=organization_choices)
-    funders = SelectMultipleField('Organizations that funded this scheme', choices=organization_choices)
-    users = SelectMultipleField('Organizations that use this scheme', choices=organization_choices)
-    locations = FieldList(FormField(LocationForm), 'Relevant links', min_entries=1)
-    samples = FieldList(FormField(SampleForm), 'Sample records conforming to this scheme', min_entries=1)
-    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this scheme', min_entries=1)
-    versions = FieldList(FormField(VersionForm), 'Version history', min_entries=1)
+    keywords = FieldList(
+        StringField('Subject area'), 'Subject areas', min_entries=1)
+    dataTypes = FieldList(
+        StringField('URL or term'), 'Data types', min_entries=1)
+    parent_schemes = SelectMultipleField(
+        'Parent metadata scheme(s)', choices=scheme_choices)
+    maintainers = SelectMultipleField(
+        'Organizations that maintain this scheme',
+        choices=organization_choices)
+    funders = SelectMultipleField(
+        'Organizations that funded this scheme', choices=organization_choices)
+    users = SelectMultipleField(
+        'Organizations that use this scheme', choices=organization_choices)
+    locations = FieldList(
+        FormField(LocationForm), 'Relevant links', min_entries=1)
+    samples = FieldList(
+        FormField(SampleForm), 'Sample records conforming to this scheme',
+        min_entries=1)
+    identifiers = FieldList(
+        FormField(IdentifierForm), 'Identifiers for this scheme',
+        min_entries=1)
+    versions = FieldList(
+        FormField(VersionForm), 'Version history', min_entries=1)
+
 
 @app.route('/edit/m<int:number>', methods=['GET', 'POST'])
 def edit_scheme(number):
@@ -1623,17 +1734,19 @@ def edit_scheme(number):
     version = request.values.get('version')
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
-        flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
+        flash('Only provide information here that is different from the'
+              ' information in the main (non-version-specific) record.')
     # Subject help
     all_keyword_uris = set()
-    for generator in [thesaurus.subjects(RDF.type, UNO.Domain),\
-        thesaurus.subjects(RDF.type, UNO.MicroThesaurus),\
-        thesaurus.subjects(RDF.type, SKOS.Concept)]:
+    for generator in [
+            thesaurus.subjects(RDF.type, UNO.Domain),
+            thesaurus.subjects(RDF.type, UNO.MicroThesaurus),
+            thesaurus.subjects(RDF.type, SKOS.Concept)]:
         for uri in generator:
             all_keyword_uris.add(uri)
     subject_set = set()
     for uri in all_keyword_uris:
-        subject_set.add( str(thesaurus.preferredLabel(uri, lang='en')[0][1]) )
+        subject_set.add(str(thesaurus.preferredLabel(uri, lang='en')[0][1]))
     subject_set.add('Multidisciplinary')
     subject_list = list(subject_set)
     subject_list.sort()
@@ -1649,7 +1762,8 @@ def edit_scheme(number):
         # Translate from internal data model to form data
         if version:
             for release in element['versions']:
-                if 'number' in release and str(release['number']) == str(version):
+                if 'number' in release and\
+                        str(release['number']) == str(version):
                     form = SchemeForm(request.form, data=msc_to_form(release))
                     break
             else:
@@ -1662,12 +1776,14 @@ def edit_scheme(number):
             return redirect(url_for('edit_tool', number=0))
         form = SchemeForm(request.form)
     for f in form.locations:
-        f['type'].choices = [('', ''),
-                ('document', 'document'), ('website', 'website'),
-                ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
-                ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
+        f['type'].choices = [
+            ('', ''), ('document', 'document'), ('website', 'website'),
+            ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
+            ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
     for f in form.keywords:
-        f.validators = [validators.Optional(), validators.AnyOf(subject_list, 'Value must match an English preferred label in the {}.'.format(thesaurus_link))]
+        f.validators = [validators.Optional(), validators.AnyOf(
+            subject_list, 'Value must match an English preferred label in the'
+            ' {}.'.format(thesaurus_link))]
     # Processing the request
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
@@ -1679,24 +1795,32 @@ def edit_scheme(number):
                 version_list = element['versions']
                 for index, item in enumerate(version_list):
                     if str(item['number']) == str(version):
-                        version_dict = {k: v for k, v in item.items()\
+                        version_dict = {
+                            k: v for k, v in item.items()
                             if k in ['number', 'available', 'issued', 'valid']}
                         version_dict.update(msc_data)
                         version_list[index] = version_dict
                         Scheme = Query()
                         Version = Query()
-                        schemes.update({'versions': version_list},\
-                            Scheme.versions.any(Version.number == version),\
+                        schemes.update(
+                            {'versions': version_list},
+                            Scheme.versions.any(Version.number == version),
                             eids=[number])
-                        flash('Successfully updated record for version {}.'.format(version), 'success')
+                        flash('Successfully updated record for version {}.'
+                              ''.format(version), 'success')
                         break
                 else:
                     # This version is not in the list
-                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+                    flash('Could not apply changes. Have you saved details for'
+                          ' version {} in the main record?'.format(version),
+                          'error')
             else:
                 # The version list or the main record is missing
-                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
-            return redirect('{}?version={}'.format(url_for('edit_scheme', number=number), version))
+                flash('Could not apply changes. Have you saved details for'
+                      ' version {} in the main record?'.format(version),
+                      'error')
+            return redirect('{}?version={}'.format(url_for(
+                'edit_scheme', number=number), version))
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 'm')
@@ -1711,24 +1835,32 @@ def edit_scheme(number):
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_scheme', number=number))
     if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
-    return render_template('edit-scheme.html', form=form, eid=number,\
-        version=version, subjects=subject_list, dataTypes=type_list,\
-        idSchemes=id_scheme_list)
+        flash('Could not save changes as there {:/was an error/were N errors}.'
+              ' See below for details.'.format(Pluralizer(len(form.errors))),
+              'error')
+    return render_template(
+        'edit-scheme.html', form=form, eid=number, version=version,
+        subjects=subject_list, dataTypes=type_list, idSchemes=id_scheme_list)
+
 
 # Editing organizations
-
+# ---------------------
 class OrganizationForm(FlaskForm):
-    organization_choices = [('standards body', 'standards body'),
-            ('archive', 'archive'),
+    organization_choices = [
+            ('standards body', 'standards body'), ('archive', 'archive'),
             ('professional group', 'professional group'),
             ('coordination group', 'coordination group')]
 
     name = StringField('Name of organization')
     description = TextAreaField('Description')
-    types = SelectMultipleField('Type of organization', choices=organization_choices)
-    locations = FieldList(FormField(LocationForm), 'Relevant links', min_entries=1)
-    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this organization', min_entries=1)
+    types = SelectMultipleField(
+        'Type of organization', choices=organization_choices)
+    locations = FieldList(
+        FormField(LocationForm), 'Relevant links', min_entries=1)
+    identifiers = FieldList(
+        FormField(IdentifierForm), 'Identifiers for this organization',
+        min_entries=1)
+
 
 @app.route('/edit/g<int:number>', methods=['GET', 'POST'])
 def edit_organization(number):
@@ -1747,7 +1879,8 @@ def edit_organization(number):
             return redirect(url_for('edit_organization', number=0))
         form = OrganizationForm(request.form)
     for f in form.locations:
-        f['type'].choices = [('', ''), ('website', 'website'), ('email', 'email address')]
+        f['type'].choices = [
+            ('', ''), ('website', 'website'), ('email', 'email address')]
     # Processing the request
     if request.method == 'POST' and form.validate():
         # Translate form data into internal data model
@@ -1766,38 +1899,56 @@ def edit_organization(number):
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_organization', number=number))
     if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
-    return render_template('edit-organization.html', form=form, eid=number,\
+        flash('Could not save changes as there {:/was an error/were N errors}.'
+              ' See below for details.'.format(Pluralizer(len(form.errors))),
+              'error')
+    return render_template(
+        'edit-organization.html', form=form, eid=number,
         idSchemes=id_scheme_list)
 
-# Editing tools
 
+# Editing tools
+# -------------
 class ToolForm(FlaskForm):
     schemes = db.table('metadata-schemes')
     scheme_choices = list()
     for scheme in schemes.all():
-        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
     scheme_choices.sort(key=lambda k: k[1].lower())
     organizations = db.table('organizations')
     organization_choices = list()
     for organization in organizations.all():
-        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+        organization_choices.append((
+            'msc:g{}'.format(organization.eid), organization['name']))
     organization_choices.sort(key=lambda k: k[1].lower())
 
     title = StringField('Name of tool')
     description = TextAreaField('Description')
-    supported_schemes = SelectMultipleField('Metadata scheme(s) supported by this tool', choices=scheme_choices)
+    supported_schemes = SelectMultipleField(
+        'Metadata scheme(s) supported by this tool', choices=scheme_choices)
     # Regex for types allowed for mappings
-    allowed_types = r'(terminal \([^)]+\)|graphical \([^)]+\)|web service|web application|^$)'
-    type_help = 'Must be one of "terminal (<platform>)", "graphical (<platform>)", "web service", "web application".'
-    types = FieldList(StringField('Type', validators=[\
-        validators.Regexp(allowed_types, message=type_help)]), 'Type of tool', min_entries=1)
-    creators = FieldList(FormField(CreatorForm), 'People responsible for this tool', min_entries=1)
-    maintainers = SelectMultipleField('Organizations that maintain this tool', choices=organization_choices)
-    funders = SelectMultipleField('Organizations that funded this tool', choices=organization_choices)
-    locations = FieldList(FormField(LocationForm), 'Links to this tool', min_entries=1)
-    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this tool', min_entries=1)
-    versions = FieldList(FormField(VersionForm), 'Version history', min_entries=1)
+    allowed_types = (r'(terminal \([^)]+\)|graphical \([^)]+\)|web service|'
+                     'web application|^$)')
+    type_help = ('Must be one of "terminal (<platform>)", "graphical'
+                 ' (<platform>)", "web service", "web application".')
+    types = FieldList(
+        StringField('Type', validators=[
+            validators.Regexp(allowed_types, message=type_help)]),
+        'Type of tool', min_entries=1)
+    creators = FieldList(
+        FormField(CreatorForm), 'People responsible for this tool',
+        min_entries=1)
+    maintainers = SelectMultipleField(
+        'Organizations that maintain this tool', choices=organization_choices)
+    funders = SelectMultipleField(
+        'Organizations that funded this tool', choices=organization_choices)
+    locations = FieldList(
+        FormField(LocationForm), 'Links to this tool', min_entries=1)
+    identifiers = FieldList(
+        FormField(IdentifierForm), 'Identifiers for this tool', min_entries=1)
+    versions = FieldList(
+        FormField(VersionForm), 'Version history', min_entries=1)
+
 
 @app.route('/edit/t<int:number>', methods=['GET', 'POST'])
 def edit_tool(number):
@@ -1809,7 +1960,8 @@ def edit_tool(number):
     version = request.values.get('version')
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
-        flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
+        flash('Only provide information here that is different from the'
+              ' information in the main (non-version-specific) record.')
     type_list = ['web application', 'web service']
     for platform in computing_platforms:
         type_list.append('terminal ({})'.format(platform))
@@ -1818,7 +1970,8 @@ def edit_tool(number):
         # Translate from internal data model to form data
         if version:
             for release in element['versions']:
-                if 'number' in release and str(release['number']) == str(version):
+                if 'number' in release and\
+                        str(release['number']) == str(version):
                     form = ToolForm(request.form, data=msc_to_form(release))
                     break
             else:
@@ -1831,7 +1984,8 @@ def edit_tool(number):
             return redirect(url_for('edit_tool', number=0))
         form = ToolForm(request.form)
     for f in form.locations:
-        f['type'].choices = [('', ''), ('document', 'document'), ('website', 'website'),\
+        f['type'].choices = [
+            ('', ''), ('document', 'document'), ('website', 'website'),
             ('application', 'application'), ('service', 'service endpoint')]
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
@@ -1843,24 +1997,32 @@ def edit_tool(number):
                 version_list = element['versions']
                 for index, item in enumerate(version_list):
                     if str(item['number']) == str(version):
-                        version_dict = {k: v for k, v in item.items()\
+                        version_dict = {
+                            k: v for k, v in item.items()
                             if k in ['number', 'available', 'issued', 'valid']}
                         version_dict.update(msc_data)
                         version_list[index] = version_dict
                         Tool = Query()
                         Version = Query()
-                        tools.update({'versions': version_list},\
-                            Tool.versions.any(Version.number == version),\
+                        tools.update(
+                            {'versions': version_list},
+                            Tool.versions.any(Version.number == version),
                             eids=[number])
-                        flash('Successfully updated record for version {}.'.format(version), 'success')
+                        flash('Successfully updated record for version {}.'
+                              ''.format(version), 'success')
                         break
                 else:
                     # This version is not in the list
-                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+                    flash('Could not apply changes. Have you saved details for'
+                          ' version {} in the main record?'.format(version),
+                          'error')
             else:
                 # The version list or the main record is missing
-                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
-            return redirect('{}?version={}'.format(url_for('edit_tool', number=number), version))
+                flash('Could not apply changes. Have you saved details for'
+                      ' version {} in the main record?'.format(version),
+                      'error')
+            return redirect('{}?version={}'.format(
+                url_for('edit_tool', number=number), version))
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 't')
@@ -1875,33 +2037,50 @@ def edit_tool(number):
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_tool', number=number))
     if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
-    return render_template('edit-tool.html', form=form, eid=number,\
-        version=version, idSchemes=id_scheme_list, toolTypes=type_list)
+        flash('Could not save changes as there {:/was an error/were N errors}.'
+              ' See below for details.'.format(Pluralizer(len(form.errors))),
+              'error')
+    return render_template(
+        'edit-tool.html', form=form, eid=number, version=version,
+        idSchemes=id_scheme_list, toolTypes=type_list)
+
 
 # Editing mappings
-
+# ----------------
 class MappingForm(FlaskForm):
     schemes = db.table('metadata-schemes')
     scheme_choices = list()
     for scheme in schemes.all():
-        scheme_choices.append( ('msc:m{}'.format(scheme.eid), scheme['title']) )
+        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
     scheme_choices.sort(key=lambda k: k[1].lower())
     organizations = db.table('organizations')
     organization_choices = list()
     for organization in organizations.all():
-        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+        organization_choices.append((
+            'msc:g{}'.format(organization.eid), organization['name']))
     organization_choices.sort(key=lambda k: k[1].lower())
 
     description = TextAreaField('Description')
-    input_schemes = SelectMultipleField('Input metadata scheme(s)', choices=scheme_choices)
-    output_schemes = SelectMultipleField('Output metadata scheme(s)', choices=scheme_choices)
-    creators = FieldList(FormField(CreatorForm), 'People responsible for this mapping', min_entries=1)
-    maintainers = SelectMultipleField('Organizations that maintain this mapping', choices=organization_choices)
-    funders = SelectMultipleField('Organizations that funded this mapping', choices=organization_choices)
-    locations = FieldList(FormField(FreeLocationForm), 'Links to this mapping', min_entries=1)
-    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this mapping', min_entries=1)
-    versions = FieldList(FormField(VersionForm), 'Version history', min_entries=1)
+    input_schemes = SelectMultipleField(
+        'Input metadata scheme(s)', choices=scheme_choices)
+    output_schemes = SelectMultipleField(
+        'Output metadata scheme(s)', choices=scheme_choices)
+    creators = FieldList(
+        FormField(CreatorForm), 'People responsible for this mapping',
+        min_entries=1)
+    maintainers = SelectMultipleField(
+        'Organizations that maintain this mapping',
+        choices=organization_choices)
+    funders = SelectMultipleField(
+        'Organizations that funded this mapping', choices=organization_choices)
+    locations = FieldList(
+        FormField(FreeLocationForm), 'Links to this mapping', min_entries=1)
+    identifiers = FieldList(
+        FormField(IdentifierForm), 'Identifiers for this mapping',
+        min_entries=1)
+    versions = FieldList(
+        FormField(VersionForm), 'Version history', min_entries=1)
+
 
 @app.route('/edit/c<int:number>', methods=['GET', 'POST'])
 def edit_mapping(number):
@@ -1913,7 +2092,8 @@ def edit_mapping(number):
     version = request.values.get('version')
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
-        flash('Only provide information here that is different from the information in the main (non-version-specific) record.')
+        flash('Only provide information here that is different from the'
+              ' information in the main (non-version-specific) record.')
     location_type_list = ['document']
     for language in programming_languages:
         location_type_list.append('library ({})'.format(language))
@@ -1923,7 +2103,8 @@ def edit_mapping(number):
         # Translate from internal data model to form data
         if version:
             for release in element['versions']:
-                if 'number' in release and str(release['number']) == str(version):
+                if 'number' in release and\
+                        str(release['number']) == str(version):
                     form = MappingForm(request.form, data=msc_to_form(release))
                     break
             else:
@@ -1945,24 +2126,32 @@ def edit_mapping(number):
                 version_list = element['versions']
                 for index, item in enumerate(version_list):
                     if str(item['number']) == str(version):
-                        version_dict = {k: v for k, v in item.items()\
+                        version_dict = {
+                            k: v for k, v in item.items()
                             if k in ['number', 'available', 'issued', 'valid']}
                         version_dict.update(msc_data)
                         version_list[index] = version_dict
                         Mapping = Query()
                         Version = Query()
-                        mappings.update({'versions': version_list},\
-                            Mapping.versions.any(Version.number == version),\
+                        mappings.update(
+                            {'versions': version_list},
+                            Mapping.versions.any(Version.number == version),
                             eids=[number])
-                        flash('Successfully updated record for version {}.'.format(version), 'success')
+                        flash('Successfully updated record for version {}.'
+                              ''.format(version), 'success')
                         break
                 else:
                     # This version is not in the list
-                    flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
+                    flash('Could not apply changes. Have you saved details for'
+                          ' version {} in the main record?'.format(version),
+                          'error')
             else:
                 # The version list or the main record is missing
-                flash('Could not apply changes. Have you saved details for version {} in the main record?'.format(version), 'error')
-            return redirect('{}?version={}'.format(url_for('edit_mapping', number=number), version))
+                flash('Could not apply changes. Have you saved details for'
+                      ' version {} in the main record?'.format(version),
+                      'error')
+            return redirect('{}?version={}'.format(
+                url_for('edit_mapping', number=number), version))
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 'c')
@@ -1977,27 +2166,38 @@ def edit_mapping(number):
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_mapping', number=number))
     if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
-    return render_template('edit-mapping.html', form=form, eid=number,\
-        version=version, idSchemes=id_scheme_list, locationTypes=location_type_list)
+        flash('Could not save changes as there {:/was an error/were N errors}.'
+              ' See below for details.'.format(Pluralizer(len(form.errors))),
+              'error')
+    return render_template(
+        'edit-mapping.html', form=form, eid=number, version=version,
+        idSchemes=id_scheme_list, locationTypes=location_type_list)
+
 
 # Editing endorsements
-
+# --------------------
 class EndorsementForm(FlaskForm):
     organizations = db.table('organizations')
     organization_choices = list()
     for organization in organizations.all():
-        organization_choices.append( ('msc:g{}'.format(organization.eid), organization['name']) )
+        organization_choices.append((
+            'msc:g{}'.format(organization.eid), organization['name']))
     organization_choices.sort(key=lambda k: k[1].lower())
 
     citation = StringField('Citation')
     issued = NativeDateField('Endorsement date')
     valid_from = NativeDateField('Endorsement period')
     valid_to = NativeDateField('until')
-    locations = FieldList(FormField(LocationForm), 'Links to this endorsement', min_entries=1)
-    identifiers = FieldList(FormField(IdentifierForm), 'Identifiers for this endorsement', min_entries=1)
-    endorsed_schemes = FieldList(FormField(SchemeVersionForm), 'Endorsed schemes', min_entries=1)
-    originators = SelectMultipleField('Endorsing organizations', choices=organization_choices)
+    locations = FieldList(
+        FormField(LocationForm), 'Links to this endorsement', min_entries=1)
+    identifiers = FieldList(
+        FormField(IdentifierForm), 'Identifiers for this endorsement',
+        min_entries=1)
+    endorsed_schemes = FieldList(
+        FormField(SchemeVersionForm), 'Endorsed schemes', min_entries=1)
+    originators = SelectMultipleField(
+        'Endorsing organizations', choices=organization_choices)
+
 
 @app.route('/edit/e<int:number>', methods=['GET', 'POST'])
 def edit_endorsement(number):
@@ -2041,11 +2241,15 @@ def edit_endorsement(number):
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_endorsement', number=number))
     if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}. See below for details.'.format(Pluralizer(len(form.errors))), 'error')
-    return render_template('edit-endorsement.html', form=form, eid=number,\
+        flash('Could not save changes as there {:/was an error/were N errors}.'
+              ' See below for details.'.format(Pluralizer(len(form.errors))),
+              'error')
+    return render_template(
+        'edit-endorsement.html', form=form, eid=number,
         idSchemes=id_scheme_list)
 
-### Executing
 
+# Executing
+# =========
 if __name__ == '__main__':
     app.run(debug=True)
