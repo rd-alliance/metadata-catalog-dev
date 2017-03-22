@@ -98,11 +98,16 @@ microthesauri to be traversed as if they were higher level concepts.
 
 ## Running the prototype Metadata Standards Catalog
 
-To run the prototype Catalog, you will need [TinyDB], [RDFLib] and [Flask]. It
+To run the prototype Catalog, you will need [TinyDB], [tinyrecord], [RDFLib],
+[Flask], [Flask-WTF] (and hence [WTForms]), and [Dulwich]. It
 is currently compatible with Flask 0.10 (this is what `python3-flask` gives you
 in Ubuntu LTS releases).
 
 [Flask]: http://flask.pocoo.org/
+[Flask-WTF]: https://flask-wtf.readthedocs.io/
+[WTForms]: https://wtforms.readthedocs.io/
+[tinyrecord]: https://github.com/eugene-eeo/tinyrecord
+[Dulwich]: https://www.dulwich.io/
 
 Open up a fresh terminal/command prompt (as it will block the command line for
 as long as the script is running) and run the [Python 3] script `serve.py`:

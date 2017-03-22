@@ -37,7 +37,7 @@ from rdflib.namespace import SKOS, RDF
 script_dir = os.path.dirname(sys.argv[0])
 
 default_folder = os.path.realpath(os.path.join(script_dir, 'db'))
-default_file = os.path.realpath(os.path.join(script_dir, 'db.json'))
+default_file = os.path.realpath(os.path.join(script_dir, 'data', 'db.json'))
 
 subfolders = {
     'endorsements': 'e',
@@ -61,7 +61,7 @@ parser.add_argument(
     dest='folder')
 parser.add_argument(
     '-d', '--db',
-    help='location of TinyDB JSON data file (default: ./db.json)',
+    help='location of TinyDB JSON data file (default: ./data/db.json)',
     action='store',
     default=default_file,
     dest='file')
@@ -269,6 +269,7 @@ def dbCheckids(args):
         print('All identifiers are in sequence. It is safe to compile the'
               ' database.')
 
+
 parser_checkids.set_defaults(func=dbCheckids)
 
 
@@ -336,9 +337,11 @@ def dbCompile(args):
 
     if isCompiled:
         with open(args.file, 'w') as f:
-            json.dump(db, f, default=json_serial, sort_keys=True)
+            json.dump(db, f, default=json_serial, sort_keys=True, indent=2,
+                      ensure_ascii=False)
     else:
         print('No data files found, database not created.')
+
 
 parser_compile.set_defaults(func=dbCompile)
 
@@ -408,6 +411,7 @@ def dbDump(args):
                 yaml.safe_dump(dict(record), r, default_flow_style=False,
                                allow_unicode=True)
 
+
 parser_dump.set_defaults(func=dbDump)
 
 
@@ -453,6 +457,7 @@ def dbVocab(args):
 
     print('Writing simplified thesaurus.')
     simplified.serialize('simple-unesco-thesaurus.ttl', format='turtle')
+
 
 parser_vocab.set_defaults(func=dbVocab)
 

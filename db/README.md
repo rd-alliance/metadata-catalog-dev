@@ -321,9 +321,6 @@ entity in the MSC database:
         development of the scheme, or helps to fund its continued maintenance.
       + *user*: The specified organization or service uses the current scheme
         in order to achieve its goals.
-      + *endorsement*: The current scheme (or version) is endorsed by the
-        specified endorsement. The originator of the endorsement must not be the
-        *maintainer*.
 
 ## Conformance levels
 
@@ -900,7 +897,10 @@ entity in the MSC database:
   * **role**  
     The manner of the relationship between the entity and the mapping. Possible
     values:
-      + *endorsed scheme*: The scheme which is endorsed.
+      + *endorsed scheme*: The scheme which is endorsed. To indicate that a
+        particular version was endorsed, append `#v` plus the version number
+        to the MSC ID. This must correspond to a version number recorded for
+        that entity.
       + *originator*: The organization that made the endorsement.
 
 *Note*

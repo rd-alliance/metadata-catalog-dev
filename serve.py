@@ -38,6 +38,11 @@ from wtforms.compat import string_types
 # Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query, where
 from tinydb.operations import delete
+from tinydb.storages import Storage, touch
+
+# See https://github.com/eugene-eeo/tinyrecord
+# Install from PyPi: sudo -H pip3 install tinyrecord
+from tinyrecord import transaction
 
 # See http://rdflib.readthedocs.io/
 # On Debian, Ubuntu, etc.:
@@ -46,6 +51,93 @@ from tinydb.operations import delete
 import rdflib
 from rdflib import Literal, Namespace
 from rdflib.namespace import SKOS, RDF
+
+# See https://www.dulwich.io/
+# On Debian, Ubuntu, etc.:
+#   - old version: sudo apt-get install python3-dulwich
+#   - latest version: sudo -H pip3 install dulwich
+from dulwich.repo import Repo
+from dulwich.errors import NotGitRepository
+import dulwich.porcelain as git
+
+
+# Customization
+# =============
+#
+# New version of JSON storage that also stores changes in a Git repo
+class JSONStorageWithGit(Storage):
+    """Store the data in a JSON file and log the change in a Git repo.
+    """
+
+    def __init__(self, path, create_dirs=False, **kwargs):
+        """Create a new instance.
+        Also creates the storage file, if it doesn't exist.
+
+        Arguments:
+            path (str): Path/filename of the JSON data.
+        """
+
+        super(JSONStorageWithGit, self).__init__()
+        # Create file if not exists
+        touch(path, create_dirs=create_dirs)
+        self.kwargs = kwargs
+        self._handle = open(path, 'r+')
+        # Ensure Git is configured properly
+        git_repo = os.path.dirname(path)
+        try:
+            self.repo = Repo(git_repo)
+        except NotGitRepository:
+            self.repo = Repo.init(git_repo)
+        self.filename = os.path.basename(path)
+        self.name = os.path.splitext(self.filename)[0]
+
+    @property
+    def _refname(self):
+        return b'refs/heads/master'
+
+    def close(self):
+        self._handle.close()
+
+    def read(self):
+        # Get the file size
+        self._handle.seek(0, os.SEEK_END)
+        size = self._handle.tell()
+
+        if not size:
+            # File is empty
+            return None
+        else:
+            self._handle.seek(0)
+            return json.load(self._handle)
+
+    def write(self, data):
+        # Write the json file
+        self._handle.seek(0)
+        serialized = json.dumps(data, **self.kwargs)
+        self._handle.write(serialized)
+        self._handle.flush()
+        self._handle.truncate()
+
+        # Add file to Git index
+        git.add(repo=self.repo, paths=[self.filename])
+
+        # Prepare commit information
+        committer = b'MSCWG <mscwg@rda-groups.org>'
+        if g.user:
+            author = ('{} <{}>'.format(g.user['name'], g.user['email'])
+                      .encode('utf8'))
+        else:
+            author = committer
+        if g.user:
+            message = ('Update to {} from {}'
+                       .format(self.name, g.user['name']).encode('utf8'))
+        else:
+            message = ('Update to {}'.format(self.name).encode('utf8'))
+
+        # Execute commit
+        git.commit(self.repo, message=message, author=author,
+                   committer=committer)
+
 
 # Basic setup
 # ===========
@@ -57,8 +149,13 @@ with open('key', 'r') as f:
     app.secret_key = f.read()
 
 script_dir = os.path.dirname(sys.argv[0])
-db = TinyDB(os.path.realpath(os.path.join(script_dir, 'db.json')))
-user_db = TinyDB(os.path.realpath(os.path.join(script_dir, 'users.json')))
+db_dir = os.path.join(script_dir, 'data')
+db = TinyDB(os.path.realpath(os.path.join(db_dir, 'db.json')),
+            storage=JSONStorageWithGit, sort_keys=True, indent=2,
+            ensure_ascii=False)
+user_db = TinyDB(os.path.realpath(os.path.join(db_dir, 'users.json')),
+                 storage=JSONStorageWithGit, sort_keys=True, indent=2,
+                 ensure_ascii=False)
 
 thesaurus = rdflib.Graph()
 thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
@@ -1668,7 +1765,11 @@ class SchemeVersionForm(Form):
     schemes = db.table('metadata-schemes')
     scheme_choices = [('', '')]
     for scheme in schemes.all():
-        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
+        if 'title' in scheme:
+            scheme_choices.append(
+                ('msc:m{}'.format(scheme.eid), scheme['title']))
+        else:
+            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
     scheme_choices.sort(key=lambda k: k[1].lower())
 
     id = SelectField('Metadata scheme', choices=scheme_choices)
@@ -1687,7 +1788,11 @@ class SchemeForm(FlaskForm):
     schemes = db.table('metadata-schemes')
     scheme_choices = list()
     for scheme in schemes.all():
-        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
+        if 'title' in scheme:
+            scheme_choices.append(
+                ('msc:m{}'.format(scheme.eid), scheme['title']))
+        else:
+            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
     scheme_choices.sort(key=lambda k: k[1].lower())
     organizations = db.table('organizations')
     organization_choices = list()
@@ -1772,8 +1877,8 @@ def edit_scheme(number):
         else:
             form = SchemeForm(request.form, data=msc_to_form(element))
     else:
-        if number != 0:
-            return redirect(url_for('edit_tool', number=0))
+        #if number != 0:
+            #return redirect(url_for('edit_scheme', number=0))
         form = SchemeForm(request.form)
     for f in form.locations:
         f['type'].choices = [
@@ -1824,9 +1929,10 @@ def edit_scheme(number):
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 'm')
-            for key in element:
-                schemes.update(delete(key), eids=[number])
-            schemes.update(msc_data, eids=[number])
+            with transaction(schemes) as t:
+                for key in (k for k in element if k not in msc_data):
+                    t.update(delete(key), eids=[number])
+                t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # Adding a new record
@@ -1889,9 +1995,10 @@ def edit_organization(number):
         # TODO: apply logging and version control
         if element:
             # Existing record
-            for key in element:
-                organizations.update(delete(key), eids=[number])
-            organizations.update(msc_data, eids=[number])
+            with transaction(organizations) as t:
+                for key in (k for k in element if k not in msc_data):
+                    t.update(delete(key), eids=[number])
+                t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # New record
@@ -1913,7 +2020,11 @@ class ToolForm(FlaskForm):
     schemes = db.table('metadata-schemes')
     scheme_choices = list()
     for scheme in schemes.all():
-        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
+        if 'title' in scheme:
+            scheme_choices.append(
+                ('msc:m{}'.format(scheme.eid), scheme['title']))
+        else:
+            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
     scheme_choices.sort(key=lambda k: k[1].lower())
     organizations = db.table('organizations')
     organization_choices = list()
@@ -2026,9 +2137,10 @@ def edit_tool(number):
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 't')
-            for key in element:
-                tools.update(delete(key), eids=[number])
-            tools.update(msc_data, eids=[number])
+            with transaction(tools) as t:
+                for key in (k for k in element if k not in msc_data):
+                    t.update(delete(key), eids=[number])
+                t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # Adding a new record
@@ -2051,7 +2163,11 @@ class MappingForm(FlaskForm):
     schemes = db.table('metadata-schemes')
     scheme_choices = list()
     for scheme in schemes.all():
-        scheme_choices.append(('msc:m{}'.format(scheme.eid), scheme['title']))
+        if 'title' in scheme:
+            scheme_choices.append(
+                ('msc:m{}'.format(scheme.eid), scheme['title']))
+        else:
+            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
     scheme_choices.sort(key=lambda k: k[1].lower())
     organizations = db.table('organizations')
     organization_choices = list()
@@ -2155,9 +2271,10 @@ def edit_mapping(number):
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 'c')
-            for key in element:
-                mappings.update(delete(key), eids=[number])
-            mappings.update(msc_data, eids=[number])
+            with transaction(mappings) as t:
+                for key in (k for k in element if k not in msc_data):
+                    t.update(delete(key), eids=[number])
+                t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # Adding a new record
@@ -2231,9 +2348,10 @@ def edit_endorsement(number):
         # TODO: apply logging and version control
         if element:
             # Existing record
-            for key in element:
-                endorsements.update(delete(key), eids=[number])
-            endorsements.update(msc_data, eids=[number])
+            with transaction(endorsements) as t:
+                for key in (k for k in element if k not in msc_data):
+                    t.update(delete(key), eids=[number])
+                t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # New record
