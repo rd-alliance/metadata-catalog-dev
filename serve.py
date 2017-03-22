@@ -179,7 +179,7 @@ def request_wants_json():
         request.accept_mimetypes[best] > request.accept_mimetypes['text/html']
 
 
-def getTermList(uri, broader=True, narrower=True):
+def get_term_list(uri, broader=True, narrower=True):
     """Recursively finds broader or narrower (or both) terms in the thesaurus.
 
     Arguments:
@@ -198,16 +198,16 @@ def getTermList(uri, broader=True, narrower=True):
         broader_terms = thesaurus.objects(uri, SKOS.broader)
         for broader_term in broader_terms:
             if broader_term not in terms:
-                terms = getTermList(broader_term, narrower=False) + terms
+                terms = get_term_list(broader_term, narrower=False) + terms
     if narrower:
         narrower_terms = thesaurus.objects(uri, SKOS.narrower)
         for narrower_term in narrower_terms:
             if narrower_term not in terms:
-                terms += getTermList(narrower_term, broader=False)
+                terms += get_term_list(narrower_term, broader=False)
     return terms
 
 
-def getTermURI(term):
+def get_term_uri(term):
     """Translates a string into the URI of the broadest term in the thesaurus
     that has that string as its preferred label in English.
 
@@ -235,7 +235,7 @@ def getTermURI(term):
     return concept_id
 
 
-def getTermNode(uri, filter=list()):
+def get_term_node(uri, filter=list()):
     """Recursively transforms the URI of a term in the thesaurus to a dictionary
     providing the preferred label of the term in English, its corresponding URL
     in the Catalog, and (if applicable) a list of dictionaries corresponding to
@@ -257,24 +257,24 @@ def getTermNode(uri, filter=list()):
     result = dict()
     term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
     result['name'] = term
-    slug = toURLSlug(term)
+    slug = to_url_slug(term)
     result['url'] = url_for('subject', subject=slug)
     narrower_ids = thesaurus.objects(uri, SKOS.narrower)
     children = list()
     if filter:
         for narrower_id in narrower_ids:
             if narrower_id in filter:
-                children.append(getTermNode(narrower_id, filter=filter))
+                children.append(get_term_node(narrower_id, filter=filter))
     else:
         for narrower_id in narrower_ids:
-            children.append(getTermNode(narrower_id, filter=filter))
+            children.append(get_term_node(narrower_id, filter=filter))
     if children:
         children.sort(key=lambda k: k['name'])
         result['children'] = children
     return result
 
 
-def getAllTermURIs():
+def get_all_term_uris():
     """Returns a deduplicated list of URIs corresponding to the subject keywords
     in use in the database, plus the URIs of all their broader terms.
     """
@@ -289,7 +289,7 @@ def getAllTermURIs():
     # Transform to URIs
     keyword_uris = set()
     for keyword in keyword_set:
-        uri = getTermURI(keyword)
+        uri = get_term_uri(keyword)
         if uri:
             keyword_uris.add(uri)
     # Get ancestor terms of all these
@@ -297,12 +297,12 @@ def getAllTermURIs():
     for keyword_uri in keyword_uris:
         if keyword_uri in full_keyword_uris:
             continue
-        keyword_uri_list = getTermList(keyword_uri, narrower=False)
+        keyword_uri_list = get_term_list(keyword_uri, narrower=False)
         full_keyword_uris.update(keyword_uri_list)
     return full_keyword_uris
 
 
-def getDBNode(table, id, type):
+def get_db_node(table, id, type):
     """Recursively transforms the internal ID of a record in the database to a
     dictionary providing the entity's title, its corresponding URL in the
     Catalog, and (if applicable) a list of dictionaries corresponding to
@@ -331,7 +331,7 @@ def getDBNode(table, id, type):
         if child_schemes:
             children = list()
             for child_scheme in child_schemes:
-                children.append(getDBNode(table, child_scheme.eid, type))
+                children.append(get_db_node(table, child_scheme.eid, type))
             children.sort(key=lambda k: k['name'])
             result['children'] = children
     return result
@@ -357,7 +357,7 @@ class Pluralizer:
         return "{}{}".format(start, singular if self.value == 1 else plural)
 
 
-def toFileSlug(string):
+def to_file_slug(string):
     """Transforms string into slug for use when decomposing the database to
     individual files.
     """
@@ -376,19 +376,19 @@ def toFileSlug(string):
     return slug
 
 
-def toURLSlug(string):
+def to_url_slug(string):
     """Transforms string into URL-safe slug."""
     slug = urllib.parse.quote_plus(string)
     return slug
 
 
-def fromURLSlug(slug):
+def from_url_slug(slug):
     """Transforms URL-safe slug back into regular string."""
     string = urllib.parse.unquote_plus(slug)
     return string
 
 
-def wild2regex(string):
+def wild_to_regex(string):
     """Transforms wildcard searches to regular expressions."""
     regex = re.escape(string)
     regex = regex.replace('\*', '.*')
@@ -396,62 +396,11 @@ def wild2regex(string):
     return regex
 
 
-def parseDateRange(string):
+def parse_date_range(string):
     date_split = string.partition('/')
     if date_split[2]:
         return (date_split[0], date_split[2])
     return (string, None)
-
-
-def formDictList(prefix, fields):
-    """Processes families of form elements named according to the scheme
-    'prefix-field' or 'prefix-field1'. Numbered fields are processed first,
-    then unnumbered fields. The fields are assembled into a list of
-    dictionaries where, in each dictionary, the fields form the keys.
-
-    Arguments:
-        prefix (str): common first element of form input names
-        fields (list): list of strings that occur as the second element of form
-            input names
-
-    Returns:
-        list: list of dictionaries, where each dictionary contains the fields
-            as keys and the submitted content as values.
-    """
-    current_list = list()
-    i = 1
-    while '{}-{}{}'.format(prefix, fields[0], i) in request.form:
-        instance = dict()
-        isWorthKeeping = False
-        for field in fields:
-            instance[field] = request.form.get(
-                '{}-{}{}'.format(prefix, field, i))
-            if instance[field]:
-                isWorthKeeping = True
-        if isWorthKeeping:
-            current_list.append(instance)
-        i += 1
-    instance = dict()
-    isWorthKeeping = False
-    for field in fields:
-        instance[field] = request.form.get('{}-{}'.format(prefix, field))
-        if instance[field]:
-            isWorthKeeping = True
-    if isWorthKeeping:
-        current_list.append(instance)
-    return current_list
-
-
-def isValidURL(url):
-    """Test whether a URL/email address is well-formed."""
-    result = urllib.parse.urlparse(url)
-    if result.scheme == 'mailto':
-        if re.match(r'[^@\s]+@[^@\s\.]+\.[^@\s]+', result.path):
-            return True
-    else:
-        if result.scheme and result.netloc:
-            return True
-    return False
 
 
 def EmailOrURL(form, field):
@@ -507,15 +456,8 @@ class RequiredIf(object):
 w3cdate = re.compile(r'^\d{4}(-\d{2}){0,2}$')
 
 
-def isValidDate(date):
-    """Test whether a string is a valid W3C-formatted date."""
-    if w3cdate.search(date) is None:
-        return False
-    return True
-
-
 def W3CDate(form, field):
-    """Test whether a string is a valid W3C-formatted date."""
+    """Raise error if a string is not a valid W3C-formatted date."""
     if w3cdate.search(field.data) is None:
         raise ValidationError('Please provide the date in yyyy-mm-dd format.')
 
@@ -525,9 +467,9 @@ def W3CDate(form, field):
 @app.context_processor
 def utility_processor():
     return {
-        'toURLSlug': toURLSlug,
-        'fromURLSlug': fromURLSlug,
-        'parseDateRange': parseDateRange}
+        'toURLSlug': to_url_slug,
+        'fromURLSlug': from_url_slug,
+        'parseDateRange': parse_date_range}
 
 
 # User handling
@@ -583,14 +525,14 @@ def scheme(number, field=None):
             if 'issued' in v:
                 this_version['date'] = v['issued']
                 if 'valid' in v:
-                    date_range = parseDateRange(v['valid'])
+                    date_range = parse_date_range(v['valid'])
                     if date_range[1]:
                         this_version['status'] = (
                             'deprecated on '.format(date_range[1]))
                     else:
                         this_version['status'] = 'current'
             elif 'valid' in v:
-                date_range = parseDateRange(v['valid'])
+                date_range = parse_date_range(v['valid'])
                 this_version['date'] = date_range[0]
                 if date_range[1]:
                     this_version['status'] = (
@@ -902,7 +844,7 @@ def endorsement(number, field=None):
 def subject(subject):
     # If people start using geographical keywords, the following will need more
     # sophistication
-    query_string = fromURLSlug(subject)
+    query_string = from_url_slug(subject)
     results = list()
 
     # Interpret subject
@@ -911,13 +853,13 @@ def subject(subject):
         term_list.append('Multidisciplinary')
     else:
         # Translate term into concept ID
-        concept_id = getTermURI(query_string)
+        concept_id = get_term_uri(query_string)
         if not concept_id:
             flash('The subject "{}" was not found in the {}.\n'.format(
                 query_string, thesaurus_link), 'error')
             return render_template('search-results.html', title=query_string)
         # Find list of broader and narrower terms
-        term_uri_list = getTermList(concept_id)
+        term_uri_list = get_term_list(concept_id)
         for term_uri in term_uri_list:
             term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
             if term not in term_list:
@@ -981,7 +923,7 @@ def group(funder=None, maintainer=None, user=None):
 # ===============================
 @app.route('/datatype/<dataType>')
 def dataType(dataType):
-    query_string = fromURLSlug(dataType)
+    query_string = from_url_slug(dataType)
     schemes = db.table('metadata-schemes')
     Scheme = Query()
     results = schemes.search(Scheme.dataTypes.any([query_string]))
@@ -1008,7 +950,7 @@ def scheme_index():
     parent_schemes.extend(schemes.search(~ Scheme.relatedEntities.exists()))
     scheme_tree = list()
     for scheme in parent_schemes:
-        scheme_tree.append(getDBNode(schemes, scheme.eid, 'scheme'))
+        scheme_tree.append(get_db_node(schemes, scheme.eid, 'scheme'))
     scheme_tree.sort(key=lambda k: k['name'].lower())
     return render_template(
         'contents.html', title='List of metadata standards', tree=scheme_tree)
@@ -1024,7 +966,7 @@ def tool_index():
     all_tools = tools.all()
     tool_tree = list()
     for tool in all_tools:
-        tool_tree.append(getDBNode(tools, tool.eid, 'tool'))
+        tool_tree.append(get_db_node(tools, tool.eid, 'tool'))
     tool_tree.sort(key=lambda k: k['name'].lower())
     return render_template(
         'contents.html', title='List of metadata tools', tree=tool_tree)
@@ -1034,12 +976,12 @@ def tool_index():
 # =============
 @app.route('/subject-index')
 def subject_index():
-    full_keyword_uris = getAllTermURIs()
+    full_keyword_uris = get_all_term_uris()
     subject_tree = list()
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
     for domain in domains:
         if domain in full_keyword_uris:
-            subject_tree.append(getTermNode(domain, filter=full_keyword_uris))
+            subject_tree.append(get_term_node(domain, filter=full_keyword_uris))
     subject_tree.sort(key=lambda k: k['name'].lower())
     subject_tree.insert(0, {
         'name': 'Multidisciplinary',
@@ -1062,7 +1004,7 @@ def search():
 
         if request.form['title'] != '':
             no_of_queries += 1
-            title_query = wild2regex(request.form['title'])
+            title_query = wild_to_regex(request.form['title'])
             title_search = schemes.search(Scheme.title.search(title_query))
             no_of_hits = len(title_search)
             if no_of_hits:
@@ -1081,12 +1023,12 @@ def search():
                 term_list.append('Multidisciplinary')
             else:
                 # - Translate term into concept ID
-                concept_id = getTermURI(request.form['keyword'])
+                concept_id = get_term_uri(request.form['keyword'])
                 if not concept_id:
                     flash('The subject "{}" was not found in the {}.\n'.format(
                         request.form['keyword'], thesaurus_link), 'error')
                 # - Find list of broader and narrower terms
-                term_uri_list = getTermList(concept_id)
+                term_uri_list = get_term_list(concept_id)
                 for term_uri in term_uri_list:
                     term = str(
                         thesaurus.preferredLabel(term_uri, lang='en')[0][1])
@@ -1126,7 +1068,7 @@ def search():
             # Interpret search
             Funder = Query()
             matching_funders = list()
-            funder_query = wild2regex(request.form['funder'])
+            funder_query = wild_to_regex(request.form['funder'])
             funder_search = organizations.search(Funder.name.search(
                 funder_query))
             for funder in funder_search:
@@ -1221,7 +1163,7 @@ def search():
         type_list = list(type_set)
         type_list.sort(key=lambda k: k.lower())
         # Subject help
-        full_keyword_uris = getAllTermURIs()
+        full_keyword_uris = get_all_term_uris()
         subject_set = set()
         for uri in full_keyword_uris:
             subject_set.add(str(
@@ -1262,9 +1204,9 @@ def scheme_query():
             term_list.append('Multidisciplinary')
         else:
             # - Translate term into concept ID
-            concept_id = getTermURI(request.form['keyword'])
+            concept_id = get_term_uri(request.form['keyword'])
             # - Find list of broader and narrower terms
-            term_uri_list = getTermList(concept_id)
+            term_uri_list = get_term_list(concept_id)
             for term_uri in term_uri_list:
                 term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
                 if term not in term_list:
@@ -1279,7 +1221,7 @@ def scheme_query():
     if 'keyword-id' in request.form and request.form['keyword-id'] != '':
         term_list = list()
         # Find list of broader and narrower terms
-        term_uri_list = getTermList(request.form['keyword-id'])
+        term_uri_list = get_term_list(request.form['keyword-id'])
         # Translate into keywords
         for term_uri in term_uri_list:
             label_pairs = thesaurus.preferredLabel(term_uri, lang='en')
@@ -1660,13 +1602,13 @@ def fix_slug(record, series):
     slug = None
     if series == 'm' or series == 't':
         if 'title' in record:
-            slug = toFileSlug(record['title'])
+            slug = to_file_slug(record['title'])
     elif series == 'g':
         if 'name' in record:
-            slug = toFileSlug(record['title'])
+            slug = to_file_slug(record['title'])
     elif series == 'e':
         if 'citation' in record:
-            slug = toFileSlug(record['citation'])
+            slug = to_file_slug(record['citation'])
     elif series == 'c':
         if 'relatedEntities' in record:
             slug_from = ''
