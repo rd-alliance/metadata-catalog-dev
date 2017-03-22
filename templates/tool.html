@@ -71,7 +71,7 @@
   <div class="identifiers">
     <h2>Identifiers</h2>
     <dl class="dl-horizontal">
-      <dt>Internal MSC ID</dt><dd><a href="{{ url_for('scheme', number=record.eid) }}">msc:t{{ record.eid }}</a></dd>
+      <dt>Internal MSC ID</dt><dd><a href="{{ url_for('display', series_number='t{}'.format(record.eid)) }}">msc:t{{ record.eid }}</a></dd>
     {% for identifier in record['identifiers'] %}
       {% if identifier['scheme'] == 'DOI' %}
       <dt>DOI</dt><dd><a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></dd>
@@ -128,13 +128,13 @@
     </dl>
   </div>
   {% endif %}
-  {% if 'supported schemes' in relations %}
+  {% if 'supported_schemes' in relations %}
   <div class="related_schemes">
     <h2>Supported metadata standards</h2>
     <p>This tool is used with the following schemes:</p>
     <ul>
-    {% for scheme in relations['supported schemes'] %}
-      <li><a href="{{ url_for('scheme', number=scheme.eid) }}">{{ scheme['title'] }}</a></li>
+    {% for scheme in relations['supported_schemes'] %}
+      <li><a href="{{ url_for('display', series_number='m{}'.format(scheme.eid)) }}">{{ scheme['title'] }}</a></li>
     {% endfor %}
     </ul>
   </div>

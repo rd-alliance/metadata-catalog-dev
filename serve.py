@@ -37,6 +37,7 @@ from wtforms.compat import string_types
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query, where
+from tinydb.database import Element
 from tinydb.operations import delete
 from tinydb.storages import Storage, touch
 
@@ -63,7 +64,9 @@ import dulwich.porcelain as git
 
 # Customization
 # =============
-#
+mscwg_email = 'mscwg@rda-groups.org'
+
+
 # New version of JSON storage that also stores changes in a Git repo
 class JSONStorageWithGit(Storage):
     """Store the data in a JSON file and log the change in a Git repo.
@@ -122,7 +125,7 @@ class JSONStorageWithGit(Storage):
         git.add(repo=self.repo, paths=[self.filename])
 
         # Prepare commit information
-        committer = b'MSCWG <mscwg@rda-groups.org>'
+        committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
         if g.user:
             author = ('{} <{}>'.format(g.user['name'], g.user['email'])
                       .encode('utf8'))
@@ -164,6 +167,46 @@ thesaurus_link = ('<a href="http://vocabularies.unesco.org/browser/thesaurus/'
                   'en/">UNESCO Thesaurus</a>')
 
 oid = OpenID(app, os.path.join(script_dir, 'open-id'))
+
+# Data model
+# ----------
+table_names = {
+    'm': 'metadata-schemes',
+    'g': 'organizations',
+    't': 'tools',
+    'c': 'mappings',
+    'e': 'endorsements'}
+
+tables = dict()
+for key, value in table_names.items():
+    tables[key] = db.table(value)
+
+templates = {
+    'm': 'metadata-scheme.html',
+    'g': 'organization.html',
+    't': 'tool.html',
+    'c': 'mapping.html',
+    'e': 'endorsement.html'}
+
+relations_msc_form = {
+    'parent scheme': 'parent_schemes',
+    'maintainer': 'maintainers',
+    'funder': 'funders',
+    'user': 'users',
+    'supported scheme': 'supported_schemes',
+    'input scheme': 'input_schemes',
+    'output scheme': 'output_schemes',
+    'endorsed scheme': 'endorsed_schemes',
+    'originator': 'originators'}
+
+relations_form_msc = {v: k for k, v in relations_msc_form.items()}
+
+relations_inverse = {
+    'parent scheme': 'child_schemes',
+    'supported scheme': 'tools',
+    'input scheme': 'mappings_from',
+    'output scheme': 'mappings_to',
+    'endorsed scheme': 'endorsements'}
 
 
 # Utility functions
@@ -462,6 +505,49 @@ def W3CDate(form, field):
         raise ValidationError('Please provide the date in yyyy-mm-dd format.')
 
 
+def parse_mscid(mscid):
+    """Splits MSC ID into a series and a record EID number, returned as a
+    tuple."""
+    just_mscid = mscid.partition('#v')[0]
+    series = just_mscid[4:5]
+    number = int(just_mscid[5:])
+    return (series, number)
+
+
+def get_relation(mscid, element):
+    """Looks within an element for a relation to a given entity (represented
+    by MSC ID) and returns tuple where the first member is a role list and the
+    second is an Element.
+
+    Arguments:
+        mscid (str): MSC ID of entity beign checked for
+        element (Element): TinyDB element being checked
+
+    Returns:
+        tuple: First member is a role list (str) and the second is an Element
+    """
+    role_list = ''
+    # We take a fresh copy so the adjustments we make don't accumulate
+    record = Element(value=element.copy(), eid=element.eid)
+    for entity in record['relatedEntities']:
+        role = entity['role']
+        if entity['id'] == mscid:
+            if role in relations_inverse:
+                role_list = relations_inverse[role]
+        elif role in relations_msc_form:
+            entity_series, entity_number = parse_mscid(entity['id'])
+            role_type = relations_msc_form[role]
+            if role_type not in record:
+                record[role_type] = list()
+            record[role_type].append(tables[entity_series]
+                                     .get(eid=entity_number))
+    if 'valid' in record:
+        record['valid_from'], valid_until = parse_date_range(record['valid'])
+        if valid_until:
+            record['valid_until'] = valid_until
+    return (role_list, record)
+
+
 # Functions made available to templates
 # -------------------------------------
 @app.context_processor
@@ -492,8 +578,132 @@ def hello():
 
 # Display metadata scheme
 # =======================
-@app.route('/msc/m<int:number>')
-@app.route('/msc/m<int:number>/<field>')
+@app.route('/msc/<series_number>')
+@app.route('/msc/<series_number>/<field>')
+def display(series_number, field=None):
+    series, number = parse_mscid('msc:{}'.format(series_number))
+    # Is this record in the database?
+    element = tables[series].get(eid=number)
+    if not element:
+        abort(404)
+
+    # Form MSC ID
+    mscid = 'msc:{}{}'.format(series, number)
+
+    # Return raw JSON if requested.
+    if request_wants_json():
+        if 'identifiers' not in element:
+            element['identifiers'] = list()
+        element['identifiers'].insert(0, {
+            'id': mscid,
+            'scheme': 'RDA-MSCWG'})
+        if field:
+            if field in element:
+                return jsonify({field: element[field]})
+            else:
+                return jsonify()
+        else:
+            return jsonify(element)
+
+    # We only provide dedicated views for metadata schemes and tools
+    if series not in ['m', 't']:
+        flash('The URL you requested is part of the Catalog API and has no'
+              ' HTML equivalent. <a href="mailto:{}">Let us know</a> if you'
+              ' would find an HTML view of this record useful.'
+              .format(mscwg_email), 'error')
+        return redirect(url_for('hello'))
+
+    # If the record has version information, interpret the associated dates.
+    versions = None
+    if 'versions' in element:
+        versions = list()
+        for v in element['versions']:
+            if 'number' not in v:
+                continue
+            this_version = v
+            this_version['status'] = ''
+            if 'issued' in v:
+                this_version['date'] = v['issued']
+                if 'valid' in v:
+                    date_range = parse_date_range(v['valid'])
+                    if date_range[1]:
+                        this_version['status'] = (
+                            'deprecated on {}'.format(date_range[1]))
+                    else:
+                        this_version['status'] = 'current'
+            elif 'valid' in v:
+                date_range = parse_date_range(v['valid'])
+                this_version['date'] = date_range[0]
+                if date_range[1]:
+                    this_version['status'] = (
+                        'deprecated on {}'.format(date_range[1]))
+                else:
+                    this_version['status'] = 'current'
+            elif 'available' in v:
+                this_version['date'] = v['available']
+                this_version['status'] = 'proposed'
+            versions.append(this_version)
+        try:
+            versions.sort(key=lambda k: k['date'], reverse=True)
+        except KeyError:
+            print('WARNING: Record msc:{}{} has missing version date.'
+                  .format(series, number))
+            versions.sort(key=lambda k: k['number'], reverse=True)
+        for version in versions:
+            if version['status'] == 'current':
+                break
+            if version['status'] == 'proposed':
+                continue
+            if version['status'] == '':
+                version['status'] = 'current'
+                break
+
+    # If the record has related entities, include the corresponding entries in
+    # a 'relations' dictionary.
+    relations = dict()
+    hasRelatedSchemes = False
+    if 'relatedEntities' in element:
+        for entity in element['relatedEntities']:
+            role = entity['role']
+            if role not in relations_msc_form:
+                print('WARNING: Record {} has related entity with unrecognized'
+                      ' role "{}".'.format(mscid, role))
+                continue
+            relation_list = relations_msc_form[role]
+            if relation_list not in relations:
+                relations[relation_list] = list()
+            entity_series, entity_number = parse_mscid(entity['id'])
+            element_record = tables[entity_series].get(eid=entity_number)
+            if element_record:
+                relations[relation_list].append(element_record)
+                if entity_series == 'm':
+                    hasRelatedSchemes = True
+
+    # Now we gather information about inverse relationships and add them to the
+    # 'relations' dictionary as well.
+    # For speed, we only run this check for metadata schemes, since only that
+    # template currently includes this information.
+    if series in ['m']:
+        for s, t in tables.items():
+            # The following query takes account of id#version syntax
+            matches = t.search(Query().relatedEntities.any(
+                Query()['id'].matches('{}(#v.*)?$'.format(mscid))))
+            for match in matches:
+                role_list, element_record = get_relation(mscid, match)
+                if role_list:
+                    if role_list in [
+                            'child schemes', 'mappings_to', 'mappings_from']:
+                        hasRelatedSchemes = True
+                    if role_list not in relations:
+                        relations[role_list] = list()
+                    relations[role_list].append(element_record)
+
+    # We are ready to display the information.
+    return render_template(
+        templates[series], record=element, versions=versions,
+        relations=relations, hasRelatedSchemes=hasRelatedSchemes)
+
+
 def scheme(number, field=None):
     schemes = db.table('metadata-schemes')
     element = schemes.get(eid=number)
@@ -547,7 +757,7 @@ def scheme(number, field=None):
             versions.sort(key=lambda k: k['date'], reverse=True)
         except KeyError:
             print('WARNING: Scheme msc:m{} has missing version date.'
-                  ''.format(number))
+                  .format(number))
             versions.sort(key=lambda k: k['number'], reverse=True)
         for version in versions:
             if version['status'] == 'current':
@@ -686,8 +896,6 @@ def scheme(number, field=None):
 
 # Display tool
 # ============
-@app.route('/msc/t<int:number>')
-@app.route('/msc/t<int:number>/<field>')
 def tool(number, field=None):
     tools = db.table('tools')
     element = tools.get(eid=number)
@@ -756,8 +964,6 @@ def tool(number, field=None):
 
 # Display organization
 
-@app.route('/msc/g<int:number>')
-@app.route('/msc/g<int:number>/<field>')
 def organization(number, field=None):
     organizations = db.table('organizations')
     element = organizations.get(eid=number)
@@ -784,8 +990,6 @@ def organization(number, field=None):
 
 # Display mapping
 # ===============
-@app.route('/msc/c<int:number>')
-@app.route('/msc/c<int:number>/<field>')
 def mapping(number, field=None):
     mappings = db.table('mappings')
     element = mappings.get(eid=number)
@@ -812,8 +1016,6 @@ def mapping(number, field=None):
 
 # Display endorsement
 # ===================
-@app.route('/msc/e<int:number>')
-@app.route('/msc/e<int:number>/<field>')
 def endorsement(number, field=None):
     endorsements = db.table('endorsements')
     element = endorsements.get(eid=number)
@@ -1153,7 +1355,7 @@ def search():
                             funder_set.add(funder['name'])
                         else:
                             print('Could not look up organization with eid {}.'
-                                  ''.format(org_id[5:]))
+                                  .format(org_id[5:]))
         title_list = list(title_set)
         title_list.sort(key=lambda k: k.lower())
         id_list = list(id_set)
@@ -1408,21 +1610,6 @@ def clean_dict(data):
     return data
 
 
-relations_msc_form = {
-    'parent scheme': 'parent_schemes',
-    'maintainer': 'maintainers',
-    'funder': 'funders',
-    'user': 'users',
-    'supported scheme': 'supported_schemes',
-    'input scheme': 'input_schemes',
-    'output scheme': 'output_schemes',
-    'endorsed scheme': 'endorsed_schemes',
-    'originator': 'originators',
-    }
-
-relations_form_msc = {v: k for k, v in relations_msc_form.items()}
-
-
 def msc_to_form(msc_data):
     """Transforms data from MSC database into the data structure used by the
     web forms.
@@ -1593,12 +1780,6 @@ def fix_slug(record, series):
     if 'slug' in record:
         return record
     # Otherwise attempt to generate from existing data
-    tables = {
-        'm': 'metadata-schemes',
-        'g': 'organizations',
-        't': 'tools',
-        'c': 'mappings',
-        'e': 'endorsements'}
     slug = None
     if series == 'm' or series == 't':
         if 'title' in record:
@@ -1613,7 +1794,7 @@ def fix_slug(record, series):
         if 'relatedEntities' in record:
             slug_from = ''
             slug_to = ''
-            schemes = db.table(tables['m'])
+            schemes = db.table(table_names['m'])
             for entity in record['relatedEntities']:
                 eid = entity['id'][5:]
                 if entity['role'] == 'input scheme':
@@ -1630,12 +1811,12 @@ def fix_slug(record, series):
                 slug += '-'.join(slug_to.split('-')[:3])
     else:
         raise Exception('Unrecognized record series "{}"; cannot fix slug.'
-                        ''.format(series))
+                        .format(series))
     # Exit if this didn't work
     if not slug:
         return record
     # Ensure uniqueness then apply
-    table = db.table(tables[series])
+    table = db.table(table_names[series])
     i = ''
     while table.search(Query().slug == (slug + str(i))):
         if i == '':
@@ -1854,7 +2035,7 @@ def edit_scheme(number):
                             Scheme.versions.any(Version.number == version),
                             eids=[number])
                         flash('Successfully updated record for version {}.'
-                              ''.format(version), 'success')
+                              .format(version), 'success')
                         break
                 else:
                     # This version is not in the list
@@ -2062,7 +2243,7 @@ def edit_tool(number):
                             Tool.versions.any(Version.number == version),
                             eids=[number])
                         flash('Successfully updated record for version {}.'
-                              ''.format(version), 'success')
+                              .format(version), 'success')
                         break
                 else:
                     # This version is not in the list
@@ -2196,7 +2377,7 @@ def edit_mapping(number):
                             Mapping.versions.any(Version.number == version),
                             eids=[number])
                         flash('Successfully updated record for version {}.'
-                              ''.format(version), 'success')
+                              .format(version), 'success')
                         break
                 else:
                     # This version is not in the list

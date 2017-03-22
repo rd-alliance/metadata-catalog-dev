@@ -88,7 +88,7 @@
   <div class="identifiers">
     <h2>Identifiers</h2>
     <dl class="dl-horizontal">
-      <dt>Internal MSC ID</dt><dd><a href="{{ url_for('scheme', number=record.eid) }}">msc:m{{ record.eid }}</a></dd>
+      <dt>Internal MSC ID</dt><dd><a href="{{ url_for('display', series_number='m{}'.format(record.eid)) }}">msc:m{{ record.eid }}</a></dd>
     {% for identifier in record['identifiers'] %}
       {% if identifier['scheme'] == 'DOI' %}
       <dt>DOI</dt><dd><a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></dd>
@@ -147,15 +147,15 @@
   <div class="related_schemes">
     <h2>Relationships to other metadata standards</h2>
     <ul>
-    {% for parent in relations['parents'] %}
-      <li><p>This scheme is a profile of <a href="{{ url_for('scheme', number=parent.eid) }}">{{ parent['title'] }}</a>.</p></li>
+    {% for parent in relations['parent_schemes'] %}
+      <li><p>This scheme is a profile of <a href="{{ url_for('display', series_number='m{}'.format(parent.eid)) }}">{{ parent['title'] }}</a>.</p></li>
     {% endfor %}
-    {% for child in relations['children'] %}
-      <li><p><a href="{{ url_for('scheme', number=child.eid) }}">{{ child['title'] }}</a> is a profile of this scheme.</p></li>
+    {% for child in relations['child_schemes'] %}
+      <li><p><a href="{{ url_for('display', series_number='m{}'.format(child.eid)) }}">{{ child['title'] }}</a> is a profile of this scheme.</p></li>
     {% endfor %}
-    {% for mapping in relations['mappings from'] %}
+    {% for mapping in relations['mappings_from'] %}
       <li class="mappings">
-        <p>This scheme can be mapped to <a href="{{ url_for('scheme', number=mapping['output scheme'].eid) }}">{{ mapping['output scheme']['title'] }}</a>.</p>
+        <p>This scheme can be mapped to {% for scheme in mapping['output_schemes'] %}{% if loop.index > 1 %}{% if loop.last %} and {% else %}, {% endif %}{% endif %}<a href="{{ url_for('display', series_number='m{}'.format(scheme.eid)) }}">{{ scheme['title'] }}</a>{% endfor %}.</p>
         {% if 'description' in mapping %}
         <div class="description">{{ mapping['description']|safe }}</div>
         {% endif %}
@@ -170,9 +170,9 @@
         </ul>
         {% endif %}
     {% endfor %}
-    {% for mapping in relations['mappings to'] %}
+    {% for mapping in relations['mappings_to'] %}
       <li class="mappings">
-        <p>This scheme can be mapped from <a href="{{ url_for('scheme', number=mapping['input scheme'].eid) }}">{{ mapping['input scheme']['title'] }}</a>.</p>
+        <p>This scheme can be mapped from {% for scheme in mapping['input_schemes'] %}{% if loop.index > 1 %}{% if loop.last %} and {% else %}, {% endif %}{% endif %}<a href="{{ url_for('display', series_number='m{}'.format(scheme.eid)) }}">{{ scheme['title'] }}</a>{% endfor %}.</p>
         {% if 'description' in mapping %}
         <div class="description">{{ mapping['description']|safe }}</div>
         {% endif %}
@@ -196,7 +196,7 @@
     <ul>
     {% for tool in relations['tools'] %}
       <li>
-        <p><a href="{{ url_for('tool', number=tool.eid) }}">{{ tool['title'] }}</a></p>
+        <p><a href="{{ url_for('display', series_number='t{}'.format(tool.eid)) }}">{{ tool['title'] }}</a></p>
         {% if 'description' in tool %}
         <div class="description">{{ tool['description']|safe }}</div>
         {% endif %}
@@ -238,11 +238,13 @@
       <li>
         {% if 'citation' in endorsement %}
         <p>{{ endorsement['citation'] }}</p>
-        {% elif 'originator' in endorsement %}
-        <p>{{ endorsement['originator'] }}</p>
+        {% elif 'originators' in endorsement %}
+        {% for originator in endorsement['originators'] %}
+        <p>{{ originator['name'] }}</p>
+        {% endfor %}
         {% endif %}
-        {% if 'valid from' in endorsement %}
-        <p>Endorsed {% if 'valid until' in endorsement %}between {{ endorsement['valid from'] }} and {{ endorsement['valid until'] }}{% else %}since {{ endorsement['valid from'] }}{% endif %}</p>
+        {% if 'valid_from' in endorsement %}
+        <p>Endorsed {% if 'valid_until' in endorsement %}between {{ endorsement['valid_from'] }} and {{ endorsement['valid_until'] }}{% else %}since {{ endorsement['valid_from'] }}{% endif %}</p>
         {% elif 'issued' in endorsement %}
         <p>Endorsed on {{ endorsement['issued'] }}</p>
         {% endif %}
