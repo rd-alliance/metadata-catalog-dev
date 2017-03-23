@@ -505,18 +505,27 @@ def W3CDate(form, field):
         raise ValidationError('Please provide the date in yyyy-mm-dd format.')
 
 
+mscid_prefix = 'msc:'
+mscid_format = re.compile(
+    mscid_prefix
+    + r'(?P<series>c|e|g|m|t)'
+    + r'(?P<number>\d+)'
+    + r'(#v(?P<version>.*))?$')
+
+
 def parse_mscid(mscid):
     """Splits MSC ID into a series and a record EID number, returned as a
-    tuple."""
-    just_mscid = mscid.partition('#v')[0]
-    series = just_mscid[4:5]
-    number = int(just_mscid[5:])
-    return (series, number)
+    tuple. If ID does not fit the pattern, return tuple of two None objects.
+    """
+    m = mscid_format.match(mscid)
+    if m:
+        return (m.group('series'), int(m.group('number')))
+    return (None, None)
 
 
 def get_mscid(series, number):
     """Forms an MSC ID from a series and a record EID number."""
-    return 'msc:{}{}'.format(series, number)
+    return mscid_prefix + series + number
 
 
 def get_relation(mscid, element):
@@ -852,144 +861,137 @@ def subject_index():
 # Search form
 # ===========
 @app.route('/search', methods=['GET', 'POST'])
+@app.route('/query/schemes', methods=['POST'])
 def search():
-    schemes = db.table('metadata-schemes')
-    organizations = db.table('organizations')
     if request.method == 'POST':
-        title = 'Search results'
-        results = list()
+        element_list = list()
+        mscid_list = list()
         Scheme = Query()
+        isGui = not request_wants_json()
+        title = 'Search results'
         no_of_queries = 0
 
-        if request.form['title'] != '':
+        if 'title' in request.form and request.form['title']:
             no_of_queries += 1
             title_query = wild_to_regex(request.form['title'])
-            title_search = schemes.search(Scheme.title.search(title_query))
-            no_of_hits = len(title_search)
-            if no_of_hits:
-                flash('Found {:N scheme/s} with title "{}". '.format(
-                    Pluralizer(no_of_hits), request.form['title']))
-                results.extend(title_search)
-            else:
-                flash('No schemes found with title "{}". '.format(
-                    request.form['title']), 'error')
+            matches = tables['m'].search(Scheme.title.search(title_query))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'with title "{}"'
+                             .format(request.form['title']))
 
-        if request.form['keyword'] != '':
+        concept_ids = set()
+        term_set = set()
+        if 'keyword' in request.form and request.form['keyword']:
             no_of_queries += 1
-            # Interpret subject
-            term_list = list()
             if request.form['keyword'] == 'Multidisciplinary':
-                term_list.append('Multidisciplinary')
+                # Use as is
+                term_set.add('Multidisciplinary')
             else:
-                # - Translate term into concept ID
+                # Translate term into concept ID
                 concept_id = get_term_uri(request.form['keyword'])
-                if not concept_id:
+                if concept_id:
+                    concept_ids.add(concept_id)
+                elif isGui:
                     flash('The subject "{}" was not found in the {}.\n'.format(
                         request.form['keyword'], thesaurus_link), 'error')
-                # - Find list of broader and narrower terms
-                term_uri_list = get_term_list(concept_id)
-                for term_uri in term_uri_list:
-                    term = str(
-                        thesaurus.preferredLabel(term_uri, lang='en')[0][1])
-                    if term not in term_list:
-                        term_list.append(term)
-
-            # Search for matching schemes
-            subject_search = schemes.search(Scheme.keywords.any(term_list))
-            no_of_hits = len(subject_search)
-            if no_of_hits:
-                flash('Found {:N scheme/s} related to {}. '.format(
-                    Pluralizer(no_of_hits), request.form['keyword']))
-                results.extend(subject_search)
-            else:
-                flash('No schemes found related to {}. '.format(
-                    request.form['keyword']), 'error')
-
-        if request.form['id'] != '':
+        if 'keyword-id' in request.form and request.form['keyword-id']:
             no_of_queries += 1
-            if request.form['id'][:5] == 'msc:m':
-                id_search = schemes.get(eid=int(request.form['id'][5:]))
+            concept_ids.add(request.form['keyword-id'])
+        for concept_id in concept_ids:
+            # - Find list of broader and narrower terms
+            term_uri_list = get_term_list(concept_id)
+            for term_uri in term_uri_list:
+                term = str(
+                    thesaurus.preferredLabel(term_uri, lang='en')[0][1])
+                term_set.add(term)
+        if term_set:
+            # Search for matching schemes
+            matches = tables['m'].search(Scheme.keywords.any(term_set))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'related to {}'
+                             .format(request.form['keyword']))
+
+        if 'id' in request.form and request.form['id']:
+            no_of_queries += 1
+            matches = list()
+            series, number = parse_mscid(request.form['id'])
+            if (series == 'm') and number:
+                matches.append(tables[series].get(eid=number))
             else:
                 Identifier = Query()
-                id_search = schemes.search(Scheme.identifiers.any(
-                    Identifier.id == request.form['id']))
-            no_of_hits = len(id_search)
-            if no_of_hits:
-                flash('Found {:N scheme/s} with identifier "{}". '.format(
-                    Pluralizer(no_of_hits), request.form['id']))
-                results.extend(id_search)
-            else:
-                flash('No schemes found with identifier "{}". '.format(
-                    request.form['id']), 'error')
+                matches.extend(tables['m'].search(Scheme.identifiers.any(
+                    Identifier.id == request.form['id'])))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'with identifier "{}"'
+                             .format(request.form['id']))
 
-        if 'funder' in request.form and request.form['funder'] != '':
+        if 'funder' in request.form and request.form['funder']:
             no_of_queries += 1
             # Interpret search
             Funder = Query()
             matching_funders = list()
             funder_query = wild_to_regex(request.form['funder'])
-            funder_search = organizations.search(Funder.name.search(
+            funder_search = tables['g'].search(Funder.name.search(
                 funder_query))
             for funder in funder_search:
-                matching_funders.append('msc:g{}'.format(funder.eid))
-            if not matching_funders:
-                flash('No funders found called "{}" .'.format(
-                    request.form['funder']), 'error')
-            else:
+                funder_mscid = get_mscid('g', funder.eid)
+                matching_funders.append(funder_mscid)
+            if matching_funders:
                 Relation = Query()
-                with_funder = list()
-                for funder_id in matching_funders:
-                    with_funder.extend(schemes.search(
+                matches = list()
+                for funder_mscid in matching_funders:
+                    matches.extend(tables['m'].search(
                         Scheme.relatedEntities.any(
                             (Relation.role == 'funder') &
-                            (Relation.id == funder_id))))
-                no_of_hits = len(with_funder)
-                if no_of_hits:
-                    flash('Found {:N scheme/s} with funder "{}". '.format(
-                        Pluralizer(no_of_hits), request.form['funder']))
-                    results.extend(with_funder)
-                else:
-                    flash('No schemes found with funder "{}". '.format(
-                        request.form['funder']), 'error')
+                            (Relation.id == funder_mscid))))
+                element_list, mscid_list = add_matches(
+                    matches, element_list, mscid_list)
+                if isGui:
+                    flash_result(matches, 'with funder "{}"'
+                                 .format(request.form['funder']))
+            elif isGui:
+                flash('No funders found called "{}" .'.format(
+                    request.form['funder']), 'error')
 
-        if 'dataType' in request.form and request.form['dataType'] != '':
+        if 'dataType' in request.form and request.form['dataType']:
             no_of_queries += 1
-            type_search = schemes.search(Scheme.dataTypes.any(
+            matches = tables['m'].search(Scheme.dataTypes.any(
                 [request.form['dataType']]))
-            no_of_hits = len(type_search)
-            if no_of_hits:
-                flash('Found {:N scheme/s} associated with {}. '.format(
-                    Pluralizer(no_of_hits), request.form['dataType']))
-                results.extend(type_search)
-            else:
-                flash('No schemes found associated with {}. '.format(
-                    request.form['dataType']), 'error')
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'associated with {}'
+                             .format(request.form['dataType']))
 
-        # Are there any duplicates?
-        result_eids = list()
-        result_list = list()
-        for result in results:
-            if result.eid not in result_eids:
-                result_list.append(result)
-                result_eids.append(result.eid)
-        no_of_hits = len(result_list)
-        if no_of_queries > 1:
-            flash('Found {:N scheme/s} in total. '.format(
-                Pluralizer(no_of_hits)))
-        if no_of_hits == 1:
-            # Go direct to that page
-            result = result_list[0]
-            return redirect(url_for('scheme', number=result.eid))
-        else:
-            if no_of_hits > 1:
-                result_list.sort(key=lambda k: k['title'].lower())
+        # Show results
+        if isGui:
+            no_of_hits = len(element_list)
+            if no_of_queries > 1:
+                flash('Found {:N scheme/s} in total. '.format(
+                    Pluralizer(no_of_hits)))
+            if no_of_hits == 1:
+                # Go direct to that page
+                result = element_list.pop()
+                return redirect(url_for('scheme', number=result.eid))
+            # Otherwise return as a list
+            element_list.sort(key=lambda k: k['title'].lower())
             # Show results list
             return render_template(
-                'search-results.html', title=title, results=result_list)
+                'search-results.html', title=title, results=element_list)
+        else:
+            n = len(mscid_prefix) + 1
+            mscid_list.sort(key=lambda k: k[:n] + k[n:].zfill(5))
+            return jsonify({'ids': mscid_list})
 
     else:
         # Title, identifier, funder, dataType help
-        all_schemes = schemes.all()
+        all_schemes = tables['m'].all()
         title_set = set()
         id_set = set()
         funder_set = set()
@@ -1007,7 +1009,7 @@ def search():
                 for entity in scheme['relatedEntities']:
                     if entity['role'] == 'funder':
                         org_id = entity['id']
-                        funder = organizations.get(eid=int(org_id[5:]))
+                        funder = tables['g'].get(eid=int(org_id[5:]))
                         if funder:
                             funder_set.add(funder['name'])
                         else:
@@ -1035,133 +1037,41 @@ def search():
             ids=id_list, funders=funder_list, dataTypes=type_list)
 
 
-# Corresponding query interface
-# =============================
-@app.route('/query/schemes', methods=['POST'])
-def scheme_query():
-    if not request_wants_json():
-        flash('The URL you requested is part of the Catalog API.'
-              ' Please use this search form instead.', 'error')
-        return redirect(url_for('search'))
+def add_matches(matches, element_list, mscid_list):
+    """Scans list of database elements and adds them to a given list of
+    elements and a given list of EIDs, but only if they are not already
+    there.
 
-    schemes = db.table('metadata-schemes')
-    organizations = db.table('organizations')
-    results = list()
-    Scheme = Query()
+    Arguments:
+        matches (list of Elements): New list of records
+        element_list (list of Elements): Existing list of records
+        eid_list (list of str): Existing list of MSC IDs
 
-    if 'title' in request.form and request.form['title'] != '':
-        title_search = schemes.search(Scheme.title.search(
-            request.form['title']))
-        no_of_hits = len(title_search)
-        if no_of_hits:
-            results.extend(title_search)
+    Returns:
+        tuple: list of records and list of EIDs
+    """
+    for element in matches:
+        mscid = get_mscid('m', element.eid)
+        if mscid not in mscid_list:
+            element_list.append(element)
+            mscid_list.append(mscid)
+    return (element_list, mscid_list)
 
-    if 'keyword' in request.form and request.form['keyword'] != '':
-        # Interpret subject
-        term_list = list()
-        if request.form['keyword'] == 'Multidisciplinary':
-            term_list.append('Multidisciplinary')
-        else:
-            # - Translate term into concept ID
-            concept_id = get_term_uri(request.form['keyword'])
-            # - Find list of broader and narrower terms
-            term_uri_list = get_term_list(concept_id)
-            for term_uri in term_uri_list:
-                term = str(thesaurus.preferredLabel(term_uri, lang='en')[0][1])
-                if term not in term_list:
-                    term_list.append(term)
 
-        # Search for matching schemes
-        subject_search = schemes.search(Scheme.keywords.any(term_list))
-        no_of_hits = len(subject_search)
-        if no_of_hits:
-            results.extend(subject_search)
+def flash_result(matches, type):
+    """Flashes user with informative message about a search result, based on
+    thing they are supposed to have in common.
 
-    if 'keyword-id' in request.form and request.form['keyword-id'] != '':
-        term_list = list()
-        # Find list of broader and narrower terms
-        term_uri_list = get_term_list(request.form['keyword-id'])
-        # Translate into keywords
-        for term_uri in term_uri_list:
-            label_pairs = thesaurus.preferredLabel(term_uri, lang='en')
-            if label_pairs:
-                term = str(label_pairs[0][1])
-                if term not in term_list:
-                    term_list.append(term)
-
-        # Search for matching schemes
-        subject_search = schemes.search(Scheme.keywords.any(term_list))
-        no_of_hits = len(subject_search)
-        if no_of_hits:
-            results.extend(subject_search)
-
-    if 'id' in request.form and request.form['id'] != '':
-        if request.form['id'][:5] == 'msc:m':
-            id_search = schemes.get(eid=int(request.form['id'][5:]))
-        else:
-            Identifier = Query()
-            id_search = schemes.search(Scheme.identifiers.any(
-                Identifier.id == request.form['id']))
-        no_of_hits = len(id_search)
-        if no_of_hits:
-            results.extend(id_search)
-
-    if 'funder' in request.form and request.form['funder'] != '':
-        # Interpret search
-        Funder = Query()
-        matching_funders = list()
-        funder_search = organizations.search(Funder.name.search(
-            request.form['funder']))
-        for funder in funder_search:
-            matching_funders.append('msc:g{}'.format(funder.eid))
-        if matching_funders:
-            Relation = Query()
-            with_funder = list()
-            for funder_id in matching_funders:
-                with_funder.extend(schemes.search(Scheme.relatedEntities.any(
-                    (Relation.role == 'funder') &
-                    (Relation.id == funder_id))))
-            no_of_hits = len(with_funder)
-            if no_of_hits:
-                results.extend(with_funder)
-
-    if 'funder-id' in request.form and request.form['funder-id'] != '':
-        # Interpret search
-        Funder = Query()
-        Identifier = Query()
-        matching_funders = list()
-        funder_search = organizations.search(Funder.identifiers.any(
-            Identifier.id == request.form['funder-id']))
-        for funder in funder_search:
-            matching_funders.append('msc:g{}'.format(funder.eid))
-        if matching_funders:
-            Relation = Query()
-            with_funder = list()
-            for funder_id in matching_funders:
-                with_funder.extend(schemes.search(Scheme.relatedEntities.any(
-                    (Relation.role == 'funder') &
-                    (Relation.id == funder_id))))
-            no_of_hits = len(with_funder)
-            if no_of_hits:
-                results.extend(with_funder)
-
-    if 'dataType' in request.form and request.form['dataType'] != '':
-        type_search = schemes.search(Scheme.dataTypes.any(
-            [request.form['dataType']]))
-        no_of_hits = len(type_search)
-        if no_of_hits:
-            results.extend(type_search)
-
-    # We just want the IDs
-    result_eids = list()
-    result_list = list()
-    for result in results:
-        if result.eid not in result_eids:
-            result_list.append('msc:m{}'.format(result.eid))
-            result_eids.append(result.eid)
-    result_list.sort()
-    # Show results list
-    return jsonify({'ids': result_list})
+    Arguments:
+        matches (list of Elements): List of records
+        type (str): Basis of matching, e.g. 'with title X'
+    """
+    no_of_hits = len(matches)
+    if no_of_hits:
+        flash('Found {:N scheme/s} {}.'.format(Pluralizer(no_of_hits), type))
+    else:
+        flash('No schemes found {}. '.format(type), 'error')
+    return None
 
 
 # User login
