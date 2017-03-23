@@ -278,43 +278,44 @@ def get_term_uri(term):
     return concept_id
 
 
-def get_term_node(uri, filter=list()):
-    """Recursively transforms the URI of a term in the thesaurus to a dictionary
-    providing the preferred label of the term in English, its corresponding URL
-    in the Catalog, and (if applicable) a list of dictionaries corresponding to
-    immediately narrower terms in the thesaurus.
+def get_term_tree(uris, filter=list()):
+    """Takes a list of URIs of terms in the thesaurus and recursively builds
+    a list of dictionaries, each of which providing the preferred label of
+    the term in English, its corresponding URL in the Catalog, and (if
+    applicable) a list of dictionaries corresponding to immediately narrower
+    terms in the thesaurus.
 
     The list of narrower terms can optionally be filtered with a whitelist.
 
     Arguments:
-        uri (str): URI of term in thesaurus
+        uris (list of str): List of URIs of terms in thesaurus
         filter (list): URIs of terms that can be listed as narrower than the
             given one
 
     Returns:
-        dict: Dictionary of two or three items: 'name' (the preferred label of
-            the term in English), 'url' (the URL of the corresponding Catalog
-            page), 'children' (list of dictionaries, only present if narrower
-            terms exist)
+        list: Dictionaries of two or three items: 'name' (the preferred label
+            of the term in English), 'url' (the URL of the corresponding
+            Catalog page), 'children' (list of dictionaries, only present if
+            narrower terms exist)
     """
-    result = dict()
-    term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
-    result['name'] = term
-    slug = to_url_slug(term)
-    result['url'] = url_for('subject', subject=slug)
-    narrower_ids = thesaurus.objects(uri, SKOS.narrower)
-    children = list()
-    if filter:
-        for narrower_id in narrower_ids:
-            if narrower_id in filter:
-                children.append(get_term_node(narrower_id, filter=filter))
-    else:
-        for narrower_id in narrower_ids:
-            children.append(get_term_node(narrower_id, filter=filter))
-    if children:
-        children.sort(key=lambda k: k['name'])
-        result['children'] = children
-    return result
+    tree = list()
+    for uri in uris:
+        result = dict()
+        term = str(thesaurus.preferredLabel(uri, lang='en')[0][1])
+        result['name'] = term
+        slug = to_url_slug(term)
+        result['url'] = url_for('subject', subject=slug)
+        narrower_ids = thesaurus.objects(uri, SKOS.narrower)
+        children = list()
+        if filter:
+            children = [id for id in narrower_ids if id in filter]
+        else:
+            children = narrower_ids
+        if children:
+            result['children'] = get_term_tree(children, filter=filter)
+        tree.append(result)
+    tree.sort(key=lambda k: k['name'])
+    return tree
 
 
 def get_all_term_uris():
@@ -839,12 +840,8 @@ def tool_index():
 @app.route('/subject-index')
 def subject_index():
     full_keyword_uris = get_all_term_uris()
-    subject_tree = list()
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
-    for domain in domains:
-        if domain in full_keyword_uris:
-            subject_tree.append(get_term_node(domain, filter=full_keyword_uris))
-    subject_tree.sort(key=lambda k: k['name'].lower())
+    subject_tree = get_term_tree(domains, filter=full_keyword_uris)
     subject_tree.insert(0, {
         'name': 'Multidisciplinary',
         'url': url_for('subject', subject='Multidisciplinary')})
