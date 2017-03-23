@@ -596,6 +596,8 @@ def hello():
 @app.route('/msc/<string(length=1):series><int:number>/<field>')
 def display(series, number, field=None):
     # Is this record in the database?
+    if series not in table_names:
+        abort(404)
     element = tables[series].get(eid=number)
     if not element:
         abort(404)
@@ -622,8 +624,8 @@ def display(series, number, field=None):
     if series not in ['m', 't']:
         flash('The URL you requested is part of the Catalog API and has no'
               ' HTML equivalent. <a href="mailto:{}">Let us know</a> if you'
-              ' would find an HTML view of this record useful.'
-              .format(mscwg_email), 'error')
+              ' would find an HTML view of {} useful.'
+              .format(mscwg_email, table_names[series]), 'error')
         return redirect(url_for('hello'))
 
     # If the record has version information, interpret the associated dates.
@@ -860,8 +862,231 @@ def subject_index():
 
 # Search form
 # ===========
+class SchemeSearchForm(Form):
+    title = StringField('Name of scheme')
+    keyword = StringField('Subject area')
+    keyword_id = StringField('URI of subject area term')
+    identifier = StringField('Identifier')
+    funder = StringField('Funder')
+    funder_id = StringField('ID of funder')
+    dataType = StringField('Data type')
+
+
 @app.route('/search', methods=['GET', 'POST'])
 @app.route('/query/schemes', methods=['POST'])
+def scheme_search():
+    form = SchemeSearchForm(request.form)
+    # Subject validation
+    all_keyword_uris = set()
+    for generator in [
+            thesaurus.subjects(RDF.type, UNO.Domain),
+            thesaurus.subjects(RDF.type, UNO.MicroThesaurus),
+            thesaurus.subjects(RDF.type, SKOS.Concept)]:
+        for uri in generator:
+            all_keyword_uris.add(uri)
+    subject_set = set()
+    for uri in all_keyword_uris:
+        subject_set.add(str(thesaurus.preferredLabel(uri, lang='en')[0][1]))
+    subject_set.add('Multidisciplinary')
+    subject_list = list(subject_set)
+    subject_list.sort()
+    form.keyword.validators = [validators.Optional(), validators.AnyOf(
+        subject_list, 'The value was not found in the'
+        ' {}.'.format(thesaurus_link))]
+    # Process form
+    if request.method == 'POST' and form.validate():
+        element_list = list()
+        mscid_list = list()
+        Scheme = Query()
+        isGui = not request_wants_json()
+        title = 'Search results'
+        no_of_queries = 0
+
+        if 'title' in form.data and form.data['title']:
+            no_of_queries += 1
+            title_query = wild_to_regex(form.data['title'])
+            matches = tables['m'].search(Scheme.title.search(title_query))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'with title "{}"'
+                             .format(form.data['title']))
+
+        concept_ids = set()
+        term_set = set()
+        if 'keyword' in form.data and form.data['keyword']:
+            no_of_queries += 1
+            if form.data['keyword'] == 'Multidisciplinary':
+                # Use as is
+                term_set.add('Multidisciplinary')
+            else:
+                # Translate term into concept ID
+                concept_id = get_term_uri(form.data['keyword'])
+                if concept_id:
+                    concept_ids.add(concept_id)
+        if 'keyword-id' in form.data and form.data['keyword-id']:
+            no_of_queries += 1
+            concept_ids.add(form.data['keyword-id'])
+        for concept_id in concept_ids:
+            # - Find list of broader and narrower terms
+            term_uri_list = get_term_list(concept_id)
+            for term_uri in term_uri_list:
+                term = str(
+                    thesaurus.preferredLabel(term_uri, lang='en')[0][1])
+                term_set.add(term)
+        if term_set:
+            # Search for matching schemes
+            matches = tables['m'].search(Scheme.keywords.any(term_set))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'related to {}'
+                             .format(form.data['keyword']))
+
+        if 'identifier' in form.data and form.data['identifier']:
+            no_of_queries += 1
+            matches = list()
+            series, number = parse_mscid(form.data['identifier'])
+            if (series == 'm') and number:
+                matches.append(tables[series].get(eid=number))
+            else:
+                Identifier = Query()
+                matches.extend(tables['m'].search(Scheme.identifiers.any(
+                    Identifier.id == form.data['identifier'])))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'with identifier "{}"'
+                             .format(form.data['identifier']))
+
+        matching_funders = list()
+        if 'funder' in form.data and form.data['funder']:
+            no_of_queries += 1
+            # Interpret search
+            Funder = Query()
+            funder_query = wild_to_regex(form.data['funder'])
+            funder_search = tables['g'].search(Funder.name.search(
+                funder_query))
+            matches = list()
+            for funder in funder_search:
+                funder_mscid = get_mscid('g', funder.eid)
+                matches.append(funder_mscid)
+            if matches:
+                matching_funders.extend(matches)
+            elif isGui:
+                flash('No funders found called "{}" .'.format(
+                    form.data['funder']), 'error')
+        if 'funder_id' in form.data and form.data['funder_id']:
+            series, number = parse_mscid(form.data['funder_id'])
+            matches = list()
+            if (series == 'g') and number:
+                matches.append(tables[series].get(eid=number))
+            else:
+                Identifier = Query()
+                matches.extend(tables['g'].search(Funder.identifiers.any(
+                    Identifier.id == form.data['funder_id'])))
+            if matches:
+                matching_funders.extend(matches)
+            elif isGui:
+                flash('No funders found with identifier "{}" .'.format(
+                    form.data['funder_id']), 'error')
+        if matching_funders:
+            Relation = Query()
+            matches = list()
+            for funder_mscid in matching_funders:
+                matches.extend(tables['m'].search(
+                    Scheme.relatedEntities.any(
+                        (Relation.role == 'funder') &
+                        (Relation.id == funder_mscid))))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(
+                    matches,
+                    'with funder "{}"'
+                    .format(form.data['funder'] or form.data['funder_id']))
+
+        if 'dataType' in form.data and form.data['dataType']:
+            no_of_queries += 1
+            matches = tables['m'].search(Scheme.dataTypes.any(
+                [form.data['dataType']]))
+            element_list, mscid_list = add_matches(
+                matches, element_list, mscid_list)
+            if isGui:
+                flash_result(matches, 'associated with {}'
+                             .format(form.data['dataType']))
+
+        # Show results
+        if isGui:
+            no_of_hits = len(element_list)
+            if no_of_queries > 1:
+                flash('Found {:N scheme/s} in total. '.format(
+                    Pluralizer(no_of_hits)))
+            if no_of_hits == 1:
+                # Go direct to that page
+                result = element_list.pop()
+                return redirect(
+                    url_for('display', series='m', number=result.eid))
+            # Otherwise return as a list
+            element_list.sort(key=lambda k: k['title'].lower())
+            # Show results list
+            return render_template(
+                'search-results.html', title=title, results=element_list)
+        else:
+            n = len(mscid_prefix) + 1
+            mscid_list.sort(key=lambda k: k[:n] + k[n:].zfill(5))
+            return jsonify({'ids': mscid_list})
+
+    else:
+        # Title, identifier, funder, dataType help
+        all_schemes = tables['m'].all()
+        title_set = set()
+        id_set = set()
+        funder_set = set()
+        type_set = set()
+        for scheme in all_schemes:
+            title_set.add(scheme['title'])
+            id_set.add(get_mscid('m', scheme.eid))
+            if 'identifiers' in scheme:
+                for identifier in scheme['identifiers']:
+                    id_set.add(identifier['id'])
+            if 'dataTypes' in scheme:
+                for type in scheme['dataTypes']:
+                    type_set.add(type)
+            if 'relatedEntities' in scheme:
+                for entity in scheme['relatedEntities']:
+                    if entity['role'] == 'funder':
+                        org_series, org_number = parse_mscid(entity['id'])
+                        funder = tables[org_series].get(eid=org_number)
+                        if funder:
+                            funder_set.add(funder['name'])
+                        else:
+                            print('Could not look up organization with eid {}.'
+                                  .format(org_number))
+        title_list = list(title_set)
+        title_list.sort(key=lambda k: k.lower())
+        id_list = list(id_set)
+        n = len(mscid_prefix) + 1
+        id_list.sort(key=lambda k: k[:n] + k[n:].zfill(5))
+        funder_list = list(funder_set)
+        funder_list.sort(key=lambda k: k.lower())
+        type_list = list(type_set)
+        type_list.sort(key=lambda k: k.lower())
+        # Subject help
+        full_keyword_uris = get_all_term_uris()
+        subject_set = set()
+        for uri in full_keyword_uris:
+            subject_set.add(str(
+                thesaurus.preferredLabel(uri, lang='en')[0][1]))
+        subject_set.add('Multidisciplinary')
+        subject_list = list(subject_set)
+        subject_list.sort()
+        return render_template(
+            'search-form.html', form=form, titles=title_list,
+            subjects=subject_list, ids=id_list, funders=funder_list,
+            dataTypes=type_list)
+
+
 def search():
     if request.method == 'POST':
         element_list = list()
@@ -978,7 +1203,8 @@ def search():
             if no_of_hits == 1:
                 # Go direct to that page
                 result = element_list.pop()
-                return redirect(url_for('scheme', number=result.eid))
+                return redirect(
+                    url_for('display', series='m', number=result.eid))
             # Otherwise return as a list
             element_list.sort(key=lambda k: k['title'].lower())
             # Show results list

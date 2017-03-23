@@ -143,17 +143,17 @@ Supported queries when retrieving a list of scheme IDs:
 
   * `keyword`: searches for an exact match within the list of keywords.
 
-  * `keyword-id`: accepts a URI from the UNESCO Vocabulary, which is translated
+  * `keyword_id`: accepts a URI from the UNESCO Vocabulary, which is translated
     into a keyword and used as for `keyword` above.
 
-  * `id`: searches for an exact match within the list of identifiers.
+  * `identifier`: searches for an exact match within the list of identifiers.
     The primary use of this is to search for schemes by external identifier,
     though it can also be used to test if an internal ID is in use.
 
   * `funder`: searches, using regular expression syntax, within the names of
     organizations listed as funders of the scheme.
 
-  * `funder-id`: searches for an exact match within the list of identifiers of
+  * `funder_id`: searches for an exact match within the list of identifiers of
     organizations listed as funders of the scheme.
 
   * `dataType`: searches for an exact match within the list of data types.
