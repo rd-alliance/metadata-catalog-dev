@@ -1395,6 +1395,28 @@ def fix_slug(record, series):
     return record
 
 
+def get_choices(series):
+    """For a given series of records, returns a list of tuples, each
+    consisting of an MSC ID and a title/name.
+
+    Arguments:
+        series (str): One of 'm', 'g', 't', 'c', 'e', referring to the type of
+            record.
+
+    Returns:
+        list: Tuples containing an MSC ID and a human-friendly string.
+    """
+    choices = [('', '')]
+    for element in tables[series].all():
+        mscid = get_mscid(series, element.eid)
+        for field in ['title', 'name', 'citation', 'slug']:
+            if field in element:
+                choices.append((mscid, element[field]))
+                break
+    choices.sort(key=lambda k: k[1].lower())
+    return choices
+
+
 computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
 
 # Top 10 languages according to http://www.langpop.com/ in 2013.
@@ -1452,15 +1474,7 @@ class VersionForm(Form):
 
 
 class SchemeVersionForm(Form):
-    schemes = db.table('metadata-schemes')
-    scheme_choices = [('', '')]
-    for scheme in schemes.all():
-        if 'title' in scheme:
-            scheme_choices.append(
-                ('msc:m{}'.format(scheme.eid), scheme['title']))
-        else:
-            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
-    scheme_choices.sort(key=lambda k: k[1].lower())
+    scheme_choices = get_choices('m')
 
     id = SelectField('Metadata scheme', choices=scheme_choices)
     version = StringField('Version')
@@ -1475,21 +1489,8 @@ class CreatorForm(Form):
 # Editing metadata schemes
 # ------------------------
 class SchemeForm(FlaskForm):
-    schemes = db.table('metadata-schemes')
-    scheme_choices = list()
-    for scheme in schemes.all():
-        if 'title' in scheme:
-            scheme_choices.append(
-                ('msc:m{}'.format(scheme.eid), scheme['title']))
-        else:
-            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
-    scheme_choices.sort(key=lambda k: k[1].lower())
-    organizations = db.table('organizations')
-    organization_choices = list()
-    for organization in organizations.all():
-        organization_choices.append((
-            'msc:g{}'.format(organization.eid), organization['name']))
-    organization_choices.sort(key=lambda k: k[1].lower())
+    scheme_choices = get_choices('m')
+    organization_choices = get_choices('g')
 
     title = StringField('Name of metadata scheme')
     description = TextAreaField('Description')
@@ -1642,7 +1643,7 @@ def edit_scheme(number):
 # Editing organizations
 # ---------------------
 class OrganizationForm(FlaskForm):
-    organization_choices = [
+    type_choices = [
             ('standards body', 'standards body'), ('archive', 'archive'),
             ('professional group', 'professional group'),
             ('coordination group', 'coordination group')]
@@ -1650,7 +1651,7 @@ class OrganizationForm(FlaskForm):
     name = StringField('Name of organization')
     description = TextAreaField('Description')
     types = SelectMultipleField(
-        'Type of organization', choices=organization_choices)
+        'Type of organization', choices=type_choices)
     locations = FieldList(
         FormField(LocationForm), 'Relevant links', min_entries=1)
     identifiers = FieldList(
@@ -1707,21 +1708,8 @@ def edit_organization(number):
 # Editing tools
 # -------------
 class ToolForm(FlaskForm):
-    schemes = db.table('metadata-schemes')
-    scheme_choices = list()
-    for scheme in schemes.all():
-        if 'title' in scheme:
-            scheme_choices.append(
-                ('msc:m{}'.format(scheme.eid), scheme['title']))
-        else:
-            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
-    scheme_choices.sort(key=lambda k: k[1].lower())
-    organizations = db.table('organizations')
-    organization_choices = list()
-    for organization in organizations.all():
-        organization_choices.append((
-            'msc:g{}'.format(organization.eid), organization['name']))
-    organization_choices.sort(key=lambda k: k[1].lower())
+    scheme_choices = get_choices('m')
+    organization_choices = get_choices('g')
 
     title = StringField('Name of tool')
     description = TextAreaField('Description')
@@ -1850,21 +1838,8 @@ def edit_tool(number):
 # Editing mappings
 # ----------------
 class MappingForm(FlaskForm):
-    schemes = db.table('metadata-schemes')
-    scheme_choices = list()
-    for scheme in schemes.all():
-        if 'title' in scheme:
-            scheme_choices.append(
-                ('msc:m{}'.format(scheme.eid), scheme['title']))
-        else:
-            print('WARNING: msc:m{} has no title.'.format(scheme.eid))
-    scheme_choices.sort(key=lambda k: k[1].lower())
-    organizations = db.table('organizations')
-    organization_choices = list()
-    for organization in organizations.all():
-        organization_choices.append((
-            'msc:g{}'.format(organization.eid), organization['name']))
-    organization_choices.sort(key=lambda k: k[1].lower())
+    scheme_choices = get_choices('m')
+    organization_choices = get_choices('g')
 
     description = TextAreaField('Description')
     input_schemes = SelectMultipleField(
@@ -1984,12 +1959,7 @@ def edit_mapping(number):
 # Editing endorsements
 # --------------------
 class EndorsementForm(FlaskForm):
-    organizations = db.table('organizations')
-    organization_choices = list()
-    for organization in organizations.all():
-        organization_choices.append((
-            'msc:g{}'.format(organization.eid), organization['name']))
-    organization_choices.sort(key=lambda k: k[1].lower())
+    organization_choices = get_choices('g')
 
     citation = StringField('Citation')
     issued = NativeDateField('Endorsement date')
