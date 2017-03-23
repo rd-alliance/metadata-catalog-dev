@@ -67,7 +67,7 @@ import dulwich.porcelain as git
 mscwg_email = 'mscwg@rda-groups.org'
 
 
-# New version of JSON storage that also stores changes in a Git repo
+# Replacement for JSONStorage
 class JSONStorageWithGit(Storage):
     """Store the data in a JSON file and log the change in a Git repo.
     """
@@ -358,9 +358,9 @@ def get_db_tree(series, element_list):
 
     Returns:
         list: List of dictionaries, each of which with two or three items:
-        'name' (the title of the scheme or tool), 'url' (the URL of the
-        corresponding Catalog page), 'children' (list of child schemes, only
-        present if there are any)
+            'name' (the title of the scheme or tool), 'url' (the URL of the
+            corresponding Catalog page), 'children' (list of child schemes,
+            only present if there are any)
     """
     tree = list()
     for element in element_list:
@@ -525,7 +525,7 @@ def parse_mscid(mscid):
 
 def get_mscid(series, number):
     """Forms an MSC ID from a series and a record EID number."""
-    return mscid_prefix + series + number
+    return mscid_prefix + series + str(number)
 
 
 def get_relation(mscid, element):
@@ -601,7 +601,7 @@ def display(series, number, field=None):
         abort(404)
 
     # Form MSC ID
-    mscid = 'msc:{}{}'.format(series, number)
+    mscid = get_mscid(series, number)
 
     # Return raw JSON if requested.
     if request_wants_json():
@@ -659,8 +659,8 @@ def display(series, number, field=None):
         try:
             versions.sort(key=lambda k: k['date'], reverse=True)
         except KeyError:
-            print('WARNING: Record msc:{}{} has missing version date.'
-                  .format(series, number))
+            print('WARNING: Record {}{} has missing version date.'
+                  .format(mscid))
             versions.sort(key=lambda k: k['number'], reverse=True)
         for version in versions:
             if version['status'] == 'current':
@@ -724,7 +724,6 @@ def subject(subject):
     # If people start using geographical keywords, the following will need more
     # sophistication
     query_string = from_url_slug(subject)
-    results = list()
 
     # Interpret subject
     term_list = list()
@@ -745,15 +744,36 @@ def subject(subject):
                 term_list.append(term)
 
     # Search for matching schemes
-    schemes = db.table('metadata-schemes')
     Scheme = Query()
-    results = schemes.search(Scheme.keywords.any(term_list))
+    results = tables['m'].search(Scheme.keywords.any(term_list))
     no_of_hits = len(results)
     if no_of_hits:
         flash('Found {:N scheme/s}.'.format(Pluralizer(no_of_hits)))
         results.sort(key=lambda k: k['title'].lower())
     else:
-        flash('Found 0 schemes.', 'error')
+        flash('No schemes have been associated with this subject area.'
+              ' Would you like to see some <a href="{}">generic schemes</a>?'
+              .format(url_for('subject', subject='Multidisciplinary')),
+              'error')
+    return render_template(
+        'search-results.html', title=query_string, results=results)
+
+
+# Per-datatype lists of standards
+# ===============================
+@app.route('/datatype/<dataType>')
+def dataType(dataType):
+    query_string = from_url_slug(dataType)
+    Scheme = Query()
+    results = tables['m'].search(Scheme.dataTypes.any([query_string]))
+    no_of_hits = len(results)
+    if no_of_hits:
+        flash('Found {:N scheme/s} used for this type of data.'
+              .format(Pluralizer(no_of_hits)))
+        results.sort(key=lambda k: k['title'].lower())
+    else:
+        flash('No schemes have been reported to be used for this type of'
+              ' data.', 'error')
     return render_template(
         'search-results.html', title=query_string, results=results)
 
@@ -780,14 +800,13 @@ def group(funder=None, maintainer=None, user=None):
         role = 'user'
         verb = 'used'
     # Do the search
-    organizations = db.table('organizations')
-    element = organizations.get(eid=id)
+    element = tables['g'].get(eid=id)
+    mscid = get_mscid('g', id)
     title = element['name']
-    schemes = db.table('metadata-schemes')
     Scheme = Query()
     Relation = Query()
-    results = schemes.search(Scheme.relatedEntities.any(
-        (Relation.role == role) & (Relation.id == 'msc:g{}'.format(id))))
+    results = tables['m'].search(Scheme.relatedEntities.any(
+        (Relation.role == role) & (Relation.id == mscid)))
     no_of_hits = len(results)
     if no_of_hits:
         flash('Found {:N scheme/s} {} by this organization.'.format(
@@ -796,25 +815,6 @@ def group(funder=None, maintainer=None, user=None):
         flash('No schemes found {} by this organization.'.format(verb),
               'error')
     return render_template('search-results.html', title=title, results=results)
-
-
-# Per-datatype lists of standards
-# ===============================
-@app.route('/datatype/<dataType>')
-def dataType(dataType):
-    query_string = from_url_slug(dataType)
-    schemes = db.table('metadata-schemes')
-    Scheme = Query()
-    results = schemes.search(Scheme.dataTypes.any([query_string]))
-    no_of_hits = len(results)
-    if no_of_hits:
-        flash('Found {:N scheme/s} used for this type of data.'.format(
-            Pluralizer(no_of_hits)))
-    else:
-        flash('No schemes have been reported to be used for this type of'
-              ' data.', 'error')
-    return render_template(
-        'search-results.html', title=query_string, results=results)
 
 
 # List of standards
@@ -830,7 +830,7 @@ def scheme_index():
         tables[series].search(~ Scheme.relatedEntities.exists()))
     tree = get_db_tree(series, matches)
     return render_template(
-        'contents.html', title='List of metadata standards', tree=tree)
+        'contents.html', title='Index of metadata standards', tree=tree)
 
 
 # List of tools
@@ -841,7 +841,7 @@ def tool_index():
     matches = tables[series].all()
     tree = get_db_tree(series, matches)
     return render_template(
-        'contents.html', title='List of metadata tools', tree=tree)
+        'contents.html', title='Index of metadata tools', tree=tree)
 
 
 # Subject index
@@ -850,12 +850,12 @@ def tool_index():
 def subject_index():
     full_keyword_uris = get_all_term_uris()
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
-    subject_tree = get_term_tree(domains, filter=full_keyword_uris)
-    subject_tree.insert(0, {
+    tree = get_term_tree(domains, filter=full_keyword_uris)
+    tree.insert(0, {
         'name': 'Multidisciplinary',
         'url': url_for('subject', subject='Multidisciplinary')})
     return render_template(
-        'contents.html', title='Index of subjects', tree=subject_tree)
+        'contents.html', title='Index of subjects', tree=tree)
 
 
 # Search form
@@ -998,7 +998,7 @@ def search():
         type_set = set()
         for scheme in all_schemes:
             title_set.add(scheme['title'])
-            id_set.add('msc:m{}'.format(scheme.eid))
+            id_set.add(get_mscid('m', scheme.eid))
             if 'identifiers' in scheme:
                 for identifier in scheme['identifiers']:
                     id_set.add(identifier['id'])
@@ -1008,13 +1008,13 @@ def search():
             if 'relatedEntities' in scheme:
                 for entity in scheme['relatedEntities']:
                     if entity['role'] == 'funder':
-                        org_id = entity['id']
-                        funder = tables['g'].get(eid=int(org_id[5:]))
+                        org_series, org_number = parse_mscid(entity['id'])
+                        funder = tables[org_series].get(eid=org_number)
                         if funder:
                             funder_set.add(funder['name'])
                         else:
                             print('Could not look up organization with eid {}.'
-                                  .format(org_id[5:]))
+                                  .format(org_number))
         title_list = list(title_set)
         title_list.sort(key=lambda k: k.lower())
         id_list = list(id_set)
@@ -1353,7 +1353,7 @@ def fix_slug(record, series):
             slug = to_file_slug(record['title'])
     elif series == 'g':
         if 'name' in record:
-            slug = to_file_slug(record['title'])
+            slug = to_file_slug(record['name'])
     elif series == 'e':
         if 'citation' in record:
             slug = to_file_slug(record['citation'])
@@ -1383,7 +1383,7 @@ def fix_slug(record, series):
     if not slug:
         return record
     # Ensure uniqueness then apply
-    table = db.table(table_names[series])
+    table = tables[series]
     i = ''
     while table.search(Query().slug == (slug + str(i))):
         if i == '':
@@ -1568,8 +1568,8 @@ def edit_scheme(number):
         else:
             form = SchemeForm(request.form, data=msc_to_form(element))
     else:
-        #if number != 0:
-            #return redirect(url_for('edit_scheme', number=0))
+        if number != 0:
+            return redirect(url_for('edit_scheme', number=0))
         form = SchemeForm(request.form)
     for f in form.locations:
         f['type'].choices = [
