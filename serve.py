@@ -578,10 +578,9 @@ def hello():
 
 # Display record
 # ==============
-@app.route('/msc/<series_number>')
-@app.route('/msc/<series_number>/<field>')
-def display(series_number, field=None):
-    series, number = parse_mscid('msc:{}'.format(series_number))
+@app.route('/msc/<string(length=1):series><int:number>')
+@app.route('/msc/<string(length=1):series><int:number>/<field>')
+def display(series, number, field=None):
     # Is this record in the database?
     element = tables[series].get(eid=number)
     if not element:

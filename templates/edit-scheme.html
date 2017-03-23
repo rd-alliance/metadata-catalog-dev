@@ -269,7 +269,7 @@
       {% elif eid == 0 %}
       <a href="{{ url_for('hello') }}" class="btn btn-default">Cancel</a>
       {% else %}
-      <a href="{{ url_for('display', series_number='m{}'.format(eid)) }}" class="btn btn-default">Cancel &amp; view record</a>
+      <a href="{{ url_for('display', series='m', number=eid) }}" class="btn btn-default">Cancel &amp; view record</a>
       {% endif %}
     </div>
   </form>
