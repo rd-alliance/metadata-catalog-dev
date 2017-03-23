@@ -318,14 +318,13 @@ def get_term_tree(uris, filter=list()):
     return tree
 
 
-def get_all_term_uris():
+def get_used_term_uris():
     """Returns a deduplicated list of URIs corresponding to the subject keywords
     in use in the database, plus the URIs of all their broader terms.
     """
     # Get a list of all the keywords used in the database
-    schemes = db.table('metadata-schemes')
     Scheme = Query()
-    classified_schemes = schemes.search(Scheme.keywords.exists())
+    classified_schemes = tables['m'].search(Scheme.keywords.exists())
     keyword_set = set()
     for classified_scheme in classified_schemes:
         for keyword in classified_scheme['keywords']:
@@ -850,7 +849,7 @@ def tool_index():
 # =============
 @app.route('/subject-index')
 def subject_index():
-    full_keyword_uris = get_all_term_uris()
+    full_keyword_uris = get_used_term_uris()
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
     tree = get_term_tree(domains, filter=full_keyword_uris)
     tree.insert(0, {
@@ -1142,6 +1141,30 @@ def get_choices(series):
     return choices
 
 
+def get_subject_terms(complete=False):
+    """Returns a list of subject terms. By default, only returns terms that
+    would yield results in a search for metadata schemes. Pass `complete=True`
+    to get a full list of all allowed subject terms.
+    """
+    keyword_uris = set()
+    if complete:
+        for generator in [
+                thesaurus.subjects(RDF.type, UNO.Domain),
+                thesaurus.subjects(RDF.type, UNO.MicroThesaurus),
+                thesaurus.subjects(RDF.type, SKOS.Concept)]:
+            for uri in generator:
+                keyword_uris.add(uri)
+    else:
+        keyword_uris |= get_used_term_uris()
+    subject_set = set()
+    for uri in keyword_uris:
+        subject_set.add(str(thesaurus.preferredLabel(uri, lang='en')[0][1]))
+    subject_set.add('Multidisciplinary')
+    subject_list = list(subject_set)
+    subject_list.sort()
+    return subject_list
+
+
 computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
 
 # Top 10 languages according to http://www.langpop.com/ in 2013.
@@ -1215,7 +1238,11 @@ class CreatorForm(Form):
 # ===========
 class SchemeSearchForm(Form):
     title = StringField('Name of scheme')
-    keyword = StringField('Subject area')
+    keyword = StringField('Subject area', validators=[
+            validators.Optional(),
+            validators.AnyOf(
+                get_subject_terms(complete=True),
+                'The value was not found in the {}.'.format(thesaurus_link))])
     keyword_id = StringField('URI of subject area term')
     identifier = StringField('Identifier')
     funder = StringField('Funder')
@@ -1227,23 +1254,6 @@ class SchemeSearchForm(Form):
 @app.route('/query/schemes', methods=['POST'])
 def scheme_search():
     form = SchemeSearchForm(request.form)
-    # Subject validation
-    all_keyword_uris = set()
-    for generator in [
-            thesaurus.subjects(RDF.type, UNO.Domain),
-            thesaurus.subjects(RDF.type, UNO.MicroThesaurus),
-            thesaurus.subjects(RDF.type, SKOS.Concept)]:
-        for uri in generator:
-            all_keyword_uris.add(uri)
-    subject_set = set()
-    for uri in all_keyword_uris:
-        subject_set.add(str(thesaurus.preferredLabel(uri, lang='en')[0][1]))
-    subject_set.add('Multidisciplinary')
-    subject_list = list(subject_set)
-    subject_list.sort()
-    form.keyword.validators = [validators.Optional(), validators.AnyOf(
-        subject_list, 'The value was not found in the'
-        ' {}.'.format(thesaurus_link))]
     # Process form
     if request.method == 'POST' and form.validate():
         element_list = list()
@@ -1275,9 +1285,10 @@ def scheme_search():
                 concept_id = get_term_uri(form.data['keyword'])
                 if concept_id:
                     concept_ids.add(concept_id)
-        if 'keyword-id' in form.data and form.data['keyword-id']:
+        if 'keyword_id' in form.data and form.data['keyword_id']:
             no_of_queries += 1
-            concept_ids.add(form.data['keyword-id'])
+            if (form.data['keyword_id'], None, None) in thesaurus:
+                concept_ids.add(form.data['keyword_id'])
         for concept_id in concept_ids:
             # - Find list of broader and narrower terms
             term_uri_list = get_term_list(concept_id)
@@ -1424,14 +1435,7 @@ def scheme_search():
         type_list = list(type_set)
         type_list.sort(key=lambda k: k.lower())
         # Subject help
-        full_keyword_uris = get_all_term_uris()
-        subject_set = set()
-        for uri in full_keyword_uris:
-            subject_set.add(str(
-                thesaurus.preferredLabel(uri, lang='en')[0][1]))
-        subject_set.add('Multidisciplinary')
-        subject_list = list(subject_set)
-        subject_list.sort()
+        subject_list = get_subject_terms()
         return render_template(
             'search-form.html', form=form, titles=title_list,
             subjects=subject_list, ids=id_list, funders=funder_list,
@@ -1548,7 +1552,13 @@ class SchemeForm(FlaskForm):
     title = StringField('Name of metadata scheme')
     description = TextAreaField('Description')
     keywords = FieldList(
-        StringField('Subject area'), 'Subject areas', min_entries=1)
+        StringField('Subject area', validators=[
+            validators.Optional(),
+            validators.AnyOf(
+                get_subject_terms(complete=True),
+                'Value must match an English preferred label in the {}.'
+                .format(thesaurus_link))]),
+        'Subject areas', min_entries=1)
     dataTypes = FieldList(
         StringField('URL or term'), 'Data types', min_entries=1)
     parent_schemes = SelectMultipleField(
@@ -1586,19 +1596,7 @@ def edit_scheme(number):
         flash('Only provide information here that is different from the'
               ' information in the main (non-version-specific) record.')
     # Subject help
-    all_keyword_uris = set()
-    for generator in [
-            thesaurus.subjects(RDF.type, UNO.Domain),
-            thesaurus.subjects(RDF.type, UNO.MicroThesaurus),
-            thesaurus.subjects(RDF.type, SKOS.Concept)]:
-        for uri in generator:
-            all_keyword_uris.add(uri)
-    subject_set = set()
-    for uri in all_keyword_uris:
-        subject_set.add(str(thesaurus.preferredLabel(uri, lang='en')[0][1]))
-    subject_set.add('Multidisciplinary')
-    subject_list = list(subject_set)
-    subject_list.sort()
+    subject_list = get_subject_terms(complete=True)
     # Data type help
     type_set = set()
     for scheme in schemes.all():
@@ -1629,10 +1627,6 @@ def edit_scheme(number):
             ('', ''), ('document', 'document'), ('website', 'website'),
             ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
             ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
-    for f in form.keywords:
-        f.validators = [validators.Optional(), validators.AnyOf(
-            subject_list, 'Value must match an English preferred label in the'
-            ' {}.'.format(thesaurus_link))]
     # Processing the request
     if request.method == 'POST' and form.validate():
         # TODO: apply logging and version control
