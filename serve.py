@@ -1582,109 +1582,6 @@ class SchemeForm(FlaskForm):
         FormField(VersionForm), 'Version history', min_entries=1)
 
 
-@app.route('/edit/m<int:number>', methods=['GET', 'POST'])
-def edit_scheme(number):
-    if g.user is None:
-        flash('You must sign in before making any changes.', 'error')
-        return redirect(url_for('login'))
-    element = tables['m'].get(eid=number)
-    version = request.values.get('version')
-    if version and request.referrer == request.base_url:
-        # This is the version screen, opened from the main screen
-        flash('Only provide information here that is different from the'
-              ' information in the main (non-version-specific) record.')
-    # Subject help
-    subject_list = get_subject_terms(complete=True)
-    # Data type help
-    type_set = set()
-    for scheme in tables['m'].all():
-        if 'dataTypes' in scheme:
-            for type in scheme['dataTypes']:
-                type_set.add(type)
-    type_list = list(type_set)
-    type_list.sort(key=lambda k: k.lower())
-    if element:
-        # Translate from internal data model to form data
-        if version:
-            for release in element['versions']:
-                if 'number' in release and\
-                        str(release['number']) == str(version):
-                    form = SchemeForm(request.form, data=msc_to_form(release))
-                    break
-            else:
-                form = SchemeForm(request.form)
-            del form['versions']
-        else:
-            form = SchemeForm(request.form, data=msc_to_form(element))
-    else:
-        if number != 0:
-            return redirect(url_for('edit_scheme', number=0))
-        form = SchemeForm(request.form)
-    for f in form.locations:
-        f['type'].choices = [
-            ('', ''), ('document', 'document'), ('website', 'website'),
-            ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
-            ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
-    # Processing the request
-    if request.method == 'POST' and form.validate():
-        # TODO: apply logging and version control
-        # Translate form data into internal data model
-        msc_data = form_to_msc(form.data, element)
-        if version:
-            # Editing the version-specific overrides
-            if element and 'versions' in element:
-                version_list = element['versions']
-                for index, item in enumerate(version_list):
-                    if str(item['number']) == str(version):
-                        version_dict = {
-                            k: v for k, v in item.items()
-                            if k in ['number', 'available', 'issued', 'valid']}
-                        version_dict.update(msc_data)
-                        version_list[index] = version_dict
-                        Scheme = Query()
-                        Version = Query()
-                        tables['m'].update(
-                            {'versions': version_list},
-                            Scheme.versions.any(Version.number == version),
-                            eids=[number])
-                        flash('Successfully updated record for version {}.'
-                              .format(version), 'success')
-                        break
-                else:
-                    # This version is not in the list
-                    flash('Could not apply changes. Have you saved details for'
-                          ' version {} in the main record?'.format(version),
-                          'error')
-            else:
-                # The version list or the main record is missing
-                flash('Could not apply changes. Have you saved details for'
-                      ' version {} in the main record?'.format(version),
-                      'error')
-            return redirect('{}?version={}'.format(url_for(
-                'edit_scheme', number=number), version))
-        elif element:
-            # Editing an existing record
-            msc_data = fix_slug(msc_data, 'm')
-            with transaction(tables['m']) as t:
-                for key in (k for k in element if k not in msc_data):
-                    t.update(delete(key), eids=[number])
-                t.update(msc_data, eids=[number])
-            flash('Successfully updated record.', 'success')
-        else:
-            # Adding a new record
-            msc_data = fix_slug(msc_data, 'm')
-            number = tables['m'].insert(msc_data)
-            flash('Successfully added record.', 'success')
-        return redirect(url_for('edit_scheme', number=number))
-    if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}.'
-              ' See below for details.'.format(Pluralizer(len(form.errors))),
-              'error')
-    return render_template(
-        'edit-metadata-scheme.html', form=form, eid=number, version=version,
-        subjects=subject_list, dataTypes=type_list, idSchemes=id_scheme_list)
-
-
 # Editing organizations
 # ---------------------
 class OrganizationForm(FlaskForm):
@@ -1702,51 +1599,6 @@ class OrganizationForm(FlaskForm):
     identifiers = FieldList(
         FormField(IdentifierForm), 'Identifiers for this organization',
         min_entries=1)
-
-
-@app.route('/edit/g<int:number>', methods=['GET', 'POST'])
-def edit_organization(number):
-    if g.user is None:
-        flash('You must sign in before making any changes.', 'error')
-        return redirect(url_for('login'))
-    element = tables['g'].get(eid=number)
-    # Types and ID schemes
-    location_type_list = ['website', 'email']
-    if element:
-        # Translate from internal data model to form data
-        form = OrganizationForm(request.form, data=msc_to_form(element))
-    else:
-        if number != 0:
-            return redirect(url_for('edit_organization', number=0))
-        form = OrganizationForm(request.form)
-    for f in form.locations:
-        f['type'].choices = [
-            ('', ''), ('website', 'website'), ('email', 'email address')]
-    # Processing the request
-    if request.method == 'POST' and form.validate():
-        # Translate form data into internal data model
-        msc_data = form_to_msc(form.data, element)
-        msc_data = fix_slug(msc_data, 'g')
-        # TODO: apply logging and version control
-        if element:
-            # Existing record
-            with transaction(tables['g']) as t:
-                for key in (k for k in element if k not in msc_data):
-                    t.update(delete(key), eids=[number])
-                t.update(msc_data, eids=[number])
-            flash('Successfully updated record.', 'success')
-        else:
-            # New record
-            number = tables['g'].insert(msc_data)
-            flash('Successfully added record.', 'success')
-        return redirect(url_for('edit_organization', number=number))
-    if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}.'
-              ' See below for details.'.format(Pluralizer(len(form.errors))),
-              'error')
-    return render_template(
-        'edit-organization.html', form=form, eid=number,
-        idSchemes=id_scheme_list)
 
 
 # Editing tools
@@ -1783,101 +1635,6 @@ class ToolForm(FlaskForm):
         FormField(VersionForm), 'Version history', min_entries=1)
 
 
-@app.route('/edit/t<int:number>', methods=['GET', 'POST'])
-def edit_tool(number):
-    if g.user is None:
-        flash('You must sign in before making any changes.', 'error')
-        return redirect(url_for('login'))
-    element = tables['t'].get(eid=number)
-    version = request.values.get('version')
-    if version and request.referrer == request.base_url:
-        # This is the version screen, opened from the main screen
-        flash('Only provide information here that is different from the'
-              ' information in the main (non-version-specific) record.')
-    type_list = ['web application', 'web service']
-    for platform in computing_platforms:
-        type_list.append('terminal ({})'.format(platform))
-        type_list.append('graphical ({})'.format(platform))
-    if element:
-        # Translate from internal data model to form data
-        if version:
-            for release in element['versions']:
-                if 'number' in release and\
-                        str(release['number']) == str(version):
-                    form = ToolForm(request.form, data=msc_to_form(release))
-                    break
-            else:
-                form = ToolForm(request.form)
-            del form['versions']
-        else:
-            form = ToolForm(request.form, data=msc_to_form(element))
-    else:
-        if number != 0:
-            return redirect(url_for('edit_tool', number=0))
-        form = ToolForm(request.form)
-    for f in form.locations:
-        f['type'].choices = [
-            ('', ''), ('document', 'document'), ('website', 'website'),
-            ('application', 'application'), ('service', 'service endpoint')]
-    if request.method == 'POST' and form.validate():
-        # TODO: apply logging and version control
-        # Translate form data into internal data model
-        msc_data = form_to_msc(form.data, element)
-        if version:
-            # Editing the version-specific overrides
-            if element and 'versions' in element:
-                version_list = element['versions']
-                for index, item in enumerate(version_list):
-                    if str(item['number']) == str(version):
-                        version_dict = {
-                            k: v for k, v in item.items()
-                            if k in ['number', 'available', 'issued', 'valid']}
-                        version_dict.update(msc_data)
-                        version_list[index] = version_dict
-                        Tool = Query()
-                        Version = Query()
-                        tables['t'].update(
-                            {'versions': version_list},
-                            Tool.versions.any(Version.number == version),
-                            eids=[number])
-                        flash('Successfully updated record for version {}.'
-                              .format(version), 'success')
-                        break
-                else:
-                    # This version is not in the list
-                    flash('Could not apply changes. Have you saved details for'
-                          ' version {} in the main record?'.format(version),
-                          'error')
-            else:
-                # The version list or the main record is missing
-                flash('Could not apply changes. Have you saved details for'
-                      ' version {} in the main record?'.format(version),
-                      'error')
-            return redirect('{}?version={}'.format(
-                url_for('edit_tool', number=number), version))
-        elif element:
-            # Editing an existing record
-            msc_data = fix_slug(msc_data, 't')
-            with transaction(tables['t']) as t:
-                for key in (k for k in element if k not in msc_data):
-                    t.update(delete(key), eids=[number])
-                t.update(msc_data, eids=[number])
-            flash('Successfully updated record.', 'success')
-        else:
-            # Adding a new record
-            msc_data = fix_slug(msc_data, 't')
-            number = tables['t'].insert(msc_data)
-            flash('Successfully added record.', 'success')
-        return redirect(url_for('edit_tool', number=number))
-    if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}.'
-              ' See below for details.'.format(Pluralizer(len(form.errors))),
-              'error')
-    return render_template(
-        'edit-tool.html', form=form, eid=number, version=version,
-        idSchemes=id_scheme_list, toolTypes=type_list)
-
-
 # Editing mappings
 # ----------------
 class MappingForm(FlaskForm):
@@ -1906,98 +1663,6 @@ class MappingForm(FlaskForm):
         FormField(VersionForm), 'Version history', min_entries=1)
 
 
-@app.route('/edit/c<int:number>', methods=['GET', 'POST'])
-def edit_mapping(number):
-    if g.user is None:
-        flash('You must sign in before making any changes.', 'error')
-        return redirect(url_for('login'))
-    element = tables['c'].get(eid=number)
-    version = request.values.get('version')
-    if version and request.referrer == request.base_url:
-        # This is the version screen, opened from the main screen
-        flash('Only provide information here that is different from the'
-              ' information in the main (non-version-specific) record.')
-    location_type_list = ['document']
-    for language in programming_languages:
-        location_type_list.append('library ({})'.format(language))
-    for platform in computing_platforms:
-        location_type_list.append('executable ({})'.format(platform))
-    if element:
-        # Translate from internal data model to form data
-        if version:
-            for release in element['versions']:
-                if 'number' in release and\
-                        str(release['number']) == str(version):
-                    form = MappingForm(request.form, data=msc_to_form(release))
-                    break
-            else:
-                form = MappingForm(request.form)
-            del form['versions']
-        else:
-            form = MappingForm(request.form, data=msc_to_form(element))
-    else:
-        if number != 0:
-            return redirect(url_for('edit_mapping', number=0))
-        form = MappingForm(request.form)
-    if request.method == 'POST' and form.validate():
-        # TODO: apply logging and version control
-        # Translate form data into internal data model
-        msc_data = form_to_msc(form.data, element)
-        if version:
-            # Editing the version-specific overrides
-            if element and 'versions' in element:
-                version_list = element['versions']
-                for index, item in enumerate(version_list):
-                    if str(item['number']) == str(version):
-                        version_dict = {
-                            k: v for k, v in item.items()
-                            if k in ['number', 'available', 'issued', 'valid']}
-                        version_dict.update(msc_data)
-                        version_list[index] = version_dict
-                        Mapping = Query()
-                        Version = Query()
-                        tables['c'].update(
-                            {'versions': version_list},
-                            Mapping.versions.any(Version.number == version),
-                            eids=[number])
-                        flash('Successfully updated record for version {}.'
-                              .format(version), 'success')
-                        break
-                else:
-                    # This version is not in the list
-                    flash('Could not apply changes. Have you saved details for'
-                          ' version {} in the main record?'.format(version),
-                          'error')
-            else:
-                # The version list or the main record is missing
-                flash('Could not apply changes. Have you saved details for'
-                      ' version {} in the main record?'.format(version),
-                      'error')
-            return redirect('{}?version={}'.format(
-                url_for('edit_mapping', number=number), version))
-        elif element:
-            # Editing an existing record
-            msc_data = fix_slug(msc_data, 'c')
-            with transaction(tables['c']) as t:
-                for key in (k for k in element if k not in msc_data):
-                    t.update(delete(key), eids=[number])
-                t.update(msc_data, eids=[number])
-            flash('Successfully updated record.', 'success')
-        else:
-            # Adding a new record
-            msc_data = fix_slug(msc_data, 'c')
-            number = tables['c'].insert(msc_data)
-            flash('Successfully added record.', 'success')
-        return redirect(url_for('edit_mapping', number=number))
-    if form.errors:
-        flash('Could not save changes as there {:/was an error/were N errors}.'
-              ' See below for details.'.format(Pluralizer(len(form.errors))),
-              'error')
-    return render_template(
-        'edit-mapping.html', form=form, eid=number, version=version,
-        idSchemes=id_scheme_list, locationTypes=location_type_list)
-
-
 # Editing endorsements
 # --------------------
 class EndorsementForm(FlaskForm):
@@ -2018,54 +1683,171 @@ class EndorsementForm(FlaskForm):
         'Endorsing organizations', choices=organization_choices)
 
 
-@app.route('/edit/e<int:number>', methods=['GET', 'POST'])
-def edit_endorsement(number):
+Forms = {
+    'm': SchemeForm,
+    'g': OrganizationForm,
+    't': ToolForm,
+    'c': MappingForm,
+    'e': EndorsementForm}
+
+
+# Generic editing form view
+# -------------------------
+@app.route('/edit/<string(length=1):series><int:number>',
+           methods=['GET', 'POST'])
+def edit_record(series, number):
+    # Sanity checks
     if g.user is None:
         flash('You must sign in before making any changes.', 'error')
         return redirect(url_for('login'))
-    element = tables['e'].get(eid=number)
+    element = tables[series].get(eid=number)
+    version = request.values.get('version')
+    if version and request.referrer == request.base_url:
+        # This is the version screen, opened from the main screen
+        flash('Only provide information here that is different from the'
+              ' information in the main (non-version-specific) record.')
+
+    # Instantiate form
     if element:
         # Translate from internal data model to form data
-        form = EndorsementForm(request.form, data=msc_to_form(element))
+        if version:
+            for release in element['versions']:
+                if 'number' in release and\
+                        str(release['number']) == str(version):
+                    form = Forms[series](
+                        request.form, data=msc_to_form(release))
+                    break
+            else:
+                form = Forms[series](request.form)
+            del form['versions']
+        else:
+            form = Forms[series](request.form, data=msc_to_form(element))
     else:
         if number != 0:
-            return redirect(url_for('edit_endorsement', number=0))
-        form = EndorsementForm(request.form)
-    for f in form.locations:
-        f['type'].choices = [('', ''), ('document', 'document')]
-        f.url.validators = [validators.Optional()]
-        f['type'].validators = [validators.Optional()]
+            return redirect(url_for('edit_record', series=series, number=0))
+        form = Forms[series](request.form)
+
+    # Form-specific value lists
+    params = dict()
+    if series == 'm':
+        # Subject keyword help
+        subject_list = get_subject_terms(complete=True)
+        params['subjects'] = subject_list
+        # Data type help
+        type_set = set()
+        for scheme in tables['m'].all():
+            if 'dataTypes' in scheme:
+                for type in scheme['dataTypes']:
+                    type_set.add(type)
+        type_list = list(type_set)
+        type_list.sort(key=lambda k: k.lower())
+        params['dataTypes'] = type_list
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].choices = [
+                ('', ''), ('document', 'document'), ('website', 'website'),
+                ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
+                ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
+    elif series == 'g':
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].choices = [
+                ('', ''), ('website', 'website'), ('email', 'email address')]
+    elif series == 't':
+        # Tool type help
+        type_list = ['web application', 'web service']
+        for platform in computing_platforms:
+            type_list.append('terminal ({})'.format(platform))
+            type_list.append('graphical ({})'.format(platform))
+        params['toolTypes'] = type_list
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].choices = [
+                ('', ''), ('document', 'document'), ('website', 'website'),
+                ('application', 'application'),
+                ('service', 'service endpoint')]
+    elif series == 'c':
+        # URL type help (unusually, it is not a fixed list)
+        type_list = ['document']
+        for language in programming_languages:
+            type_list.append('library ({})'.format(language))
+        for platform in computing_platforms:
+            type_list.append('executable ({})'.format(platform))
+        params['locationTypes'] = type_list
+    elif series == 'e':
+        # Validation for URL types; note that as there is a choice of one,
+        # we apply it automatically, not via the form.
+        for f in form.locations:
+            f['type'].choices = [('', ''), ('document', 'document')]
+            f.url.validators = [validators.Optional()]
+            f['type'].validators = [validators.Optional()]
+
+    # Processing the request
     if request.method == 'POST' and form.validate():
         form_data = form.data
-        filtered_locations = list()
-        for f in form.locations:
-            if f.url.data:
-                location = {'url': f.url.data, 'type': 'document'}
-                filtered_locations.append(location)
-        form_data['locations'] = filtered_locations
+        if series == 'e':
+            # Here is where we automatically insert the URL type
+            filtered_locations = list()
+            for f in form.locations:
+                if f.url.data:
+                    location = {'url': f.url.data, 'type': 'document'}
+                    filtered_locations.append(location)
+            form_data['locations'] = filtered_locations
         # Translate form data into internal data model
         msc_data = form_to_msc(form_data, element)
-        msc_data = fix_slug(msc_data, 'e')
-        # TODO: apply logging and version control
-        if element:
-            # Existing record
-            with transaction(tables['e']) as t:
+        if version:
+            # Editing the version-specific overrides
+            if element and 'versions' in element:
+                version_list = element['versions']
+                for index, item in enumerate(version_list):
+                    if str(item['number']) == str(version):
+                        version_dict = {
+                            k: v for k, v in item.items()
+                            if k in ['number', 'available', 'issued', 'valid']}
+                        version_dict.update(msc_data)
+                        version_list[index] = version_dict
+                        Record = Query()
+                        Version = Query()
+                        tables[series].update(
+                            {'versions': version_list},
+                            Record.versions.any(Version.number == version),
+                            eids=[number])
+                        flash('Successfully updated record for version {}.'
+                              .format(version), 'success')
+                        break
+                else:
+                    # This version is not in the list
+                    flash('Could not apply changes. Have you saved details for'
+                          ' version {} in the main record?'.format(version),
+                          'error')
+            else:
+                # The version list or the main record is missing
+                flash('Could not apply changes. Have you saved details for'
+                      ' version {} in the main record?'.format(version),
+                      'error')
+            return redirect('{}?version={}'.format(url_for(
+                'edit_record', series=series, number=number), version))
+        elif element:
+            # Editing an existing record
+            msc_data = fix_slug(msc_data, series)
+            with transaction(tables[series]) as t:
                 for key in (k for k in element if k not in msc_data):
                     t.update(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
-            # New record
-            number = tables['e'].insert(msc_data)
+            # Adding a new record
+            msc_data = fix_slug(msc_data, series)
+            number = tables[series].insert(msc_data)
             flash('Successfully added record.', 'success')
-        return redirect(url_for('edit_endorsement', number=number))
+        return redirect(url_for('edit_record', series=series, number=number))
     if form.errors:
         flash('Could not save changes as there {:/was an error/were N errors}.'
               ' See below for details.'.format(Pluralizer(len(form.errors))),
               'error')
     return render_template(
-        'edit-endorsement.html', form=form, eid=number,
-        idSchemes=id_scheme_list)
+        'edit-' + templates[series], form=form, eid=number, version=version,
+        idSchemes=id_scheme_list, **params)
 
 
 # Executing

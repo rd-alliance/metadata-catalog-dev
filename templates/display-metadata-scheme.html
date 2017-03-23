@@ -53,7 +53,7 @@
           <li><a class="btn btn-special" href="{% if location['type'] == 'email' %}mailto:{% endif %}{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
         {% if g.user %}
-          <li><a class="btn btn-default" href="{{ url_for('edit_organization', number=org.eid) }}">Edit record</a></li>
+          <li><a class="btn btn-default" href="{{ url_for('edit_record', series='g', number=org.eid) }}">Edit record</a></li>
         {% endif %}
         </ul>
       {% endif %}
@@ -68,7 +68,7 @@
           <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
         {% if g.user %}
-          <li><a class="btn btn-default" href="{{ url_for('edit_organization', number=org.eid) }}">Edit record</a></li>
+          <li><a class="btn btn-default" href="{{ url_for('edit_record', series='g', number=org.eid) }}">Edit record</a></li>
         {% endif %}
         </ul>
       {% endif %}
@@ -165,7 +165,7 @@
           <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}
         {% if g.user %}
-          <li><a class="btn btn-default" href="{{ url_for('edit_mapping', number=mapping.eid) }}">Edit record</a></li>
+          <li><a class="btn btn-default" href="{{ url_for('edit_record', series='c', number=mapping.eid) }}">Edit record</a></li>
         {% endif %}
         </ul>
         {% endif %}
@@ -182,7 +182,7 @@
           <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'document' %}View documentation{% else %}Download {{ location['type'] }}{% endif %}</a></li>
         {% endfor %}
         {% if g.user %}
-          <li><a class="btn btn-default" href="{{ url_for('edit_mapping', number=mapping.eid) }}">Edit record</a></li>
+          <li><a class="btn btn-default" href="{{ url_for('edit_record', series='c', number=mapping.eid) }}">Edit record</a></li>
         {% endif %}
         </ul>
         {% endif %}
@@ -221,7 +221,7 @@
           <li><a class="btn btn-special" href="{{ location['url'] }}">{% if location['type'] == 'website' %}View website{% elif location['type'] == 'email' %}Send email{% else %}More information{% endif %}</a></li>
         {% endfor %}
         {% if g.user %}
-          <li><a class="btn btn-default" href="{{ url_for('edit_organization', number=user.eid) }}">Edit record</a></li>
+          <li><a class="btn btn-default" href="{{ url_for('edit_record', series='g', number=user.eid) }}">Edit record</a></li>
         {% endif %}
         </ul>
       {% endif %}
@@ -254,7 +254,7 @@
           <li><a class="btn btn-special" href="{{ location['url'] }}">View endorsement</a></li>
         {% endfor %}
         {% if g.user %}
-          <li><a class="btn btn-default" href="{{ url_for('edit_endorsement', number=endorsement.eid) }}">Edit record</a></li>
+          <li><a class="btn btn-default" href="{{ url_for('edit_record', series='e', number=endorsement.eid) }}">Edit record</a></li>
         {% endif %}
         </ul>
         {% endif %}
@@ -265,7 +265,7 @@
   {% if g.user %}
   <aside>
     <p>
-      <a href="{{ url_for('edit_scheme', number=record.eid) }}" class="btn btn-default">Edit this record</a>
+      <a href="{{ url_for('edit_record', series='m', number=record.eid) }}" class="btn btn-default">Edit this record</a>
     </p>
   </aside>
   {% endif %}
