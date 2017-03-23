@@ -1241,7 +1241,8 @@ class SchemeSearchForm(Form):
             validators.Optional(),
             validators.AnyOf(
                 get_subject_terms(complete=True),
-                'The value was not found in the {}.'.format(thesaurus_link))])
+                'Schemes are classified according to the terms in the {}.'
+                .format(thesaurus_link))])
     keyword_id = StringField('URI of subject area term')
     identifier = StringField('Identifier')
     funder = StringField('Funder')
