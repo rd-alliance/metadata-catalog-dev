@@ -713,7 +713,7 @@ def display(series, number, field=None):
 
     # We are ready to display the information.
     return render_template(
-        templates[series], record=element, versions=versions,
+        'display-' + templates[series], record=element, versions=versions,
         relations=relations, hasRelatedSchemes=hasRelatedSchemes)
 
 
@@ -1636,7 +1636,7 @@ def edit_scheme(number):
               ' See below for details.'.format(Pluralizer(len(form.errors))),
               'error')
     return render_template(
-        'edit-scheme.html', form=form, eid=number, version=version,
+        'edit-metadata-scheme.html', form=form, eid=number, version=version,
         subjects=subject_list, dataTypes=type_list, idSchemes=id_scheme_list)
 
 
