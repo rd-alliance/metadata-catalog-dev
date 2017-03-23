@@ -345,16 +345,15 @@ def get_all_term_uris():
     return full_keyword_uris
 
 
-def get_db_node(table, id, type):
+def get_db_node(series, number):
     """Recursively transforms the internal ID of a record in the database to a
     dictionary providing the entity's title, its corresponding URL in the
     Catalog, and (if applicable) a list of dictionaries corresponding to
     records that are 'children' of the current record.
 
     Arguments:
-        table (database): TinyDB database
-        id (str): Internal ID of a Catalog record
-        type (str): Type of record ('scheme' or 'tool')
+        series (str): Record series
+        id (int): Internal ID of a Catalog record
 
     Returns:
         dict: Dictionary of two or three items: 'name' (the title of the scheme
@@ -362,19 +361,20 @@ def get_db_node(table, id, type):
         (list of child schemes, only present if there are any)
     """
     result = dict()
-    entity = table.get(eid=id)
+    mscid = get_mscid(series, number)
+    entity = tables[series].get(eid=number)
     result['name'] = entity['title']
-    result['url'] = url_for(type, number=id)
-    if type == 'scheme':
+    result['url'] = url_for('display', series=series, number=number)
+    if series == 'm':
         Main = Query()
         Related = Query()
-        child_schemes = table.search(Main.relatedEntities.any(
+        child_schemes = tables[series].search(Main.relatedEntities.any(
             (Related.role == 'parent scheme') &
-            (Related.id == 'msc:m{}'.format(id))))
+            (Related.id == mscid)))
         if child_schemes:
             children = list()
             for child_scheme in child_schemes:
-                children.append(get_db_node(table, child_scheme.eid, type))
+                children.append(get_db_node(series, child_scheme.eid))
             children.sort(key=lambda k: k['name'])
             result['children'] = children
     return result
@@ -512,6 +512,11 @@ def parse_mscid(mscid):
     series = just_mscid[4:5]
     number = int(just_mscid[5:])
     return (series, number)
+
+
+def get_mscid(series, number):
+    """Forms an MSC ID from a series and a record EID number."""
+    return 'msc:{}{}'.format(series, number)
 
 
 def get_relation(mscid, element):
@@ -815,7 +820,7 @@ def scheme_index():
     parent_schemes.extend(schemes.search(~ Scheme.relatedEntities.exists()))
     scheme_tree = list()
     for scheme in parent_schemes:
-        scheme_tree.append(get_db_node(schemes, scheme.eid, 'scheme'))
+        scheme_tree.append(get_db_node('m', scheme.eid))
     scheme_tree.sort(key=lambda k: k['name'].lower())
     return render_template(
         'contents.html', title='List of metadata standards', tree=scheme_tree)
@@ -831,7 +836,7 @@ def tool_index():
     all_tools = tools.all()
     tool_tree = list()
     for tool in all_tools:
-        tool_tree.append(get_db_node(tools, tool.eid, 'tool'))
+        tool_tree.append(get_db_node('t', tool.eid))
     tool_tree.sort(key=lambda k: k['name'].lower())
     return render_template(
         'contents.html', title='List of metadata tools', tree=tool_tree)
