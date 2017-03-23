@@ -1085,15 +1085,14 @@ def fix_slug(record, series):
         if 'relatedEntities' in record:
             slug_from = ''
             slug_to = ''
-            schemes = db.table(table_names['m'])
             for entity in record['relatedEntities']:
-                eid = entity['id'][5:]
+                entity_series, entity_number = parse_mscid(entity['id'])
                 if entity['role'] == 'input scheme':
-                    element = schemes.get(eid=eid)
+                    element = tables[entity_series].get(eid=entity_number)
                     if 'slug' in element:
                         slug_from = element['slug']
                 elif entity['role'] == 'output scheme':
-                    element = schemes.get(eid=eid)
+                    element = tables[entity_series].get(eid=entity_number)
                     if 'slug' in element:
                         slug_to = element['slug']
             if slug_from and slug_to:
@@ -1587,9 +1586,7 @@ def edit_scheme(number):
     if g.user is None:
         flash('You must sign in before making any changes.', 'error')
         return redirect(url_for('login'))
-    schemes = db.table('metadata-schemes')
-    organizations = db.table('organizations')
-    element = schemes.get(eid=number)
+    element = tables['m'].get(eid=number)
     version = request.values.get('version')
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
@@ -1599,7 +1596,7 @@ def edit_scheme(number):
     subject_list = get_subject_terms(complete=True)
     # Data type help
     type_set = set()
-    for scheme in schemes.all():
+    for scheme in tables['m'].all():
         if 'dataTypes' in scheme:
             for type in scheme['dataTypes']:
                 type_set.add(type)
@@ -1645,7 +1642,7 @@ def edit_scheme(number):
                         version_list[index] = version_dict
                         Scheme = Query()
                         Version = Query()
-                        schemes.update(
+                        tables['m'].update(
                             {'versions': version_list},
                             Scheme.versions.any(Version.number == version),
                             eids=[number])
@@ -1667,7 +1664,7 @@ def edit_scheme(number):
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 'm')
-            with transaction(schemes) as t:
+            with transaction(tables['m']) as t:
                 for key in (k for k in element if k not in msc_data):
                     t.update(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
@@ -1675,7 +1672,7 @@ def edit_scheme(number):
         else:
             # Adding a new record
             msc_data = fix_slug(msc_data, 'm')
-            number = schemes.insert(msc_data)
+            number = tables['m'].insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_scheme', number=number))
     if form.errors:
@@ -1711,8 +1708,7 @@ def edit_organization(number):
     if g.user is None:
         flash('You must sign in before making any changes.', 'error')
         return redirect(url_for('login'))
-    organizations = db.table('organizations')
-    element = organizations.get(eid=number)
+    element = tables['g'].get(eid=number)
     # Types and ID schemes
     location_type_list = ['website', 'email']
     if element:
@@ -1733,14 +1729,14 @@ def edit_organization(number):
         # TODO: apply logging and version control
         if element:
             # Existing record
-            with transaction(organizations) as t:
+            with transaction(tables['g']) as t:
                 for key in (k for k in element if k not in msc_data):
                     t.update(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # New record
-            number = organizations.insert(msc_data)
+            number = tables['g'].insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_organization', number=number))
     if form.errors:
@@ -1791,8 +1787,7 @@ def edit_tool(number):
     if g.user is None:
         flash('You must sign in before making any changes.', 'error')
         return redirect(url_for('login'))
-    tools = db.table('tools')
-    element = tools.get(eid=number)
+    element = tables['t'].get(eid=number)
     version = request.values.get('version')
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
@@ -1840,7 +1835,7 @@ def edit_tool(number):
                         version_list[index] = version_dict
                         Tool = Query()
                         Version = Query()
-                        tools.update(
+                        tables['t'].update(
                             {'versions': version_list},
                             Tool.versions.any(Version.number == version),
                             eids=[number])
@@ -1862,7 +1857,7 @@ def edit_tool(number):
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 't')
-            with transaction(tools) as t:
+            with transaction(tables['t']) as t:
                 for key in (k for k in element if k not in msc_data):
                     t.update(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
@@ -1870,7 +1865,7 @@ def edit_tool(number):
         else:
             # Adding a new record
             msc_data = fix_slug(msc_data, 't')
-            number = tools.insert(msc_data)
+            number = tables['t'].insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_tool', number=number))
     if form.errors:
@@ -1915,8 +1910,7 @@ def edit_mapping(number):
     if g.user is None:
         flash('You must sign in before making any changes.', 'error')
         return redirect(url_for('login'))
-    mappings = db.table('mappings')
-    element = mappings.get(eid=number)
+    element = tables['c'].get(eid=number)
     version = request.values.get('version')
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
@@ -1961,7 +1955,7 @@ def edit_mapping(number):
                         version_list[index] = version_dict
                         Mapping = Query()
                         Version = Query()
-                        mappings.update(
+                        tables['c'].update(
                             {'versions': version_list},
                             Mapping.versions.any(Version.number == version),
                             eids=[number])
@@ -1983,7 +1977,7 @@ def edit_mapping(number):
         elif element:
             # Editing an existing record
             msc_data = fix_slug(msc_data, 'c')
-            with transaction(mappings) as t:
+            with transaction(tables['c']) as t:
                 for key in (k for k in element if k not in msc_data):
                     t.update(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
@@ -1991,7 +1985,7 @@ def edit_mapping(number):
         else:
             # Adding a new record
             msc_data = fix_slug(msc_data, 'c')
-            number = mappings.insert(msc_data)
+            number = tables['c'].insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_mapping', number=number))
     if form.errors:
@@ -2028,8 +2022,7 @@ def edit_endorsement(number):
     if g.user is None:
         flash('You must sign in before making any changes.', 'error')
         return redirect(url_for('login'))
-    endorsements = db.table('endorsements')
-    element = endorsements.get(eid=number)
+    element = tables['e'].get(eid=number)
     if element:
         # Translate from internal data model to form data
         form = EndorsementForm(request.form, data=msc_to_form(element))
@@ -2055,14 +2048,14 @@ def edit_endorsement(number):
         # TODO: apply logging and version control
         if element:
             # Existing record
-            with transaction(endorsements) as t:
+            with transaction(tables['e']) as t:
                 for key in (k for k in element if k not in msc_data):
                     t.update(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
             # New record
-            number = endorsements.insert(msc_data)
+            number = tables['e'].insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_endorsement', number=number))
     if form.errors:
