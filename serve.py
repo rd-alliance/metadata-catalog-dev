@@ -345,39 +345,38 @@ def get_all_term_uris():
     return full_keyword_uris
 
 
-def get_db_node(series, number):
-    """Recursively transforms the internal ID of a record in the database to a
-    dictionary providing the entity's title, its corresponding URL in the
-    Catalog, and (if applicable) a list of dictionaries corresponding to
-    records that are 'children' of the current record.
+def get_db_tree(series, element_list):
+    """Takes a list of database elements and recursively builds a list of
+    dictionaries providing each element's title, its corresponding URL in the
+    Catalog, and (if applicable) a list of elements that are 'children' of
+    the current element.
 
     Arguments:
         series (str): Record series
-        id (int): Internal ID of a Catalog record
+        element_list (list of Elements): List of records
 
     Returns:
-        dict: Dictionary of two or three items: 'name' (the title of the scheme
-        or tool), 'url' (the URL of the corresponding Catalog page), 'children'
-        (list of child schemes, only present if there are any)
+        list: List of dictionaries, each of which with two or three items:
+        'name' (the title of the scheme or tool), 'url' (the URL of the
+        corresponding Catalog page), 'children' (list of child schemes, only
+        present if there are any)
     """
-    result = dict()
-    mscid = get_mscid(series, number)
-    entity = tables[series].get(eid=number)
-    result['name'] = entity['title']
-    result['url'] = url_for('display', series=series, number=number)
-    if series == 'm':
-        Main = Query()
-        Related = Query()
-        child_schemes = tables[series].search(Main.relatedEntities.any(
-            (Related.role == 'parent scheme') &
-            (Related.id == mscid)))
-        if child_schemes:
-            children = list()
-            for child_scheme in child_schemes:
-                children.append(get_db_node(series, child_scheme.eid))
-            children.sort(key=lambda k: k['name'])
-            result['children'] = children
-    return result
+    tree = list()
+    for element in element_list:
+        result = dict()
+        result['name'] = element['title']
+        result['url'] = url_for('display', series=series, number=element.eid)
+        if series == 'm':
+            mscid = get_mscid(series, element.eid)
+            Main = Query()
+            Related = Query()
+            children = tables[series].search(Main.relatedEntities.any(
+                (Related.role == 'parent scheme') &
+                (Related.id == mscid)))
+            result['children'] = get_db_tree(series, children)
+        tree.append(result)
+    tree.sort(key=lambda k: k['name'].lower())
+    return tree
 
 
 class Pluralizer:
@@ -812,34 +811,27 @@ def dataType(dataType):
 # =================
 @app.route('/scheme-index')
 def scheme_index():
-    schemes = db.table('metadata-schemes')
+    series = 'm'
     Scheme = Query()
     Entity = Query()
-    parent_schemes = schemes.search(Scheme.relatedEntities.all(
+    matches = tables[series].search(Scheme.relatedEntities.all(
         Entity.role != 'parent scheme'))
-    parent_schemes.extend(schemes.search(~ Scheme.relatedEntities.exists()))
-    scheme_tree = list()
-    for scheme in parent_schemes:
-        scheme_tree.append(get_db_node('m', scheme.eid))
-    scheme_tree.sort(key=lambda k: k['name'].lower())
+    matches.extend(
+        tables[series].search(~ Scheme.relatedEntities.exists()))
+    tree = get_db_tree(series, matches)
     return render_template(
-        'contents.html', title='List of metadata standards', tree=scheme_tree)
+        'contents.html', title='List of metadata standards', tree=tree)
 
 
 # List of tools
 # =============
 @app.route('/tool-index')
 def tool_index():
-    tools = db.table('tools')
-    Tool = Query()
-    Entity = Query()
-    all_tools = tools.all()
-    tool_tree = list()
-    for tool in all_tools:
-        tool_tree.append(get_db_node('t', tool.eid))
-    tool_tree.sort(key=lambda k: k['name'].lower())
+    series = 't'
+    matches = tables[series].all()
+    tree = get_db_tree(series, matches)
     return render_template(
-        'contents.html', title='List of metadata tools', tree=tool_tree)
+        'contents.html', title='List of metadata tools', tree=tree)
 
 
 # Subject index
