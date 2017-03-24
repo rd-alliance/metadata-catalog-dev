@@ -145,20 +145,17 @@ class JSONStorageWithGit(Storage):
 # Basic setup
 # ===========
 app = Flask(__name__)
+app.config.from_object('config.for.Development')
+app.config.from_envvar('MSC_SETTINGS', silent=True)
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
-with open('key', 'r') as f:
-    app.secret_key = f.read()
-
-script_dir = os.path.dirname(sys.argv[0])
-db_dir = os.path.join(script_dir, 'data')
-db = TinyDB(os.path.realpath(os.path.join(db_dir, 'db.json')),
-            storage=JSONStorageWithGit, sort_keys=True, indent=2,
-            ensure_ascii=False)
-user_db = TinyDB(os.path.realpath(os.path.join(db_dir, 'users.json')),
-                 storage=JSONStorageWithGit, sort_keys=True, indent=2,
-                 ensure_ascii=False)
+db = TinyDB(
+    app.config['MAIN_DATABASE_PATH'], storage=JSONStorageWithGit,
+    sort_keys=True, indent=2, ensure_ascii=False)
+user_db = TinyDB(
+    app.config['USER_DATABASE_PATH'], storage=JSONStorageWithGit,
+    sort_keys=True, indent=2, ensure_ascii=False)
 
 thesaurus = rdflib.Graph()
 thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
@@ -166,7 +163,7 @@ UNO = Namespace('http://vocabularies.unesco.org/ontology#')
 thesaurus_link = ('<a href="http://vocabularies.unesco.org/browser/thesaurus/'
                   'en/">UNESCO Thesaurus</a>')
 
-oid = OpenID(app, os.path.join(script_dir, 'open-id'))
+oid = OpenID(app, app.config['OPENID_PATH'])
 
 # Data model
 # ----------
