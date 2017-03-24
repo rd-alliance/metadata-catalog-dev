@@ -1176,63 +1176,6 @@ programming_languages.sort()
 id_scheme_list = ['DOI']
 
 
-# Common form snippets
-# --------------------
-class NativeDateField(StringField):
-    widget = widgets.Input(input_type='date')
-    validators = [validators.Optional(), W3CDate]
-
-
-class LocationForm(Form):
-    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
-    type = SelectField('Type', validators=[RequiredIf('url')])
-
-
-class FreeLocationForm(Form):
-    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
-    # Regex for location types allowed for mappings
-    allowed_locations = r'(document|library \([^)]+\)|executable \([^)]+\))'
-    type_help = ('Must be one of "document", "library (<language>)",'
-                 ' "executable (<platform>)".')
-    type = StringField('Type', validators=[
-        RequiredIf('url'),
-        validators.Regexp(allowed_locations, message=type_help)])
-
-
-class SampleForm(Form):
-    title = StringField('Title', validators=[RequiredIf('url')])
-    url = StringField('URL', validators=[RequiredIf('title'), EmailOrURL])
-
-
-class IdentifierForm(Form):
-    id = StringField('ID')
-    scheme = StringField('ID scheme')
-
-
-class VersionForm(Form):
-    number = StringField('Version number', validators=[
-        RequiredIf('issued'), RequiredIf('available'),
-        RequiredIf('valid_from'), validators.Length(max=20)])
-    number_old = HiddenField(validators=[validators.Length(max=20)])
-    issued = NativeDateField('Date published')
-    available = NativeDateField('Date released as draft/proposal')
-    valid_from = NativeDateField('Date considered current')
-    valid_to = NativeDateField('until')
-
-
-class SchemeVersionForm(Form):
-    scheme_choices = get_choices('m')
-
-    id = SelectField('Metadata scheme', choices=scheme_choices)
-    version = StringField('Version')
-
-
-class CreatorForm(Form):
-    fullName = StringField('Full name')
-    givenName = StringField('Given name(s)')
-    familyName = StringField('Family name')
-
-
 # Search form
 # ===========
 class SchemeSearchForm(Form):
@@ -1543,6 +1486,63 @@ def logout():
 # Forms: editing
 # ==============
 #
+# General editing form components
+# -------------------------------
+class NativeDateField(StringField):
+    widget = widgets.Input(input_type='date')
+    validators = [validators.Optional(), W3CDate]
+
+
+class LocationForm(Form):
+    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+    type = SelectField('Type', validators=[RequiredIf('url')])
+
+
+class FreeLocationForm(Form):
+    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+    # Regex for location types allowed for mappings
+    allowed_locations = r'(document|library \([^)]+\)|executable \([^)]+\))'
+    type_help = ('Must be one of "document", "library (<language>)",'
+                 ' "executable (<platform>)".')
+    type = StringField('Type', validators=[
+        RequiredIf('url'),
+        validators.Regexp(allowed_locations, message=type_help)])
+
+
+class SampleForm(Form):
+    title = StringField('Title', validators=[RequiredIf('url')])
+    url = StringField('URL', validators=[RequiredIf('title'), EmailOrURL])
+
+
+class IdentifierForm(Form):
+    id = StringField('ID')
+    scheme = StringField('ID scheme')
+
+
+class VersionForm(Form):
+    number = StringField('Version number', validators=[
+        RequiredIf('issued'), RequiredIf('available'),
+        RequiredIf('valid_from'), validators.Length(max=20)])
+    number_old = HiddenField(validators=[validators.Length(max=20)])
+    issued = NativeDateField('Date published')
+    available = NativeDateField('Date released as draft/proposal')
+    valid_from = NativeDateField('Date considered current')
+    valid_to = NativeDateField('until')
+
+
+class SchemeVersionForm(Form):
+    scheme_choices = get_choices('m')
+
+    id = SelectField('Metadata scheme', choices=scheme_choices)
+    version = StringField('Version')
+
+
+class CreatorForm(Form):
+    fullName = StringField('Full name')
+    givenName = StringField('Given name(s)')
+    familyName = StringField('Family name')
+
+
 # Editing metadata schemes
 # ------------------------
 class SchemeForm(FlaskForm):
