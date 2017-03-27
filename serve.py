@@ -289,7 +289,7 @@ class GoogleSignIn(OAuthSignIn):
 
     def callback(self):
         if 'code' not in request.args:
-            return None, None, None
+            return (None, None, None)
         r = self.service.get_raw_access_token(
             method='POST',
             data={'code': request.args['code'],
@@ -333,7 +333,7 @@ class LinkedinSignIn(OAuthSignIn):
 
     def callback(self):
         if 'code' not in request.args:
-            return None, None, None
+            return (None, None, None)
         r = self.service.get_raw_access_token(
             method='POST',
             data={'code': request.args['code'],
@@ -342,14 +342,49 @@ class LinkedinSignIn(OAuthSignIn):
         oauth_info = r.json()
         access_token = oauth_info['access_token']
         oauth_session = self.service.get_session(access_token)
-        id_r = oauth_session.get('~:(id,formatted-name,email-address)?'
-                                 'format=json')
-        idinfo = id_r.json()
+        idinfo = oauth_session.get(
+            '~:(id,formatted-name,email-address)?format=json').json()
         print('{}'.format(idinfo))
         return (
             self.provider_name + '$' + idinfo['id'],
             idinfo.get('formattedName'),
             idinfo.get('emailAddress'))
+
+
+class TwitterSignIn(OAuthSignIn):
+    def __init__(self):
+        super(TwitterSignIn, self).__init__('twitter')
+        self.formatted_name = 'Twitter'
+        self.service = OAuth1Service(
+            name=self.provider_name,
+            consumer_key=self.consumer_id,
+            consumer_secret=self.consumer_secret,
+            request_token_url='https://api.twitter.com/oauth/request_token',
+            authorize_url='https://api.twitter.com/oauth/authorize',
+            access_token_url='https://api.twitter.com/oauth/access_token',
+            base_url='https://api.twitter.com/1.1/')
+
+    def authorize(self):
+        request_token = self.service.get_request_token(
+            params={'oauth_callback': self.get_callback_url()})
+        session['request_token'] = request_token
+        return redirect(self.service.get_authorize_url(request_token[0]))
+
+    def callback(self):
+        request_token = session.pop('request_token')
+        if 'oauth_verifier' not in request.args:
+            return (None, None, None)
+        oauth_session = self.service.get_auth_session(
+            request_token[0],
+            request_token[1],
+            data={'oauth_verifier': request.args['oauth_verifier']}
+        )
+        idinfo = oauth_session.get('account/verify_credentials.json').json()
+        return (
+            self.provider_name + '$' + str(idinfo.get('id')),
+            idinfo.get('name'),
+            # Need to write policy pages before retrieving email addresses
+            None)
 
 
 # Basic setup
