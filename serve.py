@@ -11,6 +11,7 @@ import re
 import urllib
 import json
 import unicodedata
+import datetime
 
 # Non-standard
 # ------------
@@ -22,11 +23,25 @@ import unicodedata
 from flask import Flask, request, url_for, render_template, flash, redirect,\
     abort, jsonify, g, session
 
+# See https://flask-login.readthedocs.io/
+# Install from PyPi: sudo -H pip3 install flask-login
+from flask_login import LoginManager, UserMixin, login_user, logout_user,\
+    current_user, login_required
+
+# See https://rauth.readthedocs.io/
+# Install form PyPi: sudo -H pip3 install rauth
+from rauth import OAuth1Service, OAuth2Service
+import requests
+
+# See https://developers.google.com/api-client-library/python/guide/aaa_oauth
+# Install form PyPi: sudo -H pip3 install oauth2client
+from oauth2client import client, crypt
+
 # See https://pythonhosted.org/Flask-OpenID/
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
-from flask.ext.openid import OpenID
+from flask_openid import OpenID
 
-# See https://flask-wtf.readthedocs.io/en/stable/quickstart.html
+# See https://flask-wtf.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install Flask-WTF
 from flask_wtf import FlaskForm
 from wtforms import validators, widgets, Form, FormField, FieldList,\
@@ -126,20 +141,176 @@ class JSONStorageWithGit(Storage):
 
         # Prepare commit information
         committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
-        if g.user:
-            author = ('{} <{}>'.format(g.user['name'], g.user['email'])
-                      .encode('utf8'))
+        if current_user.is_authenticated:
+            author = ('{} <{}>'.format(
+                current_user['name'], current_user['email']).encode('utf8'))
+            message = ('Update to {} from {}'
+                       .format(self.name, current_user['name']).encode('utf8'))
         else:
             author = committer
-        if g.user:
-            message = ('Update to {} from {}'
-                       .format(self.name, g.user['name']).encode('utf8'))
-        else:
             message = ('Update to {}'.format(self.name).encode('utf8'))
 
         # Execute commit
         git.commit(self.repo, message=message, author=author,
                    committer=committer)
+
+
+class User(Element):
+    '''This provides implementations for the methods that Flask-Login
+    expects user objects to have.
+    '''
+    __hash__ = Element.__hash__
+
+    @property
+    def is_active(self):
+        if self.get('blocked'):
+            return False
+        return True
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.eid)
+
+    def __eq__(self, other):
+        '''
+        Checks the equality of two `UserMixin` objects using `get_id`.
+        '''
+        if isinstance(other, User):
+            return self.get_id() == other.get_id()
+        return NotImplemented
+
+    def __ne__(self, other):
+        '''
+        Checks the inequality of two `UserMixin` objects using `get_id`.
+        '''
+        equal = self.__eq__(other)
+        if equal is NotImplemented:
+            return NotImplemented
+        return not equal
+
+
+class OAuthSignIn(object):
+    '''Abstraction layer for RAuth. Source:
+    https://blog.miguelgrinberg.com/post/oauth-authentication-with-flask
+    '''
+    providers = None
+
+    def __init__(self, provider_name):
+        self.provider_name = provider_name
+        credentials = app.config['OAUTH_CREDENTIALS'][provider_name]
+        self.consumer_id = credentials['id']
+        self.consumer_secret = credentials['secret']
+
+    def authorize(self):
+        pass
+
+    def callback(self):
+        pass
+
+    def get_callback_url(self):
+        return url_for('oauth_callback', provider=self.provider_name,
+                       _external=True)
+
+    @classmethod
+    def get_provider(self, provider_name):
+        if self.providers is None:
+            self.providers = {}
+            for provider_class in self.__subclasses__():
+                provider = provider_class()
+                self.providers[provider.provider_name] = provider
+        return self.providers[provider_name]
+
+
+class GoogleSignIn(OAuthSignIn):
+    def __init__(self):
+        super(GoogleSignIn, self).__init__('google')
+        discovery = oauth_db.get(Query().provider == self.provider_name)
+        discovery_url = ('https://accounts.google.com/.well-known/'
+                         'openid-configuration')
+        if not discovery:
+            try:
+                r = requests.get(discovery_url)
+                discovery = r.json()
+                discovery['provider'] = self.provider_name
+                expiry_date = datetime.datetime.strptime(
+                    r.headers['expires'], '%a, %d %b %Y %H:%M:%S %Z')
+                discovery['timestamp'] = expiry_date.timestamp()
+                oauth_db.insert(discovery)
+            except Exception as e:
+                print('WARNING: could not retrieve URLs for {}.'
+                      .format(self.provider_name))
+                print(e)
+                discovery = {
+                    'issuer': 'https://accounts.google.com',
+                    'authorization_endpoint': 'https://accounts.google.com/'
+                    'o/oauth2/v2/auth',
+                    'token_endpoint': 'https://www.googleapis.com/oauth2/v4/'
+                    'token'}
+        elif datetime.now() > discovery['timestamp']:
+            try:
+                last_expiry_date = datetime.datetime.fromtimestamp(
+                    discovery['timestamp'])
+                headers = {
+                    'If-Modified-Since': last_expiry_date
+                    .strftime('%a, %d %b %Y %H:%M:%S %Z')}
+                r = requests.get(discovery_url, headers=headers)
+                if r.status_code != requests.codes.not_modified:
+                    discovery.update(r.json())
+                    expiry_date = datetime.strptime(r.headers['expires'],
+                                                    '%a, %d %b %Y %H:%M:%S %Z')
+                    discovery['timestamp'] = expiry_date.timestamp()
+                    oauth_db.update(discovery, eids=[discovery.eid])
+            except Exception as e:
+                print('WARNING: could not update URLs for {}.'
+                      .format(self.provider_name))
+                print(e)
+
+        self.service = OAuth2Service(
+            name=self.provider_name,
+            client_id=self.consumer_id,
+            client_secret=self.consumer_secret,
+            authorize_url=discovery['authorization_endpoint'],
+            access_token_url=discovery['token_endpoint'],
+            base_url=discovery['issuer'])
+
+    def authorize(self):
+        return redirect(self.service.get_authorize_url(
+            scope='profile email',
+            response_type='code',
+            redirect_uri=self.get_callback_url()))
+
+    def callback(self):
+        if 'code' not in request.args:
+            return None, None, None
+        r = self.service.get_raw_access_token(
+            method='POST',
+            data={'code': request.args['code'],
+                  'grant_type': 'authorization_code',
+                  'redirect_uri': self.get_callback_url()})
+        oauth_info = r.json()
+        access_token = oauth_info['access_token']
+        id_token = oauth_info['id_token']
+        oauth_session = self.service.get_session(access_token),
+        try:
+            idinfo = client.verify_id_token(id_token, self.consumer_id)
+            if idinfo['iss'] not in ['accounts.google.com',
+                                     'https://accounts.google.com']:
+                raise crypt.AppIdentityError("Wrong issuer.")
+        except crypt.AppIdentityError as e:
+            print(e)
+            return (None, None, None)
+        print('{}'.format(idinfo))
+        return (
+            self.provider_name + '$' + idinfo['sub'],
+            idinfo.get('name'),
+            idinfo.get('email'))
 
 
 # Basic setup
@@ -153,9 +324,16 @@ app.jinja_env.lstrip_blocks = True
 db = TinyDB(
     app.config['MAIN_DATABASE_PATH'], storage=JSONStorageWithGit,
     sort_keys=True, indent=2, ensure_ascii=False)
+
+lm = LoginManager(app)
+lm.login_view = 'login'
+lm.login_message = 'Please sign in to access this page.'
+lm.login_message_category = "error"
+
 user_db = TinyDB(
     app.config['USER_DATABASE_PATH'], storage=JSONStorageWithGit,
     sort_keys=True, indent=2, ensure_ascii=False)
+oauth_db = TinyDB(app.config['OAUTH_DATABASE_PATH'])
 
 thesaurus = rdflib.Graph()
 thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
@@ -568,15 +746,12 @@ def utility_processor():
         'parseDateRange': parse_date_range}
 
 
-# User handling
-# =============
-@app.before_request
-def lookup_current_user():
-    g.user = None
-    if 'openid' in session:
-        openid = session['openid']
-        User = Query()
-        g.user = user_db.get(User.openid == openid)
+@lm.user_loader
+def load_user(id):
+    element = user_db.get(eid=int(id))
+    if element:
+        return User(value=element, eid=element.eid)
+    return None
 
 
 # Front page
@@ -1421,13 +1596,22 @@ def flash_result(matches, type):
 
 # User login
 # ==========
+class LoginForm(FlaskForm):
+    openid = StringField('OpenID URL', validators=[validators.URL])
+
+
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
-    if g.user is not None:
+    '''This login view can handle both OpenID v2 and OpenID Connect
+    authentication. The POST method begins the OpenID v2 process. The
+    OpenID Connect links route to oauth_authorize() instead.
+    '''
+    if current_user.is_authenticated:
         return redirect(oid.get_next_url())
-    if request.method == 'POST':
-        openid = request.form.get('openid')
+    form = LoginForm(request.form)
+    if request.method == 'POST' and form.validate():
+        openid = form.openid.data
         if openid:
             return oid.try_login(
                 openid, ask_for=['email', 'nickname'],
@@ -1435,49 +1619,103 @@ def login():
     error = oid.fetch_error()
     if error:
         flash(error, 'error')
-    return render_template('login.html', next=oid.get_next_url())
+    return render_template('login.html', form=form, next=oid.get_next_url())
 
 
 @oid.after_login
 def create_or_login(resp):
+    '''This function handles the response from an OpenID v2 provider.
+    '''
     session['openid'] = resp.identity_url
     User = Query()
-    user = user_db.get(User.openid == resp.identity_url)
-    if user:
+    profile = user_db.get(User.openid == resp.identity_url)
+    if profile:
         flash('Successfully signed in.')
-        g.user = user
+        user = load_user(profile.eid)
+        login_user(user)
         return redirect(oid.get_next_url())
     return redirect(url_for(
         'create_profile', next=oid.get_next_url(),
         name=resp.fullname or resp.nickname, email=resp.email))
 
 
+@app.route('/authorize/<provider>')
+def oauth_authorize(provider):
+    '''This function calls out to the OpenID Connect provider.
+    '''
+    if not current_user.is_anonymous:
+        return redirect(url_for('hello'))
+    oauth = OAuthSignIn.get_provider(provider)
+    return oauth.authorize()
+
+
+@app.route('/callback/<provider>')
+def oauth_callback(provider):
+    '''The OpenID Connect provider sends information back to this URL,
+    where we use it to extract a unique ID, user name and email address.
+    '''
+    if not current_user.is_anonymous:
+        return redirect(url_for('hello'))
+    oauth = OAuthSignIn.get_provider(provider)
+    openid, username, email = oauth.callback()
+    session['openid'] = openid
+    if openid is None:
+        flash('Authentication failed.')
+        return redirect(url_for('hello'))
+    User = Query()
+    profile = user_db.get(User.openid == openid)
+    if profile:
+        flash('Successfully signed in.')
+        user = load_user(profile.eid)
+        login_user(user)
+        return redirect(url_for('hello'))
+    return redirect(url_for(
+        'create_profile', next=url_for('hello'),
+        name=username, email=email))
+
+
+class ProfileForm(FlaskForm):
+    name = StringField('Name', validators=[validators.InputRequired(
+        message='You must provide a user name.')])
+    email = StringField('Email', validators=[validators.InputRequired(
+        message='You must enter an email address.'), validators.Email(
+        message='You must enter a valid email address.')])
+
+
 @app.route('/create-profile', methods=['GET', 'POST'])
 def create_profile():
-    if g.user is not None or 'openid' not in session:
+    '''If the user authenticated successfully by either means, but does
+    not exist in the user database, this view creates and saves their profile.
+    '''
+    if current_user.is_authenticated or 'openid' not in session:
         if 'openid' not in session:
             flash('OpenID sign-in failed, sorry.', 'error')
         return redirect(url_for('hello'))
-    if request.method == 'POST':
+    form = ProfileForm(request.values)
+    if request.method == 'POST' and form.validate():
         name = request.form['name']
         email = request.form['email']
-        if not name:
-            flash('You must provide a user name.', 'error')
-        elif '@' not in email:
-            flash('You must enter a valid email address.', 'error')
-        else:
-            user_db.insert({
-                'name': name, 'email': email, 'openid': session['openid']})
-            flash('Profile successfully created.')
-            return redirect(oid.get_next_url())
-    return render_template('create-profile.html', next=oid.get_next_url())
+        data = {
+            'name': form.name.data,
+            'email': form.email.data,
+            'openid': session['openid']}
+        user_eid = user_db.insert(data)
+        flash('Profile successfully created.')
+        user = User(value=data, eid=user_eid)
+        login_user(user)
+        return redirect(oid.get_next_url() or url_for('hello'))
+    return render_template(
+        'create-profile.html', form=form,
+        next=oid.get_next_url() or url_for('hello'))
 
 
 @app.route('/logout')
+@login_required
 def logout():
+    logout_user()
     session.pop('openid', None)
     flash('You were signed out')
-    return redirect(oid.get_next_url())
+    return redirect(url_for('hello'))
 
 
 # Forms: editing
@@ -1692,11 +1930,8 @@ Forms = {
 # -------------------------
 @app.route('/edit/<string(length=1):series><int:number>',
            methods=['GET', 'POST'])
+@login_required
 def edit_record(series, number):
-    # Sanity checks
-    if g.user is None:
-        flash('You must sign in before making any changes.', 'error')
-        return redirect(url_for('login'))
     element = tables[series].get(eid=number)
     version = request.values.get('version')
     if version and request.referrer == request.base_url:

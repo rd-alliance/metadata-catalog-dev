@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from "macros-forms.html" import state, errors %}
 {% block title %}Create Profile{% endblock %}
 {% block main %}
   <p>
@@ -6,16 +7,17 @@
     please create a profile.
   </p>
   <form action="{{ url_for('create_profile') }}" method="post" accept-charset="utf-8" class="form-horizontal">
-    <div class="form-group">
-      <label for="name" class="col-sm-3 control-label">Name</label>
+    {{ form.hidden_tag() }}
+    <div class="form-group {{ state(form.name) }}">
+      {{ form.name.label(class="col-sm-3 control-label") }}
       <div class="col-sm-9">
-        <input id="name" name="name" value="{{ request.values.name }}" class="form-control">
+        {{ form.name(placeholder="Your full name", class="form-control") }}
       </div>
     </div>
     <div class="form-group">
-      <label for="email" class="col-sm-3 control-label">Email</label>
+      {{ form.email.label(class="col-sm-3 control-label") }}
       <div class="col-sm-9">
-        <input type="email" id="email" name="email" value="{{ request.values.email }}" class="form-control">
+        {{ form.email(placeholder="Valid email address", class="form-control") }}
       </div>
     </div>
     <div class="form-group">
@@ -25,6 +27,9 @@
       </div>
     </div>
   </form>
+  <p>
+    Your email address will only be used to identify your contributions in version control.
+  </p>
   <p>
     If you don't want to proceed, you can <a href="{{ url_for('logout') }}">sign out</a> again.
   </p>

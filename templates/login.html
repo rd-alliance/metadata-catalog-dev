@@ -1,19 +1,33 @@
 {% extends 'base.html' %}
+{% from "macros-forms.html" import state, errors %}
 {% block title %}Sign in{% endblock %}
 {% block main %}
-  <p>You can sign in using any OpenID provider. This will allow you to
-    contribute changes to the Catalog. Please consult your provider's
-    documentation for the right URL to use.</p>
+  <p>In order to contribute changes to the Catalog, you must sign in.</p>
+  <p>You can sign in with one of these OpenID Connect providers:</p>
+  <ul>
+    <li><a href="{{ url_for('oauth_authorize', provider='google') }}">Sign in with Google</a></li>
+  </ul>
+  <p>Alternatively, you can sign in using any OpenID v2 provider. Please consult
+    your provider's documentation for the right URL to use; some known URL
+    patterns are provided below.</p>
   <form action="{{ url_for('login') }}" method=post class="form-inline">
-    <div class="form-group form-group-wide">
-      <label for="openid" class="control-label">OpenID URL</label>
+    {{ form.hidden_tag() }}
+    <div class="form-group form-group-wide {{ state(form.openid) }}">
+      {{ form.openid.label(class="control-label") }}
       <div class="input-group">
-        <input id="openid" name="openid" placeholder="URL for your OpenID account" class="form-control">
+        {{ form.openid(placeholder="URL for your OpenID account", class="form-control") }}
         <span class="input-group-btn">
           <button class="btn">Sign in</button>
         </span>
       </div>
       <input type="hidden" name="next" value="{{ next }}">
     </div>
+    {{ errors(form.openid) }}
   </form>
+  <table class="table table-striped" style="margin-top:16px;">
+    <tr>
+      <th>Launchpad/Ubuntu One</th>
+      <td><code>http://launchpad.net/~</code>(username)</td>
+    </tr>
+  </table>
 {% endblock %}

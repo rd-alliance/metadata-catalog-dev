@@ -139,7 +139,7 @@
     </ul>
   </div>
   {% endif %}
-  {% if g.user %}
+  {% if current_user.is_authenticated %}
   <aside>
     <p>
       <a href="{{ url_for('edit_record', series='t', number=record.eid) }}" class="btn btn-default">Edit this record</a>
