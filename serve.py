@@ -231,6 +231,7 @@ class OAuthSignIn(object):
 class GoogleSignIn(OAuthSignIn):
     def __init__(self):
         super(GoogleSignIn, self).__init__('google')
+        self.formatted_name = 'Google'
         discovery = oauth_db.get(Query().provider == self.provider_name)
         discovery_url = ('https://accounts.google.com/.well-known/'
                          'openid-configuration')
@@ -253,7 +254,7 @@ class GoogleSignIn(OAuthSignIn):
                     'o/oauth2/v2/auth',
                     'token_endpoint': 'https://www.googleapis.com/oauth2/v4/'
                     'token'}
-        elif datetime.now() > discovery['timestamp']:
+        elif datetime.datetime.now().timestamp() > discovery['timestamp']:
             try:
                 last_expiry_date = datetime.datetime.fromtimestamp(
                     discovery['timestamp'])
@@ -297,7 +298,7 @@ class GoogleSignIn(OAuthSignIn):
         oauth_info = r.json()
         access_token = oauth_info['access_token']
         id_token = oauth_info['id_token']
-        oauth_session = self.service.get_session(access_token),
+        oauth_session = self.service.get_session(access_token)
         try:
             idinfo = client.verify_id_token(id_token, self.consumer_id)
             if idinfo['iss'] not in ['accounts.google.com',
@@ -306,11 +307,49 @@ class GoogleSignIn(OAuthSignIn):
         except crypt.AppIdentityError as e:
             print(e)
             return (None, None, None)
-        print('{}'.format(idinfo))
         return (
             self.provider_name + '$' + idinfo['sub'],
             idinfo.get('name'),
             idinfo.get('email'))
+
+
+class LinkedinSignIn(OAuthSignIn):
+    def __init__(self):
+        super(LinkedinSignIn, self).__init__('linkedin')
+        self.formatted_name = 'LinkedIn'
+        self.service = OAuth2Service(
+            name=self.provider_name,
+            client_id=self.consumer_id,
+            client_secret=self.consumer_secret,
+            authorize_url='https://www.linkedin.com/oauth/v2/authorization',
+            access_token_url='https://www.linkedin.com/oauth/v2/accessToken',
+            base_url='https://api.linkedin.com/v1/people/')
+
+    def authorize(self):
+        return redirect(self.service.get_authorize_url(
+            scope='r_basicprofile r_emailaddress',
+            response_type='code',
+            redirect_uri=self.get_callback_url()))
+
+    def callback(self):
+        if 'code' not in request.args:
+            return None, None, None
+        r = self.service.get_raw_access_token(
+            method='POST',
+            data={'code': request.args['code'],
+                  'grant_type': 'authorization_code',
+                  'redirect_uri': self.get_callback_url()})
+        oauth_info = r.json()
+        access_token = oauth_info['access_token']
+        oauth_session = self.service.get_session(access_token)
+        id_r = oauth_session.get('~:(id,formatted-name,email-address)?'
+                                 'format=json')
+        idinfo = id_r.json()
+        print('{}'.format(idinfo))
+        return (
+            self.provider_name + '$' + idinfo['id'],
+            idinfo.get('formattedName'),
+            idinfo.get('emailAddress'))
 
 
 # Basic setup
@@ -1619,7 +1658,15 @@ def login():
     error = oid.fetch_error()
     if error:
         flash(error, 'error')
-    return render_template('login.html', form=form, next=oid.get_next_url())
+    providers = list()
+    for provider_class in OAuthSignIn.__subclasses__():
+        provider = provider_class()
+        providers.append({
+            'name': provider.formatted_name,
+            'slug': provider.provider_name})
+    providers.sort(key=lambda k: k['slug'])
+    return render_template(
+        'login.html', form=form, providers=providers, next=oid.get_next_url())
 
 
 @oid.after_login

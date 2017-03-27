@@ -5,7 +5,9 @@
   <p>In order to contribute changes to the Catalog, you must sign in.</p>
   <p>You can sign in with one of these OpenID Connect providers:</p>
   <ul>
-    <li><a href="{{ url_for('oauth_authorize', provider='google') }}">Sign in with Google</a></li>
+    {% for p in providers %}
+    <li><a href="{{ url_for('oauth_authorize', provider=p['slug']) }}">Sign in with {{ p['name'] }}</a></li>
+    {% endfor %}
   </ul>
   <p>Alternatively, you can sign in using any OpenID v2 provider. Please consult
     your provider's documentation for the right URL to use; some known URL
