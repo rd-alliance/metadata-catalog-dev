@@ -353,7 +353,6 @@ class LinkedinSignIn(OAuthSignIn):
         oauth_session = self.service.get_session(access_token)
         idinfo = oauth_session.get(
             '~:(id,formatted-name,email-address)?format=json').json()
-        print('{}'.format(idinfo))
         return (
             self.provider_name + '$' + idinfo['id'],
             idinfo.get('formattedName'),
