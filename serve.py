@@ -1332,28 +1332,34 @@ def form_to_msc(form_data, element):
                     clean_data['valid_from'], clean_data['valid_to'])
             else:
                 msc_data['valid'] = clean_data['valid_from']
-    # Restore other data that never appears in the form
-    for k in ['slug']:
-        if element and k in element:
-            msc_data[k] = element[k]
     return msc_data
 
 
-def fix_slug(record, series):
+def fix_admin_data(record, series, number):
     """If the given record does not have a slug value, attempts to generate one.
 
     Arguments:
         record (dict): Dictionary using MSC data model.
         series (str): One of 'm', 'g', 't', 'c', 'e', referring to the type of
             record.
+        number (int): EID of the currently held version of the record, or 0
+            for a new record.
 
     Returns:
         dict: Dictionary using MSC data model.
     """
-    # Exit if slug already exists
-    if 'slug' in record:
-        return record
-    # Otherwise attempt to generate from existing data
+    # Restore any data not editable via the forms.
+    table = tables[series]
+    if number:
+        element = table.get(eid=number)
+    if element:
+        for key in ['slug']:  # room for expansion!
+            if key in element:
+                record[key] = element[key]
+        # Exit if slug has been restored
+        if 'slug' in record:
+            return record
+    # Otherwise attempt to generate slug from existing data
     slug = None
     if series == 'm' or series == 't':
         if 'title' in record:
@@ -1389,7 +1395,6 @@ def fix_slug(record, series):
     if not slug:
         return record
     # Ensure uniqueness then apply
-    table = tables[series]
     i = ''
     while table.search(Query().slug == (slug + str(i))):
         if i == '':
@@ -2181,7 +2186,7 @@ def edit_record(series, number):
                 'edit_record', series=series, number=number), version))
         elif element:
             # Editing an existing record
-            msc_data = fix_slug(msc_data, series)
+            msc_data = fix_admin_data(msc_data, series, number)
             with transaction(tables[series]) as t:
                 for key in (k for k in element if k not in msc_data):
                     t.update(delete(key), eids=[number])
@@ -2189,7 +2194,7 @@ def edit_record(series, number):
             flash('Successfully updated record.', 'success')
         else:
             # Adding a new record
-            msc_data = fix_slug(msc_data, series)
+            msc_data = fix_admin_data(msc_data, series, number)
             number = tables[series].insert(msc_data)
             flash('Successfully added record.', 'success')
         return redirect(url_for('edit_record', series=series, number=number))
