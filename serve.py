@@ -11,7 +11,8 @@ import re
 import urllib
 import json
 import unicodedata
-import datetime
+from datetime import datetime, timezone
+from email.utils import parsedate_tz, mktime_tz
 
 # Non-standard
 # ------------
@@ -247,9 +248,9 @@ class GoogleSignIn(OAuthSignIn):
                 r = requests.get(discovery_url)
                 discovery = r.json()
                 discovery['provider'] = self.provider_name
-                expiry_date = datetime.datetime.strptime(
-                    r.headers['expires'], '%a, %d %b %Y %H:%M:%S %Z')
-                discovery['timestamp'] = expiry_date.timestamp()
+                expiry_timestamp = mktime_tz(
+                    parsedate_tz(r.headers['expires']))
+                discovery['timestamp'] = expiry_timestamp
                 oauth_db.insert(discovery)
             except Exception as e:
                 print('WARNING: could not retrieve URLs for {}.'
@@ -261,20 +262,20 @@ class GoogleSignIn(OAuthSignIn):
                     'o/oauth2/v2/auth',
                     'token_endpoint': 'https://www.googleapis.com/oauth2/v4/'
                     'token'}
-        elif datetime.datetime.now().timestamp() > discovery['timestamp']:
+        elif (datetime.now(timezone.utc).timestamp() > discovery['timestamp']):
             try:
-                last_expiry_date = datetime.datetime.fromtimestamp(
-                    discovery['timestamp'])
+                last_expiry_date = datetime.fromtimestamp(
+                    discovery['timestamp'], timezone.utc)
                 headers = {
                     'If-Modified-Since': last_expiry_date
                     .strftime('%a, %d %b %Y %H:%M:%S %Z')}
                 r = requests.get(discovery_url, headers=headers)
                 if r.status_code != requests.codes.not_modified:
                     discovery.update(r.json())
-                    expiry_date = datetime.strptime(r.headers['expires'],
-                                                    '%a, %d %b %Y %H:%M:%S %Z')
-                    discovery['timestamp'] = expiry_date.timestamp()
-                    oauth_db.update(discovery, eids=[discovery.eid])
+                expiry_timestamp = mktime_tz(
+                    parsedate_tz(r.headers['expires']))
+                discovery['timestamp'] = expiry_timestamp
+                oauth_db.update(discovery, eids=[discovery.eid])
             except Exception as e:
                 print('WARNING: could not update URLs for {}.'
                       .format(self.provider_name))
