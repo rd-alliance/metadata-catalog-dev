@@ -37,7 +37,8 @@ from rdflib.namespace import SKOS, RDF
 script_dir = os.path.dirname(sys.argv[0])
 
 default_folder = os.path.realpath(os.path.join(script_dir, 'db'))
-default_file = os.path.realpath(os.path.join(script_dir, 'data', 'db.json'))
+default_file = os.path.realpath(
+    os.path.join(script_dir, 'instance', 'data', 'db.json'))
 
 subfolders = {
     'endorsements': 'e',
@@ -294,6 +295,8 @@ def dbCompile(args):
         if reply[:1].lower() != 'y':
             print('Okay. I will leave it alone.')
             sys.exit(0)
+    elif not os.path.isdir(os.path.dirname(args.file)):
+        os.makedirs(os.path.dirname(args.file))
 
     isCompiled = False
     db = dict()
@@ -362,7 +365,7 @@ def dbDump(args):
         sys.exit(1)
 
     if os.path.isdir(args.folder):
-        print('Database folder already exists at {}.'.format(args.file))
+        print('Database folder already exists at {}.'.format(args.folder))
         print('Do you wish to erase it, back it up, or keep it?'
               ' [e(rase)/(b)ackup/K(eep)]')
         reply = input("> ")
