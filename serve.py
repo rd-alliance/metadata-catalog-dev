@@ -145,8 +145,9 @@ class JSONStorageWithGit(Storage):
         if current_user.is_authenticated:
             author = ('{} <{}>'.format(
                 current_user['name'], current_user['email']).encode('utf8'))
-            message = ('Update to {} from {}'
-                       .format(self.name, current_user['name']).encode('utf8'))
+            message = ('Update to {} from {}\n\nUser ID:\n{}'.format(
+                self.name, current_user['name'], current_user['openid'])
+                .encode('utf8'))
         else:
             author = committer
             message = ('Update to {}'.format(self.name).encode('utf8'))
