@@ -1212,12 +1212,21 @@ def msc_to_form(msc_data):
                     if key == 'valid':
                         valid_tuple = value.partition('/')
                         mapped_version['valid_from'] = valid_tuple[0]
+                        mapped_version['date'] = valid_tuple[0]
                         mapped_version['valid_to'] = valid_tuple[2]
                     else:
                         mapped_version[key] = value
                     if key == 'number':
                         mapped_version['number_old'] = value
+                    if key == 'issued':
+                        mapped_version['date'] = value
+                if 'date' not in mapped_version and 'available' in version:
+                    mapped_version['date'] = version['available']
                 form_data[k].append(mapped_version)
+            try:
+                form_data[k].sort(key=lambda k: k['date'])
+            except KeyError:
+                form_data[k].sort(key=lambda k: k['number'])
         else:
             form_data[k] = v
     # Ensure there is a blank entry at the end of the following lists
