@@ -204,9 +204,16 @@ class OAuthSignIn(object):
 
     def __init__(self, provider_name):
         self.provider_name = provider_name
-        credentials = app.config['OAUTH_CREDENTIALS'][provider_name]
-        self.consumer_id = credentials['id']
-        self.consumer_secret = credentials['secret']
+        if 'OAUTH_CREDENTIALS' not in app.config:
+            print('WARNING: OAuth authentication will not work without secret'
+                  ' application keys. Please run your tests with a different'
+                  ' authentication method.')
+            self.consumer_id = None
+            self.consumer_secret = None
+        else:
+            credentials = app.config['OAUTH_CREDENTIALS'][provider_name]
+            self.consumer_id = credentials['id']
+            self.consumer_secret = credentials['secret']
 
     def authorize(self):
         pass
@@ -389,20 +396,40 @@ class TwitterSignIn(OAuthSignIn):
 
 # Basic setup
 # ===========
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
+# Data storage path defaults:
+app.config['MAIN_DATABASE_PATH'] = os.path.join(
+    app.instance_path, 'data', 'db.json')
+app.config['USER_DATABASE_PATH'] = os.path.join(
+    app.instance_path, 'data', 'users.json')
+app.config['OAUTH_DATABASE_PATH'] = os.path.join(
+    app.instance_path, 'oauth-urls.json')
+app.config['OPENID_PATH'] = os.path.join(app.instance_path, 'open-id')
+# Variable config options go here:
 app.config.from_object('config.for.Development')
+# Secret application keys go here:
+app.config.from_pyfile('keys.cfg', silent=True)
+# Any of these settings may be overridden in a .cfg file specified by the
+# following environment variable:
 app.config.from_envvar('MSC_SETTINGS', silent=True)
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
-db = TinyDB(
-    app.config['MAIN_DATABASE_PATH'], storage=JSONStorageWithGit,
-    sort_keys=True, indent=2, ensure_ascii=False)
+for path in [os.path.dirname(app.config['MAIN_DATABASE_PATH']),
+             os.path.dirname(app.config['USER_DATABASE_PATH']),
+             app.config['OPENID_PATH']]:
+    if not os.path.isdir(path):
+        print('INFO: creating empty data directory at {}'.format(path))
+        os.makedirs(path)
 
 lm = LoginManager(app)
 lm.login_view = 'login'
 lm.login_message = 'Please sign in to access this page.'
 lm.login_message_category = "error"
+
+db = TinyDB(
+    app.config['MAIN_DATABASE_PATH'], storage=JSONStorageWithGit,
+    sort_keys=True, indent=2, ensure_ascii=False)
 
 user_db = TinyDB(
     app.config['USER_DATABASE_PATH'], storage=JSONStorageWithGit,
@@ -1694,12 +1721,13 @@ def login():
     if error:
         flash(error, 'error')
     providers = list()
-    for provider_class in OAuthSignIn.__subclasses__():
-        provider = provider_class()
-        providers.append({
-            'name': provider.formatted_name,
-            'slug': provider.provider_name})
-    providers.sort(key=lambda k: k['slug'])
+    if 'OAUTH_CREDENTIALS' in app.config:
+        for provider_class in OAuthSignIn.__subclasses__():
+            provider = provider_class()
+            providers.append({
+                'name': provider.formatted_name,
+                'slug': provider.provider_name})
+        providers.sort(key=lambda k: k['slug'])
     return render_template(
         'login.html', form=form, providers=providers, next=oid.get_next_url())
 
