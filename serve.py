@@ -597,7 +597,8 @@ def get_term_tree(uris, filter=list()):
 
 def get_used_term_uris():
     """Returns a deduplicated list of URIs corresponding to the subject keywords
-    in use in the database, plus the URIs of all their broader terms.
+    in use in the database, plus the URIs of all their broader terms. Note that
+    this does not look for version-specific keywords.
     """
     # Get a list of all the keywords used in the database
     Scheme = Query()
@@ -1489,7 +1490,7 @@ def scheme_search():
     if request.method == 'POST' and form.validate():
         element_list = list()
         mscid_list = list()
-        Scheme = Query()
+        Scheme = Version = Identifier = Funder = Relation = Query()
         isGui = not request_wants_json()
         title = 'Search results'
         no_of_queries = 0
@@ -1498,6 +1499,8 @@ def scheme_search():
             no_of_queries += 1
             title_query = wild_to_regex(form.data['title'])
             matches = tables['m'].search(Scheme.title.search(title_query))
+            matches.extend(tables['m'].search(Scheme.versions.any(
+                Version.title.search(title_query))))
             element_list, mscid_list = add_matches(
                 matches, element_list, mscid_list)
             if isGui:
@@ -1530,6 +1533,8 @@ def scheme_search():
         if term_set:
             # Search for matching schemes
             matches = tables['m'].search(Scheme.keywords.any(term_set))
+            matches.extend(tables['m'].search(Scheme.versions.any(
+                Version.keywords.any(term_set))))
             element_list, mscid_list = add_matches(
                 matches, element_list, mscid_list)
             if isGui:
@@ -1543,9 +1548,11 @@ def scheme_search():
             if (series == 'm') and number:
                 matches.append(tables[series].get(eid=number))
             else:
-                Identifier = Query()
                 matches.extend(tables['m'].search(Scheme.identifiers.any(
                     Identifier.id == form.data['identifier'])))
+                matches.extend(tables['m'].search(Scheme.versions.any(
+                    Version.identifiers.any(
+                        Identifier.id == form.data['identifier']))))
             element_list, mscid_list = add_matches(
                 matches, element_list, mscid_list)
             if isGui:
@@ -1556,7 +1563,6 @@ def scheme_search():
         if 'funder' in form.data and form.data['funder']:
             no_of_queries += 1
             # Interpret search
-            Funder = Query()
             funder_query = wild_to_regex(form.data['funder'])
             funder_search = tables['g'].search(Funder.name.search(
                 funder_query))
@@ -1575,7 +1581,6 @@ def scheme_search():
             if (series == 'g') and number:
                 matches.append(tables[series].get(eid=number))
             else:
-                Identifier = Query()
                 matches.extend(tables['g'].search(Funder.identifiers.any(
                     Identifier.id == form.data['funder_id'])))
             if matches:
@@ -1584,13 +1589,16 @@ def scheme_search():
                 flash('No funders found with identifier "{}" .'.format(
                     form.data['funder_id']), 'error')
         if matching_funders:
-            Relation = Query()
             matches = list()
             for funder_mscid in matching_funders:
                 matches.extend(tables['m'].search(
                     Scheme.relatedEntities.any(
                         (Relation.role == 'funder') &
                         (Relation.id == funder_mscid))))
+                matches.extend(tables['m'].search(
+                    Scheme.versions.any(Version.relatedEntities.any(
+                        (Relation.role == 'funder') &
+                        (Relation.id == funder_mscid)))))
             element_list, mscid_list = add_matches(
                 matches, element_list, mscid_list)
             if isGui:
@@ -1601,8 +1609,10 @@ def scheme_search():
 
         if 'dataType' in form.data and form.data['dataType']:
             no_of_queries += 1
-            matches = tables['m'].search(Scheme.dataTypes.any(
-                [form.data['dataType']]))
+            matches = tables['m'].search(
+                Scheme.dataTypes.any([form.data['dataType']]))
+            matches.extend(tables['m'].search(Scheme.versions.any(
+                Version.dataTypes.any([form.data['dataType']]))))
             element_list, mscid_list = add_matches(
                 matches, element_list, mscid_list)
             if isGui:
@@ -1635,27 +1645,12 @@ def scheme_search():
         all_schemes = tables['m'].all()
         title_set = set()
         id_set = set()
-        funder_set = set()
         type_set = set()
+        funder_set = set()
         for scheme in all_schemes:
-            title_set.add(scheme['title'])
             id_set.add(get_mscid('m', scheme.eid))
-            if 'identifiers' in scheme:
-                for identifier in scheme['identifiers']:
-                    id_set.add(identifier['id'])
-            if 'dataTypes' in scheme:
-                for type in scheme['dataTypes']:
-                    type_set.add(type)
-            if 'relatedEntities' in scheme:
-                for entity in scheme['relatedEntities']:
-                    if entity['role'] == 'funder':
-                        org_series, org_number = parse_mscid(entity['id'])
-                        funder = tables[org_series].get(eid=org_number)
-                        if funder:
-                            funder_set.add(funder['name'])
-                        else:
-                            print('Could not look up organization with eid {}.'
-                                  .format(org_number))
+            title_set, id_set, type_set, funder_set = extract_hints(
+                scheme, title_set, id_set, type_set, funder_set)
         title_list = list(title_set)
         title_list.sort(key=lambda k: k.lower())
         id_list = list(id_set)
@@ -1692,6 +1687,48 @@ def add_matches(matches, element_list, mscid_list):
             element_list.append(element)
             mscid_list.append(mscid)
     return (element_list, mscid_list)
+
+
+def extract_hints(scheme, title_set, id_set, type_set, funder_set):
+    """Extracts sets of identifiers, data types and funders from a dictionary
+    of metadata scheme properties. Note that the set of identifiers will not
+    contain the MSC ID for the record.
+
+    Arguments:
+        scheme (dict): The dictionary of properties (for a metadata scheme or
+            version thereof) in which to look.
+        title_set (set): Set of titles.
+        id_set (set): Set of identifiers.
+        type_set (set): Set of data types.
+        funder_set (set): Set of funder names.
+
+    Returns:
+        tuple: The four sets passed to the function (in the same order) with
+            any new values added.
+    """
+    if 'title' in scheme:
+        title_set.add(scheme['title'])
+    if 'identifiers' in scheme:
+        for identifier in scheme['identifiers']:
+            id_set.add(identifier['id'])
+    if 'dataTypes' in scheme:
+        for type in scheme['dataTypes']:
+            type_set.add(type)
+    if 'relatedEntities' in scheme:
+        for entity in scheme['relatedEntities']:
+            if entity['role'] == 'funder':
+                org_series, org_number = parse_mscid(entity['id'])
+                funder = tables[org_series].get(eid=org_number)
+                if funder:
+                    funder_set.add(funder['name'])
+                else:
+                    print('Could not look up organization with eid {}.'
+                          .format(org_number))
+    if 'versions' in scheme:
+        for version in scheme['versions']:
+            title_set, id_set, type_set, funder_set = extract_hints(
+                version, title_set, id_set, type_set, funder_set)
+    return (title_set, id_set, type_set, funder_set)
 
 
 def flash_result(matches, type):
