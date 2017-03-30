@@ -91,7 +91,7 @@
       <dt>Internal MSC ID</dt><dd><a href="{{ url_for('display', series='m', number=record.eid) }}">msc:m{{ record.eid }}</a></dd>
     {% for identifier in record['identifiers'] %}
       {% if identifier['scheme'] == 'DOI' %}
-      <dt>DOI</dt><dd><a href="http://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></dd>
+      <dt>DOI</dt><dd><a href="http://doi.org/{{ identifier['id'] }}">{{ identifier['id'] }}</a></dd>
       {% elif identifier['scheme'] %}
       <dt>{{ identifier['scheme'] }}</dt><dd>{{ identifier['id'] }}</dd>
       {% else %}
@@ -115,7 +115,7 @@
         {% for identifier in version['identifiers'] %}
           <p>
           {% if identifier['scheme'] == 'DOI' %}
-          <strong>DOI</strong>&emsp;<a href="https://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a>
+          <strong>DOI</strong>&emsp;<a href="https://doi.org/{{ identifier['id'] }}">{{ identifier['id'] }}</a>
           {% elif identifier['scheme'] %}
           <strong>{{ identifier['scheme'] }}</strong>&emsp;{{ identifier['id'] }}
           {% else %}
