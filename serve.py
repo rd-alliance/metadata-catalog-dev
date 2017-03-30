@@ -1482,8 +1482,8 @@ class SchemeSearchForm(Form):
     dataType = StringField('Data type')
 
 
-@app.route('/search', methods=['GET', 'POST'])
 @app.route('/query/schemes', methods=['POST'])
+@app.route('/search', methods=['GET', 'POST'])
 def scheme_search():
     form = SchemeSearchForm(request.form)
     # Process form
