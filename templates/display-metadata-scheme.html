@@ -112,31 +112,29 @@
         {% if 'description' in version %}
         <div class="description">{{ version['description']|safe }}</div>
         {% endif %}
-        {% if 'identifiers' in version %}
-        <dl class="dl-horizontal">
         {% for identifier in version['identifiers'] %}
+          <p>
           {% if identifier['scheme'] == 'DOI' %}
-          <dt>DOI</dt><dd><a href="https://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a></dd>
+          <strong>DOI</strong>&emsp;<a href="https://doi.org/{{ identifier['id'][4:] }}">{{ identifier['id'] }}</a>
           {% elif identifier['scheme'] %}
-          <dt>{{ identifier['scheme'] }}</dt><dd>{{ identifier['id'] }}</dd>
+          <strong>{{ identifier['scheme'] }}</strong>&emsp;{{ identifier['id'] }}
           {% else %}
-          <dt>Other identifier</dt><dd>{{ identifier['id'] }}</dd>
+          <strong>Identifier</strong>&emsp;{{ identifier['id'] }}
           {% endif %}
-          {% if 'locations' in version %}
-          <ul class="locations list-inline">
-          {% for location in version['locations'] %}
-            {% if location['type'] == 'website' %}
-            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">Visit website</a></li>
-            {% elif location['type'] == 'document' %}
-            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">View specification</a></li>
-            {% else %}
-            <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
-            {% endif %}
-          {% endfor %}
-          </ul>
+          </p>
+        {% endfor %}
+        {% if 'locations' in version %}
+        <ul class="locations list-inline">
+        {% for location in version['locations'] %}
+          {% if location['type'] == 'website' %}
+          <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">Visit website</a></li>
+          {% elif location['type'] == 'document' %}
+          <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">View specification</a></li>
+          {% else %}
+          <li><a class="btn btn-sm btn-special" href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
           {% endif %}
         {% endfor %}
-        </dl>
+        </ul>
         {% endif %}
       </dd>
     {% endfor %}
