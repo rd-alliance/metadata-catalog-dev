@@ -13,7 +13,7 @@ locations:
 - type: library (XML)
   url: https://service.ncddc.noaa.gov/rdn/www/metadata-standards/metadata-xml/documents/bio2iso19115-2.xslt
 relatedEntities:
-- id: msc:m59
-  role: input scheme
 - id: msc:m22
   role: output scheme
+- id: msc:m59
+  role: input scheme

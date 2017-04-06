@@ -8,15 +8,14 @@ identifiers:
 - id: msc:m21
   scheme: RDA-MSCWG
 keywords:
-- Genetics
+- Biochemicals
 - Biochemistry
 - Biophysics
-- Molecular biology
-- Genetics
-- Cell biology
-- Metabolism
-- Biochemicals
 - Biotechnology
+- Cell biology
+- Genetics
+- Metabolism
+- Molecular biology
 locations:
 - type: document
   url: http://isatab.sourceforge.net/docs/ISA-TAB_release-candidate-1_v1.0_24nov08.pdf

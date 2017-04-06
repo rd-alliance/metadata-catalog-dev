@@ -14,17 +14,17 @@ relatedEntities:
 - id: msc:m33
   role: output scheme
 versions:
-- issued: 2013-04-30
+- issued: '2013-04-30'
   locations:
   - type: document
     url: http://www.w3.org/TR/2013/NOTE-prov-dc-20130430/
   number: 2013-04
-- issued: 2013-03-12
+- issued: '2013-03-12'
   locations:
   - type: document
     url: http://www.w3.org/TR/2013/WD-prov-dc-20130312/
   number: 2013-WD
-- issued: 2012-12-11
+- issued: '2012-12-11'
   locations:
   - type: document
     url: http://www.w3.org/TR/2013/WD-prov-dc-20121211/

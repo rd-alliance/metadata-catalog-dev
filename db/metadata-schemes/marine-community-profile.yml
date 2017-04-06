@@ -5,12 +5,12 @@ identifiers:
 - id: msc:m71
   scheme: RDA-MSCWG
 keywords:
-- Oceanography
-- Meteorology
 - Climatology
-- Hydrology
-- Glaciology
 - Earth sciences
+- Glaciology
+- Hydrology
+- Meteorology
+- Oceanography
 locations:
 - type: website
   url: http://www.aodc.org.au/index.php?id=37

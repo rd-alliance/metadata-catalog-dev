@@ -5,8 +5,8 @@ identifiers:
 - id: msc:m75
   scheme: RDA-MSCWG
 keywords:
-- Oceanography
 - Hydrology
+- Oceanography
 locations:
 - type: website
   url: http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/shoreline-metadata/

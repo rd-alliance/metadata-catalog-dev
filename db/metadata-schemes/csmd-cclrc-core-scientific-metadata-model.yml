@@ -8,10 +8,10 @@ identifiers:
 - id: msc:m8
   scheme: RDA-MSCWG
 keywords:
-- Materials engineering
 - Biochemistry
 - Chemistry
 - Crystallography
+- Materials engineering
 locations:
 - type: website
   url: http://icatproject-contrib.github.io/CSMD/

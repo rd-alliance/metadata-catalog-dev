@@ -5,16 +5,15 @@ identifiers:
   scheme: RDA-MSCWG
 keywords:
 - Cartography
-- Land use
-- Oceanography
-- Meteorology
 - Climatology
-- Topography
-- Hydrology
-- Glaciology
-- Oceanography
 - Earth sciences
 - Geography
+- Glaciology
+- Hydrology
+- Land use
+- Meteorology
+- Oceanography
+- Topography
 locations:
 - type: website
   url: http://www.iso.org/iso/catalogue_detail.htm?csnumber=39229

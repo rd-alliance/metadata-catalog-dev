@@ -9,9 +9,8 @@ identifiers:
 - id: msc:m5
   scheme: RDA-MSCWG
 keywords:
-- Oceanography
-- Meteorology
 - Climatology
+- Meteorology
 - Oceanography
 locations:
 - type: document

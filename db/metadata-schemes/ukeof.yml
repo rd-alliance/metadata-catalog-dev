@@ -5,15 +5,15 @@ identifiers:
 - id: msc:m40
   scheme: RDA-MSCWG
 keywords:
+- Biogeography
+- Biological diversity
+- Climatology
+- Ecology
 - Geology
 - Hydrology
-- Climatology
 - Meteorology
-- Soil sciences
-- Biogeography
 - Remote sensing
-- Ecology
-- Biological diversity
+- Soil sciences
 locations:
 - type: document
   url: http://schema.ukeof.org.uk/

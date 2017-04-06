@@ -6,11 +6,11 @@ identifiers:
 - id: msc:m38
   scheme: RDA-MSCWG
 keywords:
-- Statistics
-- Social policy
-- Economics
 - Demography
+- Economics
 - Human geography
+- Social policy
+- Statistics
 locations:
 - type: document
   url: http://sdmx.org/?page_id=5008

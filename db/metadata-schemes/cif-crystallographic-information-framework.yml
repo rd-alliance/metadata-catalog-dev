@@ -7,9 +7,9 @@ identifiers:
 - id: msc:m6
   scheme: RDA-MSCWG
 keywords:
-- Materials engineering
 - Chemistry
 - Crystallography
+- Materials engineering
 locations:
 - type: document
   url: http://www.iucr.org/resources/cif/spec

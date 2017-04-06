@@ -4,18 +4,17 @@ identifiers:
 - id: msc:m36
   scheme: RDA-MSCWG
 keywords:
-- Cartography
-- Genetics
 - Biochemistry
-- Molecular biology
+- Cartography
 - Ecology
-- Topography
+- Environmental sciences
 - Genetics
-- Soil sciences
 - Hydrogeology
 - Hydrology
-- Environmental sciences
+- Molecular biology
 - Multidisciplinary
+- Soil sciences
+- Topography
 relatedEntities:
 - id: msc:g30
   role: user

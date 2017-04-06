@@ -11,10 +11,10 @@ locations:
 - type: document
   url: http://www.bgbm.org/tdwg/codata/Schema/ABCD_1.30/OECD-MDS-2-ABCD130.pdf
 relatedEntities:
-- id: msc:m90
-  role: input scheme
 - id: msc:m1
   role: output scheme
+- id: msc:m90
+  role: input scheme
 versions:
 - issued: '2004-01-28'
   number: '2004-01-28'

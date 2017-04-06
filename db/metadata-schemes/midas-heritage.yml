@@ -6,12 +6,11 @@ identifiers:
 - id: msc:m24
   scheme: RDA-MSCWG
 keywords:
-- History
+- Archaeology
+- Architecture
 - Cultural heritage
 - Cultural property preservation
 - History
-- Architecture
-- Archaeology
 locations:
 - type: document
   url: http://www.english-heritage.org.uk/content/publications/publicationsNew/guidelines-standards/midas-heritage/midas-heritage-2012-v1_1.pdf

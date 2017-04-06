@@ -5,9 +5,9 @@ identifiers:
 - id: msc:m53
   scheme: RDA-MSCWG
 keywords:
-- Meteorology
 - Climatology
 - Hydrology
+- Meteorology
 - Oceanography
 locations:
 - type: website

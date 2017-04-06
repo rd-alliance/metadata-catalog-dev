@@ -14,11 +14,10 @@ identifiers:
 keywords:
 - Biology
 - Chemistry
-- Physics
-- Molecular biology
-- Crystallography
 - Computer applications
-- Biology
+- Crystallography
+- Molecular biology
+- Physics
 locations:
 - type: document
   url: http://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v40.dic/Index/

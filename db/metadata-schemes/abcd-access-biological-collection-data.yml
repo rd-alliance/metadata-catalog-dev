@@ -11,12 +11,12 @@ identifiers:
 - id: msc:m1
   scheme: RDA-MSCWG
 keywords:
-- Palaeontology
-- Geology
 - Biological diversity
 - Botany
-- Genetics
 - Earth sciences
+- Genetics
+- Geology
+- Palaeontology
 - Zoology
 locations:
 - type: document

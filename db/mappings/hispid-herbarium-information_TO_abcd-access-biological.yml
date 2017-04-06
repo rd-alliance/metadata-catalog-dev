@@ -10,10 +10,10 @@ locations:
 - type: document
   url: http://www.bgbm.org/tdwg/codata/Schema/Mappings/HISPID3.htm
 relatedEntities:
-- id: msc:m64
-  role: input scheme
 - id: msc:m1
   role: output scheme
+- id: msc:m64
+  role: input scheme
 versions:
 - issued: '2005-03-06'
   number: '2005-03-06'

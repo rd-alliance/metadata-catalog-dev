@@ -4,9 +4,9 @@ identifiers:
 - id: msc:m54
   scheme: RDA-MSCWG
 keywords:
+- Biogeography
 - Cartography
 - Topography
-- Biogeography
 locations:
 - type: website
   url: http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension

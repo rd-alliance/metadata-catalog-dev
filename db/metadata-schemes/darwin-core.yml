@@ -8,18 +8,18 @@ identifiers:
 - id: msc:m9
   scheme: RDA-MSCWG
 keywords:
-- Cartography
-- Palaeontology
-- Oceanography
+- Biogeography
 - Biological diversity
 - Botany
-- Ecology
-- Topography
-- Physical geography
-- Biogeography
+- Cartography
 - Earth sciences
-- Zoology
+- Ecology
 - Marine animals
+- Oceanography
+- Palaeontology
+- Physical geography
+- Topography
+- Zoology
 locations:
 - type: document
   url: http://www.tdwg.org/standards/450

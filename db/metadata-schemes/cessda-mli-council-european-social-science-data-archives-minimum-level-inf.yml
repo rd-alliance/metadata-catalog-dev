@@ -3,10 +3,10 @@ identifiers:
 - id: msc:m50
   scheme: RDA-MSCWG
 keywords:
+- Demography
+- Economics
 - Land use
 - Sociology
-- Economics
-- Demography
 locations:
 - type: website
   url: http://www.cessda.org/sharing/managing/3/

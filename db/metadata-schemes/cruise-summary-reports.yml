@@ -5,13 +5,12 @@ identifiers:
 - id: msc:m52
   scheme: RDA-MSCWG
 keywords:
-- Oceanography
-- Meteorology
 - Climatology
-- Hydrology
-- Glaciology
-- Oceanography
 - Earth sciences
+- Glaciology
+- Hydrology
+- Meteorology
+- Oceanography
 locations:
 - type: website
   url: http://www.seadatanet.org/Metadata/CSR

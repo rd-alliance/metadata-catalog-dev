@@ -11,10 +11,10 @@ locations:
 - type: document
   url: http://www.bgbm.org/tdwg/codata/Schema/Mappings/EURISCO-2-ABCD.pdf
 relatedEntities:
-- id: msc:m90
-  role: input scheme
 - id: msc:m1
   role: output scheme
+- id: msc:m90
+  role: input scheme
 versions:
 - issued: '2006-01-31'
   number: '2006-01-31'

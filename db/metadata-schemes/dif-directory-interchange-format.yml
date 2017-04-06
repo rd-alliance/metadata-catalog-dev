@@ -8,17 +8,15 @@ identifiers:
 - id: msc:m14
   scheme: RDA-MSCWG
 keywords:
-- Biochemistry
-- Oceanography
-- Meteorology
-- Ecology
-- Climatology
-- Marine biology
-- Hydrology
-- Glaciology
 - Agriculture
-- Oceanography
+- Biochemistry
+- Climatology
+- Ecology
+- Glaciology
 - Hydrology
+- Marine biology
+- Meteorology
+- Oceanography
 locations:
 - type: document
   url: http://gcmd.nasa.gov/add/difguide/WRITEADIF.pdf

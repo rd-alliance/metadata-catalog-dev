@@ -9,16 +9,15 @@ identifiers:
 - id: msc:m23
   scheme: RDA-MSCWG
 keywords:
-- Genetics
 - Biochemistry
-- Computer applications
 - Biology
-- Proteins
-- Genetics
-- Cell biology
-- Environmental sciences
-- Metabolism
 - Biotechnology
+- Cell biology
+- Computer applications
+- Environmental sciences
+- Genetics
+- Metabolism
+- Proteins
 locations:
 - type: document
   url: http://mibbi.sourceforge.net/foundry.shtml

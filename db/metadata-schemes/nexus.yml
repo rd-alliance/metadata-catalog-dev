@@ -10,9 +10,9 @@ identifiers:
 - id: msc:m25
   scheme: RDA-MSCWG
 keywords:
-- Materials engineering
 - Chemistry
 - Crystallography
+- Materials engineering
 locations:
 - type: document
   url: http://download.nexusformat.org/doc/html/ref_doc.html

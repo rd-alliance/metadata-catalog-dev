@@ -3,9 +3,9 @@ identifiers:
 - id: msc:m62
   scheme: RDA-MSCWG
 keywords:
-- Statistics
-- Social policy
 - Economics
+- Social policy
+- Statistics
 locations:
 - type: website
   url: http://www.ecb.int/stats/services/sdmx/html/index.en.html

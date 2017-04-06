@@ -8,7 +8,7 @@ locations:
 - type: library (XML)
   url: https://service.ncddc.noaa.gov/rdn/www/metadata-standards/metadata-xml/documents/fgdcrse2iso19115-2.xslt
 relatedEntities:
-- id: msc:m53
-  role: input scheme
 - id: msc:m22
   role: output scheme
+- id: msc:m53
+  role: input scheme

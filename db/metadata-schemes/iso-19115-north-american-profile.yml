@@ -6,8 +6,8 @@ identifiers:
   scheme: RDA-MSCWG
 keywords:
 - Cartography
-- Topography
 - Geography
+- Topography
 locations:
 - type: website
   url: http://www.fgdc.gov/standards/projects/incits-l1-standards-projects/NAP-Metadata

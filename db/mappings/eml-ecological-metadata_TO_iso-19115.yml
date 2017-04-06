@@ -12,12 +12,12 @@ relatedEntities:
 - id: msc:m22
   role: output scheme
 versions:
-- issued: 2016-10-25
+- issued: '2016-10-25'
   locations:
   - type: library (XML)
     url: http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml2iso19139.xsl
   number: 1.1
-- issued: 2015-02-13
+- issued: '2015-02-13'
   locations:
   - type: library (XML)
     url: http://rs.gbif.org/schema/eml-gbif-profile/1.0.2/eml2iso19139.xsl

@@ -5,11 +5,11 @@ identifiers:
   scheme: RDA-MSCWG
 keywords:
 - Animal diseases
-- Physiology
-- Zoology
-- Plant physiology
-- Plant diseases
 - Cell biology
+- Physiology
+- Plant diseases
+- Plant physiology
+- Zoology
 locations:
 - type: website
   url: http://www.openmicroscopy.org/site/support/file-formats/ome-tiff

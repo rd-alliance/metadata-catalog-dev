@@ -7,8 +7,8 @@ identifiers:
 - id: msc:m18
   scheme: RDA-MSCWG
 keywords:
-- Astrophysics
 - Astronomy
+- Astrophysics
 - Sun
 locations:
 - type: document

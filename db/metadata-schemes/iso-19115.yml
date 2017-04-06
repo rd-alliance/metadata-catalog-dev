@@ -12,17 +12,16 @@ identifiers:
   scheme: RDA-MSCWG
 keywords:
 - Cartography
-- Oceanography
-- Meteorology
 - Climatology
-- Topography
-- Hydrology
-- Glaciology
-- Oceanography
-- Hydrogeology
 - Earth sciences
 - Geography
 - Geology
+- Glaciology
+- Hydrogeology
+- Hydrology
+- Meteorology
+- Oceanography
+- Topography
 locations:
 - type: document
   url: http://standards.iso.org/iso/19115/-3/

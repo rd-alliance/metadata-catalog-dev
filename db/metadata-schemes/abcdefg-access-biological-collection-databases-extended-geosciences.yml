@@ -3,9 +3,9 @@ identifiers:
 - id: msc:m43
   scheme: RDA-MSCWG
 keywords:
-- Palaeontology
-- Mineralogy
 - Earth sciences
+- Mineralogy
+- Palaeontology
 locations:
 - type: website
   url: http://www.geocase.eu/efg

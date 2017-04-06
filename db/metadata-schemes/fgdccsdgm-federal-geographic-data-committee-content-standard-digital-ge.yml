@@ -7,17 +7,16 @@ identifiers:
 - id: msc:m17
   scheme: RDA-MSCWG
 keywords:
-- Cartography
 - Biochemistry
-- Land use
-- Oceanography
-- Meteorology
+- Cartography
 - Climatology
-- Marine biology
-- Topography
-- Hydrology
-- Oceanography
 - Geography
+- Hydrology
+- Land use
+- Marine biology
+- Meteorology
+- Oceanography
+- Topography
 locations:
 - type: document
   url: http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/v2_0698.pdf

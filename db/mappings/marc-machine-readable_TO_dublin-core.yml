@@ -13,7 +13,7 @@ relatedEntities:
 - id: msc:m91
   role: input scheme
 versions:
-- issued: 2008-04-24
+- issued: '2008-04-24'
   number: 2008
 - issued: 2001-02
   locations:
