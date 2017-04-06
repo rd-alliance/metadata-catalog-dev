@@ -1351,6 +1351,7 @@ def fix_admin_data(record, series, number):
     """
     # Restore any data not editable via the forms.
     table = tables[series]
+    element = None
     if number:
         element = table.get(eid=number)
     if element:
