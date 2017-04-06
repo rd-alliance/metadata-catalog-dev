@@ -9,8 +9,6 @@ identifiers:
 keywords:
 - Multidisciplinary
 locations:
-- type: document
-  url: http://schema.datacite.org/meta/kernel-3/index.html
 - type: website
   url: http://schema.datacite.org
 relatedEntities:
@@ -21,3 +19,64 @@ relatedEntities:
 - id: msc:g64
   role: user
 title: DataCite Metadata Schema
+versions:
+- identifiers:
+  - id: 10.5438/0003
+    scheme: DOI
+  - id: 10.5438/0004
+    scheme: DOI
+  issued: '2011-03-28'
+  locations:
+  - type: document
+    url: http://schema.datacite.org/meta/kernel-2.1/doc/DataCite-MetadataKernel_v2.2.pdf
+  - type: XSD
+    url: http://schema.datacite.org/meta/kernel-2.1/metadata.xsd
+  number: '2.1'
+- identifiers:
+  - id: 10.5438/0005
+    scheme: DOI
+  - id: 10.5438/0006
+    scheme: DOI
+  issued: '2011-07-01'
+  locations:
+  - type: document
+    url: http://schema.datacite.org/meta/kernel-2.2/doc/DataCite-MetadataKernel_v2.2.pdf
+  - type: XSD
+    url: http://schema.datacite.org/meta/kernel-2.2/metadata.xsd
+  number: '2.2'
+- identifiers:
+  - id: 10.5438/0008
+    scheme: DOI
+  - id: 10.5438/0009
+    scheme: DOI
+  issued: '2013-07-24'
+  locations:
+  - type: document
+    url: http://schema.datacite.org/meta/kernel-3.0/doc/DataCite-MetadataKernel_v3.0.pdf
+  - type: XSD
+    url: http://schema.datacite.org/meta/kernel-3.0/metadata.xsd
+  number: '3.0'
+- identifiers:
+  - id: 10.5438/0010
+    scheme: DOI
+  - id: 10.5438/0011
+    scheme: DOI
+  issued: '2014-10-16'
+  locations:
+  - type: document
+    url: http://schema.datacite.org/meta/kernel-3.1/doc/DataCite-MetadataKernel_v3.1.pdf
+  - type: XSD
+    url: http://schema.datacite.org/meta/kernel-3.1/metadata.xsd
+  number: '3.1'
+- identifiers:
+  - id: 10.5438/0012
+    scheme: DOI
+  - id: 10.5438/0013
+    scheme: DOI
+  issued: '2016-09-19'
+  locations:
+  - type: document
+    url: http://schema.datacite.org/meta/kernel-4.0/doc/DataCite-MetadataKernel_v4.0.pdf
+  - type: XSD
+    url: http://schema.datacite.org/meta/kernel-4.0/metadata.xsd
+  number: '4.0'
