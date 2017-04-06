@@ -1,0 +1,13 @@
+description: <p>The DDI Alliance is the organization that maintains the DDI standard.
+  The Alliance has both full and associate member organizations, mainly social science
+  institutes, universities and domain repositories. It is governed by an Executive
+  Board, a Scientific Board, and a Technical Committee.</p>
+identifiers:
+- id: msc:g113
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.ddialliance.org/about/about-the-alliance
+name: DDI Alliance
+types:
+- coordination group

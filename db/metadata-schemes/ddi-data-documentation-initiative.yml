@@ -41,6 +41,8 @@ relatedEntities:
   role: user
 - id: msc:g91
   role: user
+- id: msc:g113
+  role: maintainer
 title: DDI (Data Documentation Initiative)
 versions:
 - number: '2.1'
