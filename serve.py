@@ -1944,9 +1944,6 @@ class CreatorForm(Form):
 # Editing metadata schemes
 # ------------------------
 class SchemeForm(FlaskForm):
-    scheme_choices = get_choices('m')
-    organization_choices = get_choices('g')
-
     title = StringField('Name of metadata scheme')
     description = TextAreaField('Description')
     keywords = FieldList(
@@ -1959,15 +1956,11 @@ class SchemeForm(FlaskForm):
         'Subject areas', min_entries=1)
     dataTypes = FieldList(
         StringField('URL or term'), 'Data types', min_entries=1)
-    parent_schemes = SelectMultipleField(
-        'Parent metadata scheme(s)', choices=scheme_choices)
+    parent_schemes = SelectMultipleField('Parent metadata scheme(s)')
     maintainers = SelectMultipleField(
-        'Organizations that maintain this scheme',
-        choices=organization_choices)
-    funders = SelectMultipleField(
-        'Organizations that funded this scheme', choices=organization_choices)
-    users = SelectMultipleField(
-        'Organizations that use this scheme', choices=organization_choices)
+        'Organizations that maintain this scheme')
+    funders = SelectMultipleField('Organizations that funded this scheme')
+    users = SelectMultipleField('Organizations that use this scheme')
     locations = FieldList(
         FormField(LocationForm), 'Relevant links', min_entries=1)
     samples = FieldList(
@@ -2002,13 +1995,10 @@ class OrganizationForm(FlaskForm):
 # Editing tools
 # -------------
 class ToolForm(FlaskForm):
-    scheme_choices = get_choices('m')
-    organization_choices = get_choices('g')
-
     title = StringField('Name of tool')
     description = TextAreaField('Description')
     supported_schemes = SelectMultipleField(
-        'Metadata scheme(s) supported by this tool', choices=scheme_choices)
+        'Metadata scheme(s) supported by this tool')
     # Regex for types allowed for mappings
     allowed_types = (r'(terminal \([^)]+\)|graphical \([^)]+\)|web service|'
                      'web application|^$)')
@@ -2021,10 +2011,8 @@ class ToolForm(FlaskForm):
     creators = FieldList(
         FormField(CreatorForm), 'People responsible for this tool',
         min_entries=1)
-    maintainers = SelectMultipleField(
-        'Organizations that maintain this tool', choices=organization_choices)
-    funders = SelectMultipleField(
-        'Organizations that funded this tool', choices=organization_choices)
+    maintainers = SelectMultipleField('Organizations that maintain this tool')
+    funders = SelectMultipleField('Organizations that funded this tool')
     locations = FieldList(
         FormField(LocationForm), 'Links to this tool', min_entries=1)
     identifiers = FieldList(
@@ -2036,22 +2024,16 @@ class ToolForm(FlaskForm):
 # Editing mappings
 # ----------------
 class MappingForm(FlaskForm):
-    scheme_choices = get_choices('m')
-    organization_choices = get_choices('g')
-
     description = TextAreaField('Description')
-    input_schemes = SelectMultipleField(
-        'Input metadata scheme(s)', choices=scheme_choices)
-    output_schemes = SelectMultipleField(
-        'Output metadata scheme(s)', choices=scheme_choices)
+    input_schemes = SelectMultipleField('Input metadata scheme(s)')
+    output_schemes = SelectMultipleField('Output metadata scheme(s)')
     creators = FieldList(
         FormField(CreatorForm), 'People responsible for this mapping',
         min_entries=1)
     maintainers = SelectMultipleField(
         'Organizations that maintain this mapping',
-        choices=organization_choices)
-    funders = SelectMultipleField(
-        'Organizations that funded this mapping', choices=organization_choices)
+        choices=get_choices('g'))
+    funders = SelectMultipleField('Organizations that funded this mapping')
     locations = FieldList(
         FormField(FreeLocationForm), 'Links to this mapping', min_entries=1)
     identifiers = FieldList(
@@ -2064,8 +2046,6 @@ class MappingForm(FlaskForm):
 # Editing endorsements
 # --------------------
 class EndorsementForm(FlaskForm):
-    organization_choices = get_choices('g')
-
     citation = StringField('Citation')
     issued = NativeDateField('Endorsement date')
     valid_from = NativeDateField('Endorsement period')
@@ -2077,8 +2057,7 @@ class EndorsementForm(FlaskForm):
         min_entries=1)
     endorsed_schemes = FieldList(
         FormField(SchemeVersionForm), 'Endorsed schemes', min_entries=1)
-    originators = SelectMultipleField(
-        'Endorsing organizations', choices=organization_choices)
+    originators = SelectMultipleField('Endorsing organizations')
 
 
 Forms = {
@@ -2124,6 +2103,8 @@ def edit_record(series, number):
 
     # Form-specific value lists
     params = dict()
+    scheme_choices = get_choices('m')
+    organization_choices = get_choices('g')
     if series == 'm':
         # Subject keyword help
         subject_list = get_subject_terms(complete=True)
@@ -2137,6 +2118,12 @@ def edit_record(series, number):
         type_list = list(type_set)
         type_list.sort(key=lambda k: k.lower())
         params['dataTypes'] = type_list
+        # Validation for parent schemes
+        form.parent_schemes.choices = scheme_choices
+        # Validation for organizations
+        form.maintainers.choices = organization_choices
+        form.funders.choices = organization_choices
+        form.users.choices = organization_choices
         # Validation for URL types
         for f in form.locations:
             f['type'].choices = [
@@ -2155,6 +2142,11 @@ def edit_record(series, number):
             type_list.append('terminal ({})'.format(platform))
             type_list.append('graphical ({})'.format(platform))
         params['toolTypes'] = type_list
+        # Validation for parent schemes
+        form.supported_schemes.choices = scheme_choices
+        # Validation for organizations
+        form.maintainers.choices = organization_choices
+        form.funders.choices = organization_choices
         # Validation for URL types
         for f in form.locations:
             f['type'].choices = [
@@ -2169,7 +2161,15 @@ def edit_record(series, number):
         for platform in computing_platforms:
             type_list.append('executable ({})'.format(platform))
         params['locationTypes'] = type_list
+        # Validation for parent schemes
+        form.input_schemes.choices = scheme_choices
+        form.output_schemes.choices = scheme_choices
+        # Validation for organizations
+        form.maintainers.choices = organization_choices
+        form.funders.choices = organization_choices
     elif series == 'e':
+        # Validation for organizations
+        form.originators.choices = organization_choices
         # Validation for URL types; note that as there is a choice of one,
         # we apply it automatically, not via the form.
         for f in form.locations:
