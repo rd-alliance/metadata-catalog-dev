@@ -1,0 +1,13 @@
+description: <p>A European Scholarly Communication Infrastructure that aggregates
+  bibliographic metadata from a network of publication repositories, data archives
+  and CRIS following the OpenAIRE Guidelines. Together with additional authoritative
+  information, the objects and their relationships described by the metadata form
+  an information space graph which can be traversed by users and accessed via APIs
+  by other services. The metadata primarily support discovery and monitoring services.</p>
+identifiers:
+- id: msc:g112
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://www.openaire.eu/
+name: OpenAIRE

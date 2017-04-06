@@ -1,0 +1,27 @@
+description: <p>The OpenAIRE Guidelines are a suite of application profiles designed
+  to allow research institutions to make their scholarly outputs visible through the
+  OpenAIRE infrastructure. The profiles are based on established standards and designed
+  to be used in conjunction with the OAI-PMH metadata harvesting protocol:</p><ul><li>The
+  OpenAIRE Guidelines for Literature Repositories are based on Dublin Core;</li><li>The
+  OpenAIRE Guidelines for Data Archives are based on the DataCite Metadata Schema;</li><li>The
+  OpenAIRE Guidelines for CRIS Managers is based on CERIF.</li></ul><p>While the focus
+  of each profile is different, they allow for interlinking and the contextualization
+  of research artefacts.</p>
+identifiers:
+- id: msc:m92
+  scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
+locations:
+- type: website
+  url: https://guidelines.openaire.eu/
+relatedEntities:
+- id: msc:g112
+  role: maintainer
+- id: msc:m4
+  role: parent scheme
+- id: msc:m11
+  role: parent scheme
+- id: msc:m15
+  role: parent scheme
+title: OpenAIRE Guidelines

@@ -1,0 +1,15 @@
+description: <p>This service validates OAI-PMH metadata records against the OpenAIRE
+  Guidelines for publication repositories, data archives and current research information
+  systems.</p>
+identifiers:
+- id: msc:t64
+  scheme: RDA-MSCWG
+locations:
+- type: application
+  url: https://validator.openaire.eu/
+relatedEntities:
+- id: msc:m92
+  role: supported scheme
+title: OpenAIRE Validator
+types:
+- web application
