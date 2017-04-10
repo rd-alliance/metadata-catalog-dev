@@ -29,6 +29,7 @@
         <ul class="nav navbar-nav navbar-right">
           <li><a href="{{ url_for('scheme_search') }}">Search</a></li>
           {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('edit_profile') }}">My profile</a></li>
           <li><a href="{{ url_for('logout') }}">Sign out</a></li>
           {% else %}
           <li><a href="{{ url_for('login') }}">Sign in</a></li>

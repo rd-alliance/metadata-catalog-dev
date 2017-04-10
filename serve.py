@@ -1872,12 +1872,67 @@ def create_profile():
         next=oid.get_next_url() or url_for('hello'))
 
 
+@app.route('/edit-profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    '''Allows users to change their displayed username and email address.
+    '''
+    openid_formatted = 'unknown profile'
+    openid_tuple = current_user['openid'].partition('$')
+    if openid_tuple[2]:
+        # OpenID Connect profile
+        openid_format = '{} profile for '
+        for provider_class in OAuthSignIn.__subclasses__():
+            provider = provider_class()
+            if openid_tuple[0] == provider.provider_name:
+                openid_formatted = (openid_format
+                                    .format(provider.formatted_name))
+                break
+        else:
+            openid_formatted = (openid_format
+                                .format(openid_tuple[0]))
+        openid_formatted += current_user['name']
+    else:
+        # OpenID v2 profile
+        openid_formatted = current_user['openid']
+    form = ProfileForm(request.values, data=current_user)
+    if request.method == 'POST' and form.validate():
+        name = request.form['name']
+        email = request.form['email']
+        data = {
+            'name': form.name.data,
+            'email': form.email.data,
+            'openid': current_user['openid']}
+        if user_db.update(data, eids=[current_user.eid]):
+            flash('Profile successfully updated.')
+        else:
+            flash('Profile could not be updated, sorry.')
+        return redirect(url_for('hello'))
+    return render_template(
+        'edit-profile.html', form=form, openid_formatted=openid_formatted)
+
+
+@app.route('/remove-profile')
+@login_required
+def remove_profile():
+    '''Allows users to remove their profile from the system.
+    '''
+    if user_db.remove(eids=[current_user.eid]):
+        flash('Your profile was successfully deleted.')
+        logout_user()
+        session.pop('openid', None)
+        flash('You were signed out.')
+    else:
+        flash('Your profile could not be deleted.')
+    return redirect(url_for('hello'))
+
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     session.pop('openid', None)
-    flash('You were signed out')
+    flash('You were signed out.')
     return redirect(url_for('hello'))
 
 
