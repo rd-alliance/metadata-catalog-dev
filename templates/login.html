@@ -16,9 +16,9 @@
     communicate with OpenID Connect providers by means of secret keys. This
     instance of the Catalog does not have those secret keys installed.</p>
   {% endif %}
-  <p>{% if providers %}Alternatively{% else %}As an alternative{% endif %}, you can sign in using any OpenID v2 provider. Please consult
-    your provider's documentation for the right URL to use; some known URL
-    patterns are provided below.</p>
+  <p>{% if providers %}Alternatively{% else %}As an alternative{% endif %}, you can sign in through the Research Data Alliance website,
+    or any other OpenID v2 provider. Please consult your provider's documentation
+    for the right URL to use; some known URL patterns are provided below.</p>
   <form action="{{ url_for('login') }}" method=post class="form-inline">
     {{ form.hidden_tag() }}
     <div class="form-group form-group-wide {{ state(form.openid) }}">
@@ -34,6 +34,10 @@
     {{ errors(form.openid) }}
   </form>
   <table class="table table-striped" style="margin-top:16px;">
+    <tr>
+      <th>Research Data Alliance</th>
+      <td><code>https://www.rd-alliance.org/users/</code>(user name)<code>/openid</code></td>
+    </tr>
     <tr>
       <th>AOL</th>
       <td><code>http://openid.aol.com/</code>(screenname)</td>
