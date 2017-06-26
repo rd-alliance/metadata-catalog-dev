@@ -864,6 +864,13 @@ def hello():
     return render_template('home.html')
 
 
+# Terms of use
+# ============
+@app.route('/terms-of-use')
+def terms_of_use():
+    return render_template('terms-of-use.html')
+
+
 # Display record
 # ==============
 @app.route('/msc/<string(length=1):series><int:number>')
