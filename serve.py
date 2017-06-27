@@ -23,6 +23,8 @@ from email.utils import parsedate_tz, mktime_tz
 #   - latest version: sudo -H pip3 install flask
 from flask import Flask, request, url_for, render_template, flash, redirect,\
     abort, jsonify, g, session
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
 
 # See https://flask-login.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install flask-login
@@ -41,6 +43,14 @@ from oauth2client import client, crypt
 # See https://pythonhosted.org/Flask-OpenID/
 # Install from PyPi: sudo -H pip3 install Flask-OpenID
 from flask_openid import OpenID
+
+# See https://flask-httpauth.readthedocs.io/
+# Install from PyPi: sudo -H pip3 install flask-httpauth
+from flask_httpauth import HTTPBasicAuth
+
+# See https://passlib.readthedocs.io/
+# Install from PyPi: sudo -H pip3 install passlib
+from passlib.apps import custom_app_context as pwd_context
 
 # See https://flask-wtf.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install Flask-WTF
@@ -444,6 +454,49 @@ thesaurus_link = ('<a href="http://vocabularies.unesco.org/browser/thesaurus/'
                   'en/">UNESCO Thesaurus</a>')
 
 oid = OpenID(app, app.config['OPENID_PATH'])
+
+auth = HTTPBasicAuth()
+
+
+class ApiUser(Element):
+    '''For objects representing an application using the API. Source:
+    https://blog.miguelgrinberg.com/post/restful-authentication-with-flask
+    '''
+    @property
+    def is_active(self):
+        if self.get('blocked'):
+            return False
+        return True
+
+    def hash_password(self, password):
+        self['password_hash'] = pwd_context.encrypt(password)
+        user_db.table('api_users').update(
+            {'password_hash': self.get('password_hash')}, eids=[self.eid])
+
+    def verify_password(self, password):
+        return pwd_context.verify_and_update(
+            password, self.get('password_hash'))
+
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
+        return s.dumps({'id': self.eid})
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None  # valid token, but expired
+        except BadSignature:
+            return None  # invalid token
+        api_users = user_db.table('api_users')
+        user_record = api_users.get(eid=int(data['id']))
+        if not user_record:
+            return None
+        user = ApiUser(value=user_record, eid=user_record.eid)
+        return user
+
 
 # Data model
 # ----------
@@ -1941,6 +1994,71 @@ def logout():
     session.pop('openid', None)
     flash('You were signed out.')
     return redirect(url_for('hello'))
+
+
+# API authentication
+# ==================
+#
+# Source: https://blog.miguelgrinberg.com/post/restful-authentication-with-flask
+@app.route('/api/set-password', methods=['POST'])
+def set_api_password():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if username is None or password is None:
+        abort(400)  # missing arguments
+    api_users = user_db.table('api_users')
+    User = Query()
+    user_record = api_users.get(User.name == username)
+    if not user_record or 'password_hash' in user_record:
+        abort(400)  # unknown user, or password already set
+    user = ApiUser(value=user_record, eid=user_record.eid)
+    user.hash_password(password)
+    return jsonify({'username': user.get('name'), 'password_set': 'true'}), 201
+
+
+@app.route('/api/reset-password', methods=['POST'])
+def reset_api_password():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    new_password = request.json.get('new_password')
+    if username is None or password is None or new_password is None:
+        abort(400)  # missing arguments
+    api_users = user_db.table('api_users')
+    User = Query()
+    user_record = api_users.get(User.name == username)
+    if not user_record or 'password_hash' not in user_record:
+        abort(400)  # unknown user, or password not already set
+    user = ApiUser(value=user_record, eid=user_record.eid)
+    if not user.verify_password(password):
+        abort(401)  # wrong old password
+    user.hash_password(new_password)
+    return jsonify({'username': user.get('name'), 'password_reset': 'true'}),\
+        201
+
+
+app.route('/api/token')
+@auth.login_required
+def get_auth_token():
+    token = g.user.generate_auth_token()
+    return jsonify({'token': token.decode('ascii')})
+
+
+@auth.verify_password
+def verify_password(username_or_token, password):
+    # first try to authenticate by token
+    user = ApiUser.verify_auth_token(username_or_token)
+    if not user:
+        # try to authenticate with username/password
+        api_users = user_db.table('api_users')
+        User = Query()
+        user_record = api_users.get(User.name == username_or_token)
+        if not user_record:
+            return False
+        user = ApiUser(value=user_record, eid=user_record.eid)
+        if not user.verify_password(password) or not user.is_active:
+            return False
+        g.user = user
+        return True
 
 
 # Forms: editing
