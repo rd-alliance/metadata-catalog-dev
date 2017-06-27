@@ -2425,6 +2425,39 @@ def edit_record(series, number):
         idSchemes=id_scheme_list, **params)
 
 
+# Generic API contribution handling
+# =================================
+# Providing functions for CREATE, UPDATE, DELETE
+@app.route('/update/<string(length=1):series><int:number>',
+           methods=['POST'])
+@auth.login_required
+def update_record(series, number):
+    # Is this record in the database?
+    if series not in table_names:
+        abort(404)
+    element = tables[series].get(eid=number)
+    if not element:
+        abort(404)
+
+    # Form MSC ID
+    mscid = get_mscid(series, number)
+
+    # If not an API request, redirect to GUI version (though GUI requests
+    # should be caught by the login handler)
+    if not request_wants_json():
+        return redirect(url_for('edit_record', series=series, number=number))
+
+    # Retrieve JSON payload
+
+    # Validate JSON payload
+
+    # Filter out MSCID if present
+
+    # Apply changes to record
+
+    # Return record with MSCID reinstated
+
+
 # Executing
 # =========
 if __name__ == '__main__':
