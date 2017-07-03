@@ -892,6 +892,45 @@ def get_relation(mscid, element):
     return (role_list, record)
 
 
+def assess_conformance(series, element):
+    """Examines the contents of an element and assesses its compliance with the
+    MSC data model, giving the result as an integer score.
+
+    Arguments:
+        series (str): Record series
+        element (dict or Element): MSC record
+
+    Returns:
+        int: Conformance level of the record, where 0 = invalid, 1 = valid,
+            2 = useful, and 3 = complete.
+    """
+    expected = ['identifiers', 'locations']
+    useful = list()
+    if series == 'g':
+        expected.extend(['name', 'description', 'types'])
+    elif series == 'e':
+        expected.extend(['issued', 'valid', 'citation', 'relatedEntities'])
+    elif series == 'c':
+        expected.extend(['versions', 'creators', 'description',
+                         'relatedEntities'])
+    elif series == 't':
+        expected.extend(['title', 'versions', 'creators', 'description',
+                         'types', 'relatedEntities'])
+    elif series == 'm':
+        expected.extend(['title', 'versions', 'description', 'keywords',
+                         'dataTypes', 'samples', 'relatedEntities'])
+
+    conformance = 0
+    count_useful = 0
+    count_expected = 0
+
+    # Tests
+    for field in expected:
+        if field in element:
+            count_expected += 1
+
+    return conformance
+
 # Functions made available to templates
 # -------------------------------------
 @app.context_processor
