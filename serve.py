@@ -2427,9 +2427,39 @@ def edit_record(series, number):
 
 # Generic API contribution handling
 # =================================
-# Providing functions for CREATE, UPDATE, DELETE
-@app.route('/update/<string(length=1):series><int:number>',
+# CREATE function
+@app.route('/api/<string(length=1):series>',
            methods=['POST'])
+@auth.login_required
+def create_record(series):
+    if series not in table_names:
+        abort(404)
+
+    # Retrieve JSON payload
+    new_record = request.get_json()
+
+    # Validate JSON payload
+
+    # Filter out MSCID if present
+    if 'identifiers' in new_record:
+        id_list = new_record['identifiers'].copy()
+        new_record['identifiers'].clear()
+        for identifier in id_list:
+            if 'scheme' in identifier and identifier['scheme'] == 'RDA-MSCWG':
+                continue
+            new_record['identifiers'].append(identifier)
+
+    # Save record
+    msc_data = fix_admin_data(new_record, series, 0)
+    number = tables[series].insert(msc_data)
+
+    # Return newly generated MSCID
+    return jsonify({'id': get_mscid(series, number)})
+
+
+# UPDATE function
+@app.route('/api/<string(length=1):series><int:number>',
+           methods=['PUT'])
 @auth.login_required
 def update_record(series, number):
     # Is this record in the database?
@@ -2442,20 +2472,34 @@ def update_record(series, number):
     # Form MSC ID
     mscid = get_mscid(series, number)
 
-    # If not an API request, redirect to GUI version (though GUI requests
-    # should be caught by the login handler)
-    if not request_wants_json():
-        return redirect(url_for('edit_record', series=series, number=number))
-
     # Retrieve JSON payload
+    new_record = request.get_json()
 
     # Validate JSON payload
 
     # Filter out MSCID if present
+    if 'identifiers' in new_record:
+        id_list = new_record['identifiers'].copy()
+        new_record['identifiers'].clear()
+        for identifier in id_list:
+            if 'scheme' in identifier and identifier['scheme'] == 'RDA-MSCWG':
+                if 'id' in identifier and identifier['id'] != mscid:
+                    abort(422)  # Throw error if MSCIDs do not match
+                continue
+            new_record['identifiers'].append(identifier)
 
     # Apply changes to record
+    msc_data = fix_admin_data(new_record, series, number)
+    with transaction(tables[series]) as t:
+        for key in (k for k in element if k not in msc_data):
+            t.update(delete(key), eids=[number])
+        t.update(msc_data, eids=[number])
 
     # Return record with MSCID reinstated
+    display(series, number)
+
+
+# DELETE function
 
 
 # Executing
