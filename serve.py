@@ -539,6 +539,109 @@ relations_inverse = {
     'endorsed scheme': 'endorsements'}
 
 
+def assess_conformance(series, element):
+    """Examines the contents of an element and assesses its compliance with the
+    MSC data model, giving the result as an integer score.
+
+    Arguments:
+        series (str): Record series
+        element (dict or Element): MSC record
+
+    Returns:
+        int: Conformance level of the record, where 0 = invalid, 1 = valid,
+            2 = useful, and 3 = complete.
+    """
+    expected = ['identifiers', 'locations']
+    useful = list()
+    if series == 'g':
+        expected.extend(['name', 'description', 'types'])
+        useful.extend(['name', 'identifiers'])
+    elif series == 'e':
+        expected.extend(['issued', 'valid', 'citation', 'relatedEntities'])
+        useful.extend(['identifiers', 'locations', 'relatedEntities'])
+    elif series == 'c':
+        expected.extend(['versions', 'creators', 'description',
+                         'relatedEntities'])
+        useful.extend(['identifiers', 'locations', 'relatedEntities'])
+    elif series == 't':
+        expected.extend(['title', 'versions', 'creators', 'description',
+                         'types', 'relatedEntities'])
+        useful.extend(['title', 'identifiers', 'description', 'keywords',
+                       'locations'])
+    elif series == 'm':
+        expected.extend(['title', 'versions', 'description', 'keywords',
+                         'dataTypes', 'samples', 'relatedEntities'])
+        useful.extend(['title', 'identifiers', 'description', 'keywords',
+                       'locations'])
+
+    roles = dict()
+    roles['m'] = ['parent scheme', 'maintainer', 'funder', 'user']
+    roles['t'] = ['supported scheme', 'maintainer', 'funder']
+    roles['c'] = ['input scheme', 'output scheme', 'maintainer', 'funder']
+    roles['e'] = ['endorsed scheme', 'originator']
+    roles['g'] = list()
+
+    conformance = 0
+    count_useful = 0
+    count_expected = 0
+
+    # Tests
+    for field in expected:
+        if field in element:
+            is_syntactical = True
+            # Test that lists are lists with at least one member
+            if field in ['identifiers', 'locations', 'types', 'relatedEntities',
+                         'versions', 'creators', 'keywords', 'samples',
+                         'dataTypes']:
+                if (not isinstance(element[field], list)
+                        or len(element[field]) < 1):
+                    is_syntactical = False
+                # Test that dictionaries have the right keys
+                elif field == 'identifiers':
+                    for identifier in element[field]:
+                        if 'id' not in identifier:
+                            is_syntactical = False
+                elif field == 'versions':
+                    for version in element[field]:
+                        if 'number' not in version or (
+                                'available' not in version and
+                                'issued' not in version and
+                                'valid' not in version):
+                            is_syntactical = False
+                elif field == 'locations':
+                    for location in element[field]:
+                        if ('url' not in location or 'type' not in location):
+                            is_syntactical = False
+                elif field == 'samples':
+                    for sample in element[field]:
+                        if 'url' not in sample or 'title' not in sample:
+                            is_syntactical = False
+                elif field == 'relatedEntities':
+                    for relatedEntity in element[field]:
+                        if ('id' not in relatedEntity
+                                or 'role' not in relatedEntity
+                                or relatedEntity['role'] not in roles[series]):
+                            is_syntactical = False
+                elif field == 'creators':
+                    for creator in element[field]:
+                        if ('fullName' not in creator
+                                and 'givenName' not in creator
+                                and 'familyName' not in creator):
+                            is_syntactical = False
+            if is_syntactical:
+                count_expected += 1
+                if field in useful:
+                    count_useful += 1
+
+    if count_expected > 1:
+        conformance += 1
+        if count_useful == len(useful):
+            conformance += 1
+            if count_expected == len(expected):
+                conformance += 1
+    return conformance
+
+
 # Utility functions
 # =================
 def request_wants_json():
@@ -891,45 +994,6 @@ def get_relation(mscid, element):
             record['valid_until'] = valid_until
     return (role_list, record)
 
-
-def assess_conformance(series, element):
-    """Examines the contents of an element and assesses its compliance with the
-    MSC data model, giving the result as an integer score.
-
-    Arguments:
-        series (str): Record series
-        element (dict or Element): MSC record
-
-    Returns:
-        int: Conformance level of the record, where 0 = invalid, 1 = valid,
-            2 = useful, and 3 = complete.
-    """
-    expected = ['identifiers', 'locations']
-    useful = list()
-    if series == 'g':
-        expected.extend(['name', 'description', 'types'])
-    elif series == 'e':
-        expected.extend(['issued', 'valid', 'citation', 'relatedEntities'])
-    elif series == 'c':
-        expected.extend(['versions', 'creators', 'description',
-                         'relatedEntities'])
-    elif series == 't':
-        expected.extend(['title', 'versions', 'creators', 'description',
-                         'types', 'relatedEntities'])
-    elif series == 'm':
-        expected.extend(['title', 'versions', 'description', 'keywords',
-                         'dataTypes', 'samples', 'relatedEntities'])
-
-    conformance = 0
-    count_useful = 0
-    count_expected = 0
-
-    # Tests
-    for field in expected:
-        if field in element:
-            count_expected += 1
-
-    return conformance
 
 # Functions made available to templates
 # -------------------------------------
