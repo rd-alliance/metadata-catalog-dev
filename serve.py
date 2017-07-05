@@ -25,6 +25,7 @@ from flask import Flask, request, url_for, render_template, flash, redirect,\
     abort, jsonify, g, session
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
+from werkzeug.datastructures import MultiDict
 
 # See https://flask-login.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install flask-login
@@ -52,7 +53,7 @@ from flask_httpauth import HTTPBasicAuth
 # Install from PyPi: sudo -H pip3 install passlib
 from passlib.apps import custom_app_context as pwd_context
 
-# See https://flask-wtf.readthedocs.io/
+# See https://flask-wtf.readthedocs.io/ and https://wtforms.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install Flask-WTF
 from flask_wtf import FlaskForm
 from wtforms import validators, widgets, Form, FormField, FieldList,\
@@ -538,108 +539,89 @@ relations_inverse = {
     'output scheme': 'mappings_to',
     'endorsed scheme': 'endorsements'}
 
+useful_fields = dict()
+useful_fields['m'] = ['title', 'identifiers', 'description', 'keywords',
+                      'locations']
+useful_fields['g'] = ['name', 'identifiers']
+useful_fields['t'] = ['title', 'identifiers', 'description', 'keywords',
+                      'locations']
+useful_fields['c'] = ['identifiers', 'locations', 'input_schemes',
+                      'output_schemes']
+useful_fields['e'] = ['identifiers', 'locations', 'endorsed_schemes']
 
-def assess_conformance(series, element):
-    """Examines the contents of an element and assesses its compliance with the
-    MSC data model, giving the result as an integer score.
+computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
 
-    Arguments:
-        series (str): Record series
-        element (dict or Element): MSC record
+# Top 10 languages according to http://www.langpop.com/ in 2013.
+# Though not really belonging here, 'XML' added for XSL tranformations.
+programming_languages = [
+    'C', 'Java', 'PHP', 'JavaScript', 'C++', 'Python', 'Shell', 'Ruby',
+    'Objective-C', 'C#', 'XML']
+programming_languages.sort()
 
-    Returns:
-        int: Conformance level of the record, where 0 = invalid, 1 = valid,
-            2 = useful, and 3 = complete.
+id_scheme_list = ['DOI']
+
+scheme_locations = [
+    ('', ''), ('document', 'document'), ('website', 'website'),
+    ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
+    ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
+
+organization_locations = [
+    ('', ''), ('website', 'website'), ('email', 'email address')]
+organization_types = [
+    ('standards body', 'standards body'), ('archive', 'archive'),
+    ('professional group', 'professional group'),
+    ('coordination group', 'coordination group')]
+
+tool_locations = [
+    ('', ''), ('document', 'document'), ('website', 'website'),
+    ('application', 'application'),
+    ('service', 'service endpoint')]
+tool_type_regexp = (
+    r'(terminal \([^)]+\)|graphical \([^)]+\)|web service|web application|^$)')
+tool_type_help = (
+    'Must be one of "terminal (<platform>)", "graphical (<platform>)",'
+    ' "web service", "web application".')
+tool_type_list = ['web application', 'web service']
+for platform in computing_platforms:
+    tool_type_list.append('terminal ({})'.format(platform))
+    tool_type_list.append('graphical ({})'.format(platform))
+
+mapping_location_regexp = (
+    r'(document|library \([^)]+\)|executable \([^)]+\)|^$)')
+mapping_location_help = (
+    'Must be one of "document", "library (<language>)",'
+    ' "executable (<platform>)".')
+mapping_location_list = ['document']
+for language in programming_languages:
+    mapping_location_list.append('library ({})'.format(language))
+for platform in computing_platforms:
+    mapping_location_list.append('executable ({})'.format(platform))
+
+endorsement_locations = [('', ''), ('document', 'document')]
+
+
+def get_subject_terms(complete=False):
+    """Returns a list of subject terms. By default, only returns terms that
+    would yield results in a search for metadata schemes. Pass `complete=True`
+    to get a full list of all allowed subject terms.
     """
-    expected = ['identifiers', 'locations']
-    useful = list()
-    if series == 'g':
-        expected.extend(['name', 'description', 'types'])
-        useful.extend(['name', 'identifiers'])
-    elif series == 'e':
-        expected.extend(['issued', 'valid', 'citation', 'relatedEntities'])
-        useful.extend(['identifiers', 'locations', 'relatedEntities'])
-    elif series == 'c':
-        expected.extend(['versions', 'creators', 'description',
-                         'relatedEntities'])
-        useful.extend(['identifiers', 'locations', 'relatedEntities'])
-    elif series == 't':
-        expected.extend(['title', 'versions', 'creators', 'description',
-                         'types', 'relatedEntities'])
-        useful.extend(['title', 'identifiers', 'description', 'keywords',
-                       'locations'])
-    elif series == 'm':
-        expected.extend(['title', 'versions', 'description', 'keywords',
-                         'dataTypes', 'samples', 'relatedEntities'])
-        useful.extend(['title', 'identifiers', 'description', 'keywords',
-                       'locations'])
-
-    roles = dict()
-    roles['m'] = ['parent scheme', 'maintainer', 'funder', 'user']
-    roles['t'] = ['supported scheme', 'maintainer', 'funder']
-    roles['c'] = ['input scheme', 'output scheme', 'maintainer', 'funder']
-    roles['e'] = ['endorsed scheme', 'originator']
-    roles['g'] = list()
-
-    conformance = 0
-    count_useful = 0
-    count_expected = 0
-
-    # Tests
-    for field in expected:
-        if field in element:
-            is_syntactical = True
-            # Test that lists are lists with at least one member
-            if field in ['identifiers', 'locations', 'types', 'relatedEntities',
-                         'versions', 'creators', 'keywords', 'samples',
-                         'dataTypes']:
-                if (not isinstance(element[field], list)
-                        or len(element[field]) < 1):
-                    is_syntactical = False
-                # Test that dictionaries have the right keys
-                elif field == 'identifiers':
-                    for identifier in element[field]:
-                        if 'id' not in identifier:
-                            is_syntactical = False
-                elif field == 'versions':
-                    for version in element[field]:
-                        if 'number' not in version or (
-                                'available' not in version and
-                                'issued' not in version and
-                                'valid' not in version):
-                            is_syntactical = False
-                elif field == 'locations':
-                    for location in element[field]:
-                        if ('url' not in location or 'type' not in location):
-                            is_syntactical = False
-                elif field == 'samples':
-                    for sample in element[field]:
-                        if 'url' not in sample or 'title' not in sample:
-                            is_syntactical = False
-                elif field == 'relatedEntities':
-                    for relatedEntity in element[field]:
-                        if ('id' not in relatedEntity
-                                or 'role' not in relatedEntity
-                                or relatedEntity['role'] not in roles[series]):
-                            is_syntactical = False
-                elif field == 'creators':
-                    for creator in element[field]:
-                        if ('fullName' not in creator
-                                and 'givenName' not in creator
-                                and 'familyName' not in creator):
-                            is_syntactical = False
-            if is_syntactical:
-                count_expected += 1
-                if field in useful:
-                    count_useful += 1
-
-    if count_expected > 1:
-        conformance += 1
-        if count_useful == len(useful):
-            conformance += 1
-            if count_expected == len(expected):
-                conformance += 1
-    return conformance
+    keyword_uris = set()
+    if complete:
+        for generator in [
+                thesaurus.subjects(RDF.type, UNO.Domain),
+                thesaurus.subjects(RDF.type, UNO.MicroThesaurus),
+                thesaurus.subjects(RDF.type, SKOS.Concept)]:
+            for uri in generator:
+                keyword_uris.add(uri)
+    else:
+        keyword_uris |= get_used_term_uris()
+    subject_set = set()
+    for uri in keyword_uris:
+        subject_set.add(str(thesaurus.preferredLabel(uri, lang='en')[0][1]))
+    subject_set.add('Multidisciplinary')
+    subject_list = list(subject_set)
+    subject_list.sort()
+    return subject_list
 
 
 # Utility functions
@@ -1339,12 +1321,14 @@ def clean_dict(data):
     return data
 
 
-def msc_to_form(msc_data):
+def msc_to_form(msc_data, padded=True):
     """Transforms data from MSC database into the data structure used by the
     web forms.
 
     Arguments:
         msc_data (dict): Record from the MSC database.
+        padded (bool): Whether to add an empty member to the end of each list,
+            so the user can complete it.
 
     Returns:
         dict: Dictionary suitable for populating a web form.
@@ -1391,23 +1375,24 @@ def msc_to_form(msc_data):
                 form_data[k].sort(key=lambda k: k['date'])
             except KeyError:
                 form_data[k].sort(key=lambda k: k['number'])
-        else:
+        elif v:
             form_data[k] = v
     # Ensure there is a blank entry at the end of the following lists
-    for l in ['keywords', 'dataTypes', 'types']:
-        if l in form_data:
-            form_data[l].append('')
-    if 'locations' in form_data:
-        form_data['locations'].append({'url': '', 'type': ''})
-    if 'identifiers' in form_data:
-        form_data['identifiers'].append({'id': '', 'scheme': ''})
-    if 'versions' in form_data:
-        form_data['versions'].append({'number': '', 'issued': ''})
-    if 'creators' in form_data:
-        form_data['creators'].append({
-            'fullName': '', 'givenName': '', 'familyName': ''})
-    if 'endorsed_schemes' in form_data:
-        form_data['endorsed_schemes'].append({'id': '', 'version': ''})
+    if padded:
+        for l in ['keywords', 'dataTypes', 'types']:
+            if l in form_data:
+                form_data[l].append('')
+        if 'locations' in form_data:
+            form_data['locations'].append({'url': '', 'type': ''})
+        if 'identifiers' in form_data:
+            form_data['identifiers'].append({'id': '', 'scheme': ''})
+        if 'versions' in form_data:
+            form_data['versions'].append({'number': '', 'issued': ''})
+        if 'creators' in form_data:
+            form_data['creators'].append({
+                'fullName': '', 'givenName': '', 'familyName': ''})
+        if 'endorsed_schemes' in form_data:
+            form_data['endorsed_schemes'].append({'id': '', 'version': ''})
     return form_data
 
 
@@ -1593,52 +1578,16 @@ def get_choices(series):
     return choices
 
 
-def get_subject_terms(complete=False):
-    """Returns a list of subject terms. By default, only returns terms that
-    would yield results in a search for metadata schemes. Pass `complete=True`
-    to get a full list of all allowed subject terms.
-    """
-    keyword_uris = set()
-    if complete:
-        for generator in [
-                thesaurus.subjects(RDF.type, UNO.Domain),
-                thesaurus.subjects(RDF.type, UNO.MicroThesaurus),
-                thesaurus.subjects(RDF.type, SKOS.Concept)]:
-            for uri in generator:
-                keyword_uris.add(uri)
-    else:
-        keyword_uris |= get_used_term_uris()
-    subject_set = set()
-    for uri in keyword_uris:
-        subject_set.add(str(thesaurus.preferredLabel(uri, lang='en')[0][1]))
-    subject_set.add('Multidisciplinary')
-    subject_list = list(subject_set)
-    subject_list.sort()
-    return subject_list
-
-
-computing_platforms = ['Windows', 'Mac OS X', 'Linux', 'BSD', 'cross-platform']
-
-# Top 10 languages according to http://www.langpop.com/ in 2013.
-# Though not really belonging here, 'XML' added for XSL tranformations.
-programming_languages = [
-    'C', 'Java', 'PHP', 'JavaScript', 'C++', 'Python', 'Shell', 'Ruby',
-    'Objective-C', 'C#', 'XML']
-programming_languages.sort()
-
-id_scheme_list = ['DOI']
-
-
 # Search form
 # ===========
 class SchemeSearchForm(Form):
     title = StringField('Name of scheme')
     keyword = StringField('Subject area', validators=[
-            validators.Optional(),
-            validators.AnyOf(
-                get_subject_terms(complete=True),
-                'Schemes are classified according to the terms in the {}.'
-                .format(thesaurus_link))])
+        validators.Optional(),
+        validators.AnyOf(
+            get_subject_terms(complete=True),
+            'Schemes are classified according to the terms in the {}.'
+            .format(thesaurus_link))])
     keyword_id = StringField('URI of subject area term')
     identifier = StringField('Identifier')
     funder = StringField('Funder')
@@ -2176,18 +2125,7 @@ class NativeDateField(StringField):
 
 class LocationForm(Form):
     url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
-    type = SelectField('Type', validators=[RequiredIf('url')])
-
-
-class FreeLocationForm(Form):
-    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
-    # Regex for location types allowed for mappings
-    allowed_locations = r'(document|library \([^)]+\)|executable \([^)]+\))'
-    type_help = ('Must be one of "document", "library (<language>)",'
-                 ' "executable (<platform>)".')
-    type = StringField('Type', validators=[
-        RequiredIf('url'),
-        validators.Regexp(allowed_locations, message=type_help)])
+    type = SelectField('Type', validators=[RequiredIf('url')], default='')
 
 
 class SampleForm(Form):
@@ -2259,15 +2197,10 @@ class SchemeForm(FlaskForm):
 # Editing organizations
 # ---------------------
 class OrganizationForm(FlaskForm):
-    type_choices = [
-            ('standards body', 'standards body'), ('archive', 'archive'),
-            ('professional group', 'professional group'),
-            ('coordination group', 'coordination group')]
-
     name = StringField('Name of organization')
     description = TextAreaField('Description')
     types = SelectMultipleField(
-        'Type of organization', choices=type_choices)
+        'Type of organization', choices=organization_types)
     locations = FieldList(
         FormField(LocationForm), 'Relevant links', min_entries=1)
     identifiers = FieldList(
@@ -2282,14 +2215,9 @@ class ToolForm(FlaskForm):
     description = TextAreaField('Description')
     supported_schemes = SelectMultipleField(
         'Metadata scheme(s) supported by this tool')
-    # Regex for types allowed for mappings
-    allowed_types = (r'(terminal \([^)]+\)|graphical \([^)]+\)|web service|'
-                     'web application|^$)')
-    type_help = ('Must be one of "terminal (<platform>)", "graphical'
-                 ' (<platform>)", "web service", "web application".')
     types = FieldList(
         StringField('Type', validators=[
-            validators.Regexp(allowed_types, message=type_help)]),
+            validators.Regexp(tool_type_regexp, message=tool_type_help)]),
         'Type of tool', min_entries=1)
     creators = FieldList(
         FormField(CreatorForm), 'People responsible for this tool',
@@ -2318,7 +2246,7 @@ class MappingForm(FlaskForm):
         choices=get_choices('g'))
     funders = SelectMultipleField('Organizations that funded this mapping')
     locations = FieldList(
-        FormField(FreeLocationForm), 'Links to this mapping', min_entries=1)
+        FormField(LocationForm), 'Links to this mapping', min_entries=1)
     identifiers = FieldList(
         FormField(IdentifierForm), 'Identifiers for this mapping',
         min_entries=1)
@@ -2409,22 +2337,14 @@ def edit_record(series, number):
         form.users.choices = organization_choices
         # Validation for URL types
         for f in form.locations:
-            f['type'].choices = [
-                ('', ''), ('document', 'document'), ('website', 'website'),
-                ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
-                ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
+            f['type'].choices = scheme_locations
     elif series == 'g':
         # Validation for URL types
         for f in form.locations:
-            f['type'].choices = [
-                ('', ''), ('website', 'website'), ('email', 'email address')]
+            f['type'].choices = organization_locations
     elif series == 't':
         # Tool type help
-        type_list = ['web application', 'web service']
-        for platform in computing_platforms:
-            type_list.append('terminal ({})'.format(platform))
-            type_list.append('graphical ({})'.format(platform))
-        params['toolTypes'] = type_list
+        params['toolTypes'] = tool_type_list
         # Validation for parent schemes
         form.supported_schemes.choices = scheme_choices
         # Validation for organizations
@@ -2432,31 +2352,27 @@ def edit_record(series, number):
         form.funders.choices = organization_choices
         # Validation for URL types
         for f in form.locations:
-            f['type'].choices = [
-                ('', ''), ('document', 'document'), ('website', 'website'),
-                ('application', 'application'),
-                ('service', 'service endpoint')]
+            f['type'].choices = tool_locations
     elif series == 'c':
-        # URL type help (unusually, it is not a fixed list)
-        type_list = ['document']
-        for language in programming_languages:
-            type_list.append('library ({})'.format(language))
-        for platform in computing_platforms:
-            type_list.append('executable ({})'.format(platform))
-        params['locationTypes'] = type_list
         # Validation for parent schemes
         form.input_schemes.choices = scheme_choices
         form.output_schemes.choices = scheme_choices
         # Validation for organizations
         form.maintainers.choices = organization_choices
         form.funders.choices = organization_choices
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].validators.append(
+                validators.Regexp(
+                    mapping_location_regexp, message=mapping_location_help))
+        params['locationTypes'] = mapping_location_list
     elif series == 'e':
         # Validation for organizations
         form.originators.choices = organization_choices
         # Validation for URL types; note that as there is a choice of one,
         # we apply it automatically, not via the form.
         for f in form.locations:
-            f['type'].choices = [('', ''), ('document', 'document')]
+            f['type'].choices = endorsement_locations
             f.url.validators = [validators.Optional()]
             f['type'].validators = [validators.Optional()]
 
@@ -2530,10 +2446,127 @@ def edit_record(series, number):
 
 # Generic API contribution handling
 # =================================
+def assess_conformance(series, element):
+    """Examines the contents of an element and assesses its compliance with the
+    MSC data model, giving the result as an integer score.
+
+    Arguments:
+        series (str): Record series
+        element (dict or Element): MSC record
+
+    Returns:
+        dict: 'level' contains the conformance level of the record as an int,
+            where 0 = invalid, 1 = valid, 2 = useful, and 3 = complete.
+            'errors' contains any validation errors.
+    """
+    conformance = 0
+    errors = dict()
+
+    # Convert JSON into MultiDict format expected by WTForms
+    converted = msc_to_form(element, padded=False)
+    multi_dict_items = []
+    for key in converted:
+        value = converted[key]
+        if isinstance(value, list):
+            for index, subvalue in enumerate(value):
+                if isinstance(subvalue, dict):
+                    for subsubkey in subvalue:
+                        multi_dict_items.append(
+                            ('{}-{}-{}'.format(key, index, subsubkey),
+                             subvalue[subsubkey]))
+                elif isinstance(subvalue, list):
+                    for subsubvalue in subvalue:
+                        multi_dict_items.append(
+                            ('{}-{}'.format(key, index), subvalue[subsubkey]))
+                else:
+                    multi_dict_items.append((key, subvalue))
+        elif isinstance(value, dict):
+            pass
+        else:
+            multi_dict_items.append((key, value))
+    data = MultiDict(multi_dict_items)
+
+    scheme_choices = get_choices('m')
+    organization_choices = get_choices('g')
+
+    # We'll use WTForms to validate the incoming JSON
+    form = Forms[series](data, meta={'csrf': False})
+    if series == 'm':
+        # Validation for parent schemes
+        form.parent_schemes.choices = scheme_choices
+        # Validation for organizations
+        form.maintainers.choices = organization_choices
+        form.funders.choices = organization_choices
+        form.users.choices = organization_choices
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].choices = scheme_locations
+    elif series == 'g':
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].choices = organization_locations
+    elif series == 't':
+        # Validation for parent schemes
+        form.supported_schemes.choices = scheme_choices
+        # Validation for organizations
+        form.maintainers.choices = organization_choices
+        form.funders.choices = organization_choices
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].choices = tool_locations
+    elif series == 'c':
+        # Validation for parent schemes
+        form.input_schemes.choices = scheme_choices
+        form.output_schemes.choices = scheme_choices
+        # Validation for organizations
+        form.maintainers.choices = organization_choices
+        form.funders.choices = organization_choices
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].validators.append(
+                validators.Regexp(
+                    mapping_location_regexp, message=mapping_location_help))
+    elif series == 'e':
+        # Validation for organizations
+        form.originators.choices = organization_choices
+        # Validation for URL types
+        for f in form.locations:
+            f['type'].choices = endorsement_locations
+
+    form_fields = list()
+    for unbound_field in Forms[series]._unbound_fields:
+        form_fields.append(unbound_field[0])
+    if form.validate():
+        validity = 0
+        utility = 1
+        completeness = 1
+        for field in form_fields:
+            if field in data:
+                validity = 1
+            else:
+                completeness = 0
+                if field in useful_fields[series]:
+                    utility = 0
+                    if validity:
+                        break
+        if validity:
+            conformance = validity + utility + completeness
+        else:
+            errors['general'] = 'No valid fields supplied.'
+
+    if form.errors:
+        errors.update(form.errors)
+
+    return {'level': conformance, 'errors': errors}
+
+
+conformance_levels = ['invalid', 'valid', 'useful', 'complete']
+
+
 # CREATE function
 @app.route('/api/<string(length=1):series>',
            methods=['POST'])
-@auth.login_required
+# @auth.login_required
 def create_record(series):
     if series not in table_names:
         abort(404)
@@ -2542,6 +2575,9 @@ def create_record(series):
     new_record = request.get_json()
 
     # Validate JSON payload
+    conformance = assess_conformance(series, new_record)
+    if conformance['level'] == 0:
+        return jsonify({'success': False, 'errors': conformance['errors']})
 
     # Filter out MSCID if present
     if 'identifiers' in new_record:
@@ -2553,11 +2589,13 @@ def create_record(series):
             new_record['identifiers'].append(identifier)
 
     # Save record
-    msc_data = fix_admin_data(new_record, series, 0)
-    number = tables[series].insert(msc_data)
+    # msc_data = fix_admin_data(new_record, series, 0)
+    # number = tables[series].insert(msc_data)
+    number = 0
 
     # Return newly generated MSCID
-    return jsonify({'id': get_mscid(series, number)})
+    return jsonify({'success': True, 'id': get_mscid(series, number),
+                    'conformance': conformance_levels[conformance['level']]})
 
 
 # UPDATE function
