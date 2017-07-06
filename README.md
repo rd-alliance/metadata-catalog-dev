@@ -1,7 +1,7 @@
 # Metadata Standards Catalog Development
 
 This repository is for experimental code used in the development of the
-Metadata Standards Catalog. Nothing here is ready for the prime time yet!
+Metadata Standards Catalog.
 
 ## Migrating data from the Metadata Standards Directory
 
@@ -108,6 +108,7 @@ To run the prototype Catalog, you will need quite a lot of non-standard packages
   - For Open ID v2.x login support, you will need [Flask-OpenID].
   - For Open ID Connect (OAuth) support, you will need [RAuth] (and hence
     [Requests]), and Google's [oauth2client].
+  - For API authentication, you will need [Flask-HTTPAuth] and [PassLib]
   - For database capability, you will need [TinyDB], [tinyrecord], and [RDFLib].
   - For version control of the databases, you will need [Dulwich].
 
@@ -119,6 +120,8 @@ To run the prototype Catalog, you will need quite a lot of non-standard packages
 [RAuth]: https://rauth.readthedocs.io/
 [Requests]: http://docs.python-requests.org/
 [oauth2client]: https://developers.google.com/api-client-library/python/guide/aaa_oauth
+[Flask-HTTPAuth]: https://flask-httpauth.readthedocs.io/
+[PassLib]: https://passlib.readthedocs.io/
 [tinyrecord]: https://github.com/eugene-eeo/tinyrecord
 [Dulwich]: https://www.dulwich.io/
 
@@ -168,7 +171,9 @@ as long as the script is running) and run the [Python 3] script `serve.py`:
 You should then be able to access the Catalog in your Web browser using the URL
 the script shows you, e.g. <http://127.0.0.1:5000/>.
 
-## Testing the API
+## Testing the public API
+
+### Display record
 
 To test retrieval of a record in JSON, use something like the following:
 
@@ -178,6 +183,8 @@ curl -H 'Accept: application/json' http://127.0.0.1:5000/msc/m13
 
 The convention for dereferencing the MSC internal IDs is to replace the initial
 `msc:` with the URL of the Catalog followed by `/msc/`.
+
+### Search for records
 
 To test the retrieval of internal IDs in response to a query, use something
 like the following:
@@ -212,4 +219,76 @@ as its value:
 
 ```json
 { "ids": [ "msc:m1", "msc:m2" ] }
+```
+
+## Testing the restricted API
+
+In order to use the restricted API, you will need to have your organization or
+application registered in the user database. Application accounts must have a
+name, email address and password.
+
+These accounts must be set up by an administrator, and cannot be added through
+the Web interface.
+
+### Change password
+
+To change the password, use something like the following:
+
+```bash
+curl -u username:password -X POST -H "Content-Type: application/json" -d '{"new_password": "your_new_password"}' http://127.0.0.1:5000/api/reset-password
+```
+
+If successful , the response will be a JSON object like this:
+
+```json
+{ "username": "your_username", "password_reset": "true"}
+```
+
+### Get token
+
+To receive an authorization token, use something like the following:
+
+```bash
+curl -u username:password -X GET http://127.0.0.1:5000/api/token
+```
+
+If authentication is successful, the response will be a JSON object, consisting
+of the key `token` and a long string as the value:
+
+```json
+{ "token": "the_actual_token_itself" }
+```
+
+The token will be valid for 600 seconds.
+
+### Create a new record
+
+To create a new record, send a POST request to one of the following URLs:
+
+  - `http://127.0.0.1:5000/api/m` for a metadata scheme
+  - `http://127.0.0.1:5000/api/g` for an organization
+  - `http://127.0.0.1:5000/api/t` for a tool
+  - `http://127.0.0.1:5000/api/c` for a mapping
+  - `http://127.0.0.1:5000/api/e` for an endorsement
+
+The body of the request should be a JSON object representing the complete record. Example:
+
+```bash
+curl -u token:anything -X POST -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' http://127.0.0.1:5000/api/g
+```
+
+The response will be a JSON object, consisting of three keys:
+
+  - `success` indicates whether the record was created successfully;
+  - `conformance` indicates if the record was judged to be invalid, valid,
+    useful, or complete;
+  - if the record was invalid, `errors` contains the reasons why the record was
+    rejected, otherwise `id` contains the MSC ID of the new record.
+
+```json
+{ "success": true, "conformance": "valid", "id": "msc:g99" }
+```
+
+```json
+{ "success": false, "conformance": "invalid", "errors": { "locations": [ { "type": [ "This field is required." ] } ] } }
 ```

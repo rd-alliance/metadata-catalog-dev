@@ -473,6 +473,7 @@ class ApiUser(Element):
         self['password_hash'] = pwd_context.encrypt(password)
         user_db.table('api_users').update(
             {'password_hash': self.get('password_hash')}, eids=[self.eid])
+        return True
 
     def verify_password(self, password):
         return pwd_context.verify_and_update(
@@ -2065,30 +2066,21 @@ def set_api_password():
         abort(400)  # unknown user, or password already set
     user = ApiUser(value=user_record, eid=user_record.eid)
     user.hash_password(password)
-    return jsonify({'username': user.get('name'), 'password_set': 'true'}), 201
+    return jsonify({'username': user.get('name'), 'password_set': 'true'})
 
 
 @app.route('/api/reset-password', methods=['POST'])
+@auth.login_required
 def reset_api_password():
-    username = request.json.get('username')
-    password = request.json.get('password')
     new_password = request.json.get('new_password')
-    if username is None or password is None or new_password is None:
-        abort(400)  # missing arguments
-    api_users = user_db.table('api_users')
-    User = Query()
-    user_record = api_users.get(User.name == username)
-    if not user_record or 'password_hash' not in user_record:
-        abort(400)  # unknown user, or password not already set
-    user = ApiUser(value=user_record, eid=user_record.eid)
-    if not user.verify_password(password):
-        abort(401)  # wrong old password
-    user.hash_password(new_password)
-    return jsonify({'username': user.get('name'), 'password_reset': 'true'}),\
-        201
+    if g.user.hash_password(new_password):
+        return jsonify(
+            {'username': g.user.get('name'), 'password_reset': 'true'})
+    else:
+        abort(500)
 
 
-app.route('/api/token')
+@app.route('/api/token')
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
@@ -2577,7 +2569,10 @@ def create_record(series):
     # Validate JSON payload
     conformance = assess_conformance(series, new_record)
     if conformance['level'] == 0:
-        return jsonify({'success': False, 'errors': conformance['errors']})
+        return jsonify({
+            'success': False,
+            'errors': conformance['errors'],
+            'conformance': conformance_levels[conformance['level']]})
 
     # Filter out MSCID if present
     if 'identifiers' in new_record:
@@ -2594,8 +2589,10 @@ def create_record(series):
     number = 0
 
     # Return newly generated MSCID
-    return jsonify({'success': True, 'id': get_mscid(series, number),
-                    'conformance': conformance_levels[conformance['level']]})
+    return jsonify({
+        'success': True,
+        'id': get_mscid(series, number),
+        'conformance': conformance_levels[conformance['level']]})
 
 
 # UPDATE function
