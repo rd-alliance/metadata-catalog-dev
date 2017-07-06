@@ -29,6 +29,14 @@ import rdflib
 from rdflib import Literal, Namespace, URIRef
 from rdflib.namespace import SKOS, RDF
 
+# See https://www.dulwich.io/
+# On Debian, Ubuntu, etc.:
+#   - old version: sudo apt-get install python3-dulwich
+#   - latest version: sudo -H pip3 install dulwich
+from dulwich.repo import Repo
+from dulwich.errors import NotGitRepository
+import dulwich.porcelain as git
+
 # Initializing
 # ============
 
@@ -37,8 +45,10 @@ from rdflib.namespace import SKOS, RDF
 script_dir = os.path.dirname(sys.argv[0])
 
 default_folder = os.path.realpath(os.path.join(script_dir, 'db'))
-default_file = os.path.realpath(
+default_db_file = os.path.realpath(
     os.path.join(script_dir, 'instance', 'data', 'db.json'))
+default_users_file = os.path.realpath(
+    os.path.join(script_dir, 'instance', 'data', 'users.json'))
 
 subfolders = {
     'endorsements': 'e',
@@ -46,6 +56,8 @@ subfolders = {
     'metadata-schemes': 'm',
     'organizations': 'g',
     'tools': 't'}
+
+mscwg_email = 'mscwg@rda-groups.org'
 
 # Command-line arguments
 # ----------------------
@@ -62,9 +74,15 @@ parser.add_argument(
     dest='folder')
 parser.add_argument(
     '-d', '--db',
-    help='location of TinyDB JSON data file (default: ./data/db.json)',
+    help='location of Catalog database file (default: ./instance/data/db.json)',
     action='store',
-    default=default_file,
+    default=default_db_file,
+    dest='file')
+parser.add_argument(
+    '-u', '--user-db',
+    help='location of user database file (default: ./instance/data/users.json)',
+    action='store',
+    default=default_users_file,
     dest='file')
 subparsers = parser.add_subparsers(
     title='subcommands',
@@ -81,6 +99,15 @@ parser_dump = subparsers.add_parser(
 parser_vocab = subparsers.add_parser(
     'vocab',
     help='fetch and optimise UNESCO Vocabulary')
+parser_blockuser = subparsers.add_parser(
+    'block-user',
+    help='block regular user of the Catalog')
+parser_blockapiuser = subparsers.add_parser(
+    'block-api-user',
+    help='block user of the restricted Catalog API')
+parser_addapiuser = subparsers.add_parser(
+    'add-api-user',
+    help='add API user to user database')
 
 
 # Operations
@@ -339,9 +366,22 @@ def dbCompile(args):
         isCompiled = True
 
     if isCompiled:
+        # Write the json file
         with open(args.file, 'w') as f:
             json.dump(db, f, default=json_serial, sort_keys=True, indent=2,
                       ensure_ascii=False)
+
+        # Add file to Git index
+        git.add(repo=os.path.dirname(args.file), paths=[args.file])
+
+        # Prepare commit information
+        committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
+        author = committer
+        message = ('Refresh database fully from YAML files'.encode('utf8'))
+
+        # Execute commit
+        git.commit(os.path.dirname(args.file), message=message, author=author,
+                   committer=committer)
     else:
         print('No data files found, database not created.')
 
@@ -463,6 +503,31 @@ def dbVocab(args):
 
 
 parser_vocab.set_defaults(func=dbVocab)
+
+
+# Block user
+# ----------
+def dbBlock(args, api=False):
+    pass
+
+
+parser_blockuser.set_defaults(func=dbBlock)
+
+
+def dbBlockApi(args):
+    dbBlock(args, api=True)
+
+
+parser_blockapiuser.set_defaults(func=dbBlockApi)
+
+
+# Add API user
+# ------------
+def dbAdd(args):
+    pass
+
+
+parser_addapiuser.set_defaults(func=dbAdd)
 
 # Processing
 # ==========
