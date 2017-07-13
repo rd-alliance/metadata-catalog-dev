@@ -19,7 +19,7 @@ import yaml
 # See http://tinydb.readthedocs.io/en/latest/intro.html
 # Install from PyPi: sudo pip3 install tinydb
 # sudo apt install python3-ujson
-from tinydb import TinyDB
+from tinydb import TinyDB, Query
 
 # See http://rdflib.readthedocs.io/
 # On Debian, Ubuntu, etc.:
@@ -508,7 +508,44 @@ parser_vocab.set_defaults(func=dbVocab)
 # Block user
 # ----------
 def dbBlock(args, api=False):
-    pass
+    # Retrieve user record
+    db = TinyDB(args.file)
+    User = Query()
+    if api:
+        table = db.table('api_users')
+        search_key = 'Username'
+    else:
+        table = db
+        search_key = 'ID code'
+    user_list = list()
+    status = 0
+    while status != 1:
+        print('\nPlease give the {} of the user to block.'
+              .format(search_key.lower()))
+        userid = input('> ')
+        user_list = table.search(User.openid == userid)
+        status = sorted((0, len(user_list), 2))[1]  # 0, 1 or 2
+        messages = ['\nUser not found. Please try again',
+                    '\nBlocking user...',
+                    '\n{} not unique. Please try again'.format(search_key)]
+        print(messages[status])
+    user = user_list[0]
+
+    # Update user record
+    table.update({'blocked': True}, eids=[user.eid])
+
+    # Add file to Git index
+    git.add(repo=os.path.dirname(args.file), paths=[args.file])
+
+    # Prepare commit information
+    committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
+    author = committer
+    message = ('Block user {}'.format(search_key).encode('utf8'))
+
+    # Execute commit
+    git.commit(os.path.dirname(args.file), message=message, author=author,
+               committer=committer)
+    print('\nUser successfully blocked')
 
 
 parser_blockuser.set_defaults(func=dbBlock)
