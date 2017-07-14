@@ -77,13 +77,13 @@ parser.add_argument(
     help='location of Catalog database file (default: ./instance/data/db.json)',
     action='store',
     default=default_db_file,
-    dest='file')
+    dest='db')
 parser.add_argument(
     '-u', '--user-db',
     help='location of user database file (default: ./instance/data/users.json)',
     action='store',
     default=default_users_file,
-    dest='file')
+    dest='userdb')
 subparsers = parser.add_subparsers(
     title='subcommands',
     help='perform database operation')
@@ -105,10 +105,21 @@ parser_blockuser = subparsers.add_parser(
 parser_blockapiuser = subparsers.add_parser(
     'block-api-user',
     help='block user of the restricted Catalog API')
+parser_unblockuser = subparsers.add_parser(
+    'unblock-user',
+    help='unblock regular user of the Catalog')
+parser_unblockapiuser = subparsers.add_parser(
+    'unblock-api-user',
+    help='unblock user of the restricted Catalog API')
 parser_addapiuser = subparsers.add_parser(
     'add-api-user',
     help='add API user to user database')
-
+parser_addapiuser.add_argument(
+    'name',
+    help='name of the API user')
+parser_addapiuser.add_argument(
+    'email',
+    help='contact email address for the API user')
 
 # Operations
 # ==========
@@ -315,15 +326,15 @@ def dbCompile(args):
               ''.format(parser_checkids.prog))
         sys.exit(1)
 
-    if os.path.isfile(args.file):
-        print('Database file already exists at {}.'.format(args.file))
+    if os.path.isfile(args.db):
+        print('Database file already exists at {}.'.format(args.db))
         print('Do you wish to replace it? [y/N]')
         reply = input("> ")
         if reply[:1].lower() != 'y':
             print('Okay. I will leave it alone.')
             sys.exit(0)
-    elif not os.path.isdir(os.path.dirname(args.file)):
-        os.makedirs(os.path.dirname(args.file))
+    elif not os.path.isdir(os.path.dirname(args.db)):
+        os.makedirs(os.path.dirname(args.db))
 
     isCompiled = False
     db = dict()
@@ -367,12 +378,12 @@ def dbCompile(args):
 
     if isCompiled:
         # Write the json file
-        with open(args.file, 'w') as f:
+        with open(args.db, 'w') as f:
             json.dump(db, f, default=json_serial, sort_keys=True, indent=2,
                       ensure_ascii=False)
 
         # Add file to Git index
-        git.add(repo=os.path.dirname(args.file), paths=[args.file])
+        git.add(repo=os.path.dirname(args.db), paths=[args.db])
 
         # Prepare commit information
         committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
@@ -380,7 +391,7 @@ def dbCompile(args):
         message = ('Refresh database fully from YAML files'.encode('utf8'))
 
         # Execute commit
-        git.commit(os.path.dirname(args.file), message=message, author=author,
+        git.commit(os.path.dirname(args.db), message=message, author=author,
                    committer=committer)
     else:
         print('No data files found, database not created.')
@@ -399,7 +410,7 @@ def createSlug(string):
 
 
 def dbDump(args):
-    if not os.path.isfile(args.file):
+    if not os.path.isfile(args.db):
         print('Cannot find database file; please check location and try'
               ' again.')
         sys.exit(1)
@@ -430,7 +441,7 @@ def dbDump(args):
             print('Okay. I will leave it alone.')
             sys.exit(0)
 
-    db = TinyDB(args.file)
+    db = TinyDB(args.db)
 
     for folder, series in subfolders.items():
         folder_path = os.path.join(args.folder, folder)
@@ -507,9 +518,9 @@ parser_vocab.set_defaults(func=dbVocab)
 
 # Block user
 # ----------
-def dbBlock(args, api=False):
+def dbBlock(args, api=False, toggle=True):
     # Retrieve user record
-    db = TinyDB(args.file)
+    db = TinyDB(args.userdb)
     User = Query()
     if api:
         table = db.table('api_users')
@@ -517,45 +528,58 @@ def dbBlock(args, api=False):
     else:
         table = db
         search_key = 'ID code'
+    if toggle:
+        verb = ('Block', 'Blocking', 'blocked')
+    else:
+        verb = ('Unblock', 'Unblocking', 'unblocked')
     user_list = list()
     status = 0
     while status != 1:
-        print('\nPlease give the {} of the user to block.'
-              .format(search_key.lower()))
+        print('\nPlease give the {} of the user to {}.'
+              .format(search_key.lower(), verb[0].lower()))
         userid = input('> ')
         user_list = table.search(User.openid == userid)
         status = sorted((0, len(user_list), 2))[1]  # 0, 1 or 2
         messages = ['\nUser not found. Please try again',
-                    '\nBlocking user...',
+                    '\n{} user...'.format(verb[1]),
                     '\n{} not unique. Please try again'.format(search_key)]
         print(messages[status])
     user = user_list[0]
 
     # Update user record
-    table.update({'blocked': True}, eids=[user.eid])
+    table.update({'blocked': toggle}, eids=[user.eid])
 
     # Add file to Git index
-    git.add(repo=os.path.dirname(args.file), paths=[args.file])
+    git.add(repo=os.path.dirname(args.db), paths=[args.db])
 
     # Prepare commit information
     committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
     author = committer
-    message = ('Block user {}'.format(search_key).encode('utf8'))
+    message = ('{} user {}'
+               .format(verb[0], search_key).encode('utf8'))
 
     # Execute commit
-    git.commit(os.path.dirname(args.file), message=message, author=author,
+    git.commit(os.path.dirname(args.db), message=message, author=author,
                committer=committer)
-    print('\nUser successfully blocked')
-
-
-parser_blockuser.set_defaults(func=dbBlock)
+    print('\nUser successfully {}'.format(verb[2]))
 
 
 def dbBlockApi(args):
     dbBlock(args, api=True)
 
 
+def dbUnblock(args):
+    dbBlock(args, toggle=False)
+
+
+def dbUnblockApi(args):
+    dbBlock(args, api=True, toggle=False)
+
+
+parser_blockuser.set_defaults(func=dbBlock)
 parser_blockapiuser.set_defaults(func=dbBlockApi)
+parser_unblockuser.set_defaults(func=dbUnblock)
+parser_unblockapiuser.set_defaults(func=dbUnblockApi)
 
 
 # Add API user
