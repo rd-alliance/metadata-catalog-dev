@@ -10,6 +10,8 @@ import os
 import sys
 import json
 import re
+import random
+import string
 from datetime import date
 
 # Non-standard
@@ -36,6 +38,10 @@ from rdflib.namespace import SKOS, RDF
 from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 import dulwich.porcelain as git
+
+# See https://passlib.readthedocs.io/
+# Install from PyPi: sudo -H pip3 install passlib
+from passlib.apps import custom_app_context as pwd_context
 
 # Initializing
 # ============
@@ -585,7 +591,39 @@ parser_unblockapiuser.set_defaults(func=dbUnblockApi)
 # Add API user
 # ------------
 def dbAdd(args):
-    pass
+    db = TinyDB(args.userdb)
+    table = db.table('api_users')
+    name = args.name
+    email = args.email
+
+    # Generate pseudo-random string
+    try:
+        rng = random.SystemRandom()
+    except NotImplementedError:
+        rng = random
+    password = ''.join(rng.choices(
+        string.ascii_letters + string.digits,
+        k=12))
+
+    # Update user record
+    table.insert({
+        'name': name,
+        'email': email,
+        'password_hash': pwd_context.encrypt(password)})
+
+    # Add file to Git index
+    git.add(repo=os.path.dirname(args.db), paths=[args.db])
+
+    # Prepare commit information
+    committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
+    author = committer
+    message = ('Add API user {}'
+               .format(name).encode('utf8'))
+
+    # Execute commit
+    git.commit(os.path.dirname(args.db), message=message, author=author,
+               committer=committer)
+    print('\nUser successfully added with password {}'.format(password))
 
 
 parser_addapiuser.set_defaults(func=dbAdd)
