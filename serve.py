@@ -157,7 +157,7 @@ class JSONStorageWithGit(Storage):
             author = ('{} <{}>'.format(
                 current_user['name'], current_user['email']).encode('utf8'))
             message = ('Update to {} from {}\n\nUser ID:\n{}'.format(
-                self.name, current_user['name'], current_user['openid'])
+                self.name, current_user['name'], current_user['userid'])
                 .encode('utf8'))
         else:
             author = committer
@@ -1939,7 +1939,7 @@ def oauth_callback(provider):
         flash('Authentication failed.')
         return redirect(url_for('hello'))
     User = Query()
-    profile = user_db.get(User.openid == openid)
+    profile = user_db.get(User.userid == openid)
     if profile:
         flash('Successfully signed in.')
         user = load_user(profile.eid)
@@ -1974,7 +1974,7 @@ def create_profile():
         data = {
             'name': form.name.data,
             'email': form.email.data,
-            'openid': session['openid']}
+            'userid': session['openid']}
         user_eid = user_db.insert(data)
         flash('Profile successfully created.')
         user = User(value=data, eid=user_eid)
@@ -1991,7 +1991,7 @@ def edit_profile():
     '''Allows users to change their displayed username and email address.
     '''
     openid_formatted = 'unknown profile'
-    openid_tuple = current_user['openid'].partition('$')
+    openid_tuple = current_user['userid'].partition('$')
     if openid_tuple[2]:
         # OpenID Connect profile
         openid_format = '{} profile for '
@@ -2007,7 +2007,7 @@ def edit_profile():
         openid_formatted += current_user['name']
     else:
         # OpenID v2 profile
-        openid_formatted = current_user['openid']
+        openid_formatted = current_user['userid']
     form = ProfileForm(request.values, data=current_user)
     if request.method == 'POST' and form.validate():
         name = request.form['name']
@@ -2015,7 +2015,7 @@ def edit_profile():
         data = {
             'name': form.name.data,
             'email': form.email.data,
-            'openid': current_user['openid']}
+            'userid': current_user['userid']}
         if user_db.update(data, eids=[current_user.eid]):
             flash('Profile successfully updated.')
         else:
@@ -2053,22 +2053,6 @@ def logout():
 # ==================
 #
 # Source: https://blog.miguelgrinberg.com/post/restful-authentication-with-flask
-@app.route('/api/set-password', methods=['POST'])
-def set_api_password():
-    username = request.json.get('username')
-    password = request.json.get('password')
-    if username is None or password is None:
-        abort(400)  # missing arguments
-    api_users = user_db.table('api_users')
-    User = Query()
-    user_record = api_users.get(User.name == username)
-    if not user_record or 'password_hash' in user_record:
-        abort(400)  # unknown user, or password already set
-    user = ApiUser(value=user_record, eid=user_record.eid)
-    user.hash_password(password)
-    return jsonify({'username': user.get('name'), 'password_set': 'true'})
-
-
 @app.route('/api/reset-password', methods=['POST'])
 @auth.login_required
 def reset_api_password():
@@ -2088,14 +2072,14 @@ def get_auth_token():
 
 
 @auth.verify_password
-def verify_password(username_or_token, password):
+def verify_password(userid_or_token, password):
     # first try to authenticate by token
-    user = ApiUser.verify_auth_token(username_or_token)
+    user = ApiUser.verify_auth_token(userid_or_token)
     if not user:
         # try to authenticate with username/password
         api_users = user_db.table('api_users')
         User = Query()
-        user_record = api_users.get(User.name == username_or_token)
+        user_record = api_users.get(User.userid == userid_or_token)
         if not user_record:
             return False
         user = ApiUser(value=user_record, eid=user_record.eid)

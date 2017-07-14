@@ -22,6 +22,7 @@ import yaml
 # Install from PyPi: sudo pip3 install tinydb
 # sudo apt install python3-ujson
 from tinydb import TinyDB, Query
+from tinydb.storages import Storage, touch
 
 # See http://rdflib.readthedocs.io/
 # On Debian, Ubuntu, etc.:
@@ -42,6 +43,53 @@ import dulwich.porcelain as git
 # See https://passlib.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install passlib
 from passlib.apps import custom_app_context as pwd_context
+
+
+# Utility definitions
+# ===================
+# This is an exact copy from TinyDB, but using regular json instead of ujson.
+class RealJSONStorage(Storage):
+    """
+    Store the data in a JSON file.
+    """
+
+    def __init__(self, path, create_dirs=False, **kwargs):
+        """
+        Create a new instance.
+
+        Also creates the storage file, if it doesn't exist.
+
+        :param path: Where to store the JSON data.
+        :type path: str
+        """
+
+        super(RealJSONStorage, self).__init__()
+        touch(path, create_dirs=create_dirs)  # Create file if not exists
+        self.kwargs = kwargs
+        self._handle = open(path, 'r+')
+
+    def close(self):
+        self._handle.close()
+
+    def read(self):
+        # Get the file size
+        self._handle.seek(0, os.SEEK_END)
+        size = self._handle.tell()
+
+        if not size:
+            # File is empty
+            return None
+        else:
+            self._handle.seek(0)
+            return json.load(self._handle)
+
+    def write(self, data):
+        self._handle.seek(0)
+        serialized = json.dumps(data, **self.kwargs)
+        self._handle.write(serialized)
+        self._handle.flush()
+        self._handle.truncate()
+
 
 # Initializing
 # ============
@@ -64,6 +112,9 @@ subfolders = {
     'tools': 't'}
 
 mscwg_email = 'mscwg@rda-groups.org'
+
+db_format = {'storage': RealJSONStorage, 'sort_keys': True, 'indent': 2,
+             'ensure_ascii': False}
 
 # Command-line arguments
 # ----------------------
@@ -123,6 +174,9 @@ parser_addapiuser = subparsers.add_parser(
 parser_addapiuser.add_argument(
     'name',
     help='name of the API user')
+parser_addapiuser.add_argument(
+    'userid',
+    help='user ID of the API user')
 parser_addapiuser.add_argument(
     'email',
     help='contact email address for the API user')
@@ -447,7 +501,7 @@ def dbDump(args):
             print('Okay. I will leave it alone.')
             sys.exit(0)
 
-    db = TinyDB(args.db)
+    db = TinyDB(args.db, **db_format)
 
     for folder, series in subfolders.items():
         folder_path = os.path.join(args.folder, folder)
@@ -526,7 +580,7 @@ parser_vocab.set_defaults(func=dbVocab)
 # ----------
 def dbBlock(args, api=False, toggle=True):
     # Retrieve user record
-    db = TinyDB(args.userdb)
+    db = TinyDB(args.userdb, **db_format)
     User = Query()
     if api:
         table = db.table('api_users')
@@ -556,17 +610,20 @@ def dbBlock(args, api=False, toggle=True):
     table.update({'blocked': toggle}, eids=[user.eid])
 
     # Add file to Git index
-    git.add(repo=os.path.dirname(args.db), paths=[args.db])
+    try:
+        repo = Repo(os.path.dirname(args.userdb))
+    except NotGitRepository:
+        repo = Repo.init(os.path.dirname(args.userdb))
+    git.add(repo=repo, paths=[args.userdb])
 
     # Prepare commit information
     committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
     author = committer
-    message = ('{} user {}'
-               .format(verb[0], search_key).encode('utf8'))
+    message = ('{} user {}\n\nChanged by dbctl.py'
+               .format(verb[0], userid).encode('utf8'))
 
     # Execute commit
-    git.commit(os.path.dirname(args.db), message=message, author=author,
-               committer=committer)
+    git.commit(repo, message=message, author=author, committer=committer)
     print('\nUser successfully {}'.format(verb[2]))
 
 
@@ -591,39 +648,61 @@ parser_unblockapiuser.set_defaults(func=dbUnblockApi)
 # Add API user
 # ------------
 def dbAdd(args):
-    db = TinyDB(args.userdb)
+    db = TinyDB(args.userdb, **db_format)
     table = db.table('api_users')
     name = args.name
+    userid = args.userid
     email = args.email
+
+    # Validation
+    errors = list()
+    # Check username
+    badchars = ''
+    for char in userid:
+        if char not in (string.ascii_letters + string.digits + '-_.'):
+            badchars += char
+    if badchars:
+        errors.append('These characters are not allowed in the user ID: "{}"'
+                      .format(badchars))
+    # Check email
+    if not re.match(r'[^@\s]+@[^@\s\.]+\.[^@\s]+', email):
+        errors.append('That email address does not look quite right.')
+    # Were there errors?
+    if errors:
+        print('\n'.join(errors))
+        sys.exit(1)
 
     # Generate pseudo-random string
     try:
         rng = random.SystemRandom()
     except NotImplementedError:
         rng = random
-    password = ''.join(rng.choices(
-        string.ascii_letters + string.digits,
-        k=12))
+    password = ''.join(rng.choice(string.ascii_letters + string.digits)
+                       for _ in range(12))
 
     # Update user record
     table.insert({
         'name': name,
         'email': email,
+        'userid': userid,
         'password_hash': pwd_context.encrypt(password)})
 
     # Add file to Git index
-    git.add(repo=os.path.dirname(args.db), paths=[args.db])
+    try:
+        repo = Repo(os.path.dirname(args.userdb))
+    except NotGitRepository:
+        repo = Repo.init(os.path.dirname(args.userdb))
+    git.add(repo=repo, paths=[args.userdb])
 
     # Prepare commit information
     committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
     author = committer
-    message = ('Add API user {}'
+    message = ('Add API user {}\n\nChanged by dbctl.py'
                .format(name).encode('utf8'))
 
     # Execute commit
-    git.commit(os.path.dirname(args.db), message=message, author=author,
-               committer=committer)
-    print('\nUser successfully added with password {}'.format(password))
+    git.commit(repo, message=message, author=author, committer=committer)
+    print('User successfully added with password {}'.format(password))
 
 
 parser_addapiuser.set_defaults(func=dbAdd)
