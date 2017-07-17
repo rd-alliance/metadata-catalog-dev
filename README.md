@@ -59,12 +59,20 @@ Note that the `db/` folder is now part of the version-controlled code.
 Once you are happy with the data in its human-friendly YAML format, you will
 need to compile it to a single app-friendly JSON file. For this you can use the
 [Python 3] script `dbctl.py`. You will again need [PyYAML] but you will also
-need the non-standard libraries [TinyDB] and [RDFLib]. (Ubuntu/Debian users:
-TinyDB has not been packaged for Ubuntu so you will probably want to install it
-with `python3-pip`. RDFLib has been packaged as `python3-rdflib`.)
+need some other non-standard libraries:
+
+- For reading/writing to the databases, you will need [TinyDB] and [RDFLib].
+- For version control of the databases, you will need [Dulwich].
+- For password hashing (see below), you will need [PassLib].
+
+(Ubuntu/Debian users: TinyDB has not been packaged for Ubuntu so you will
+probably want to install it with `python3-pip`. RDFLib has been packaged as
+`python3-rdflib`, Dulwich as `python3-dulwich`, PassLib as `python3-passlib`.)
 
 [TinyDB]: http://tinydb.readthedocs.io/
 [RDFLib]: http://rdflib.readthedocs.io/
+[Dulwich]: https://www.dulwich.io/
+[PassLib]: https://passlib.readthedocs.io/
 
 If you are using the defaults you should be able to generate a file `db.json`
 (in an `instance/data` folder) by running the script with the `compile`
@@ -99,6 +107,38 @@ of the UNESCO Vocabulary on the Web and transform it into
 unused triples and (in a somewhat hackish manner) enabling the domains and
 microthesauri to be traversed as if they were higher level concepts.
 
+## Managing users
+
+You can use `dbctl.py` to perform actions on the user database not available through the Metadata Standards Catalog interfaces. This separation is a security measure.
+
+To add a new API user, run the script with `add-api-user` action and three arguments:
+
+```.bash
+./dbctl.py add-api-user "Readable name" "user ID" "email address"
+```
+
+  - The readable name can be anything, but Git will not be happy if it is too
+    long. It is only used in the Git logs.
+  - The user ID (username) can only contain ASCII letters (upper or lower case),
+    digits, hyphens or underscores.
+  - Some light verification is performed on the email address as well. It is
+    only used in the Git logs.
+
+The script will return an automatically generated password. This (and the user
+ID, if not chosen by them) should be passed to the API user; they should be
+encouraged to change the password as soon as possible, but this is not enforced.
+
+To block or unblock a user, use one of the following actions:
+
+```.bash
+./dbctl.py block-user "user ID"
+./dbctl.py block-api-user "user ID"
+./dbctl.py unblock-user "user ID"
+./dbctl.py unblock-api-user "user ID"
+```
+
+The user ID must correspond to a `userid` value in the database.
+
 ## Running the prototype Metadata Standards Catalog
 
 To run the prototype Catalog, you will need quite a lot of non-standard packages, but all of them are easily available via the `pip` utility:
@@ -121,9 +161,7 @@ To run the prototype Catalog, you will need quite a lot of non-standard packages
 [Requests]: http://docs.python-requests.org/
 [oauth2client]: https://developers.google.com/api-client-library/python/guide/aaa_oauth
 [Flask-HTTPAuth]: https://flask-httpauth.readthedocs.io/
-[PassLib]: https://passlib.readthedocs.io/
 [tinyrecord]: https://github.com/eugene-eeo/tinyrecord
-[Dulwich]: https://www.dulwich.io/
 
 The Catalog is compatible with Flask 0.10 (this is what `python3-flask` gives
 you in Ubuntu LTS releases).
@@ -235,7 +273,7 @@ the Web interface.
 To change the password, use something like the following:
 
 ```bash
-curl -u username:password -X POST -H "Content-Type: application/json" -d '{"new_password": "your_new_password"}' http://127.0.0.1:5000/api/reset-password
+curl -u userid:password -X POST -H "Content-Type: application/json" -d '{"new_password": "your_new_password"}' http://127.0.0.1:5000/api/reset-password
 ```
 
 If successful , the response will be a JSON object like this:
@@ -249,7 +287,7 @@ If successful , the response will be a JSON object like this:
 To receive an authorization token, use something like the following:
 
 ```bash
-curl -u username:password -X GET http://127.0.0.1:5000/api/token
+curl -u userid:password -X GET http://127.0.0.1:5000/api/token
 ```
 
 If authentication is successful, the response will be a JSON object, consisting
