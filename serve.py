@@ -2568,9 +2568,8 @@ def create_record(series):
             new_record['identifiers'].append(identifier)
 
     # Save record
-    # msc_data = fix_admin_data(new_record, series, 0)
-    # number = tables[series].insert(msc_data)
-    number = 0
+    msc_data = fix_admin_data(new_record, series, 0)
+    number = tables[series].insert(msc_data)
 
     # Return newly generated MSCID
     return jsonify({
