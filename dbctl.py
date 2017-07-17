@@ -156,18 +156,35 @@ parser_dump = subparsers.add_parser(
 parser_vocab = subparsers.add_parser(
     'vocab',
     help='fetch and optimise UNESCO Vocabulary')
+# We reuse the following help text a lot
+user_argument = {
+    'help': 'openID/OAuth ID code of the user'}
+apiuser_argument = {
+    'help': 'user ID of the API user'}
 parser_blockuser = subparsers.add_parser(
     'block-user',
     help='block regular user of the Catalog')
+parser_blockuser.add_argument(
+    'userid',
+    **user_argument)
 parser_blockapiuser = subparsers.add_parser(
     'block-api-user',
     help='block user of the restricted Catalog API')
+parser_blockapiuser.add_argument(
+    'userid',
+    **apiuser_argument)
 parser_unblockuser = subparsers.add_parser(
     'unblock-user',
     help='unblock regular user of the Catalog')
+parser_unblockuser.add_argument(
+    'userid',
+    **user_argument)
 parser_unblockapiuser = subparsers.add_parser(
     'unblock-api-user',
     help='unblock user of the restricted Catalog API')
+parser_unblockapiuser.add_argument(
+    'userid',
+    **apiuser_argument)
 parser_addapiuser = subparsers.add_parser(
     'add-api-user',
     help='add API user to user database')
@@ -176,10 +193,11 @@ parser_addapiuser.add_argument(
     help='name of the API user')
 parser_addapiuser.add_argument(
     'userid',
-    help='user ID of the API user')
+    **apiuser_argument)
 parser_addapiuser.add_argument(
     'email',
     help='contact email address for the API user')
+
 
 # Operations
 # ==========
@@ -584,26 +602,22 @@ def dbBlock(args, api=False, toggle=True):
     User = Query()
     if api:
         table = db.table('api_users')
-        search_key = 'Username'
     else:
         table = db
-        search_key = 'ID code'
     if toggle:
         verb = ('Block', 'Blocking', 'blocked')
     else:
         verb = ('Unblock', 'Unblocking', 'unblocked')
-    user_list = list()
-    status = 0
-    while status != 1:
-        print('\nPlease give the {} of the user to {}.'
-              .format(search_key.lower(), verb[0].lower()))
-        userid = input('> ')
-        user_list = table.search(User.openid == userid)
-        status = sorted((0, len(user_list), 2))[1]  # 0, 1 or 2
-        messages = ['\nUser not found. Please try again',
-                    '\n{} user...'.format(verb[1]),
-                    '\n{} not unique. Please try again'.format(search_key)]
-        print(messages[status])
+    user_list = table.search(User.userid == args.userid)
+    status = len(user_list)
+    if status < 1:
+        print('User {} not found. Exiting.'.format(args.userid))
+        sys.exit(1)
+    elif status > 1:
+        print('ID not unique. Is there a problem in the database?')
+        sys.exit(2)
+
+    print('{} user {}...'.format(verb[1], args.userid))
     user = user_list[0]
 
     # Update user record
@@ -620,7 +634,7 @@ def dbBlock(args, api=False, toggle=True):
     committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
     author = committer
     message = ('{} user {}\n\nChanged by dbctl.py'
-               .format(verb[0], userid).encode('utf8'))
+               .format(verb[0], args.userid).encode('utf8'))
 
     # Execute commit
     git.commit(repo, message=message, author=author, committer=committer)
