@@ -2652,6 +2652,24 @@ def update_record(series, number):
 
 
 # DELETE function
+@app.route('/api/<string(length=1):series><int:number>',
+           methods=['DELETE'])
+@auth.login_required
+def delete_record(series, number):
+    # Is this record in the database?
+    if series not in table_names:
+        abort(404)
+    element = tables[series].get(eid=number)
+    if not element:
+        abort(404)
+
+    tables[series].remove(eids=[number])
+
+    # Return status, MSCID and conformance level
+    return jsonify({
+        'success': True,
+        'id': get_mscid(series, number)})
+
 
 
 # Executing

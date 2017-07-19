@@ -342,3 +342,20 @@ curl -u token:anything -X PUT -H 'Content-Type: application/json' -d '{"name": "
 ```
 
 The response is the same as for ‘Create a new record’.
+
+### Delete an existing record
+
+To delete a record, send a DELETE request to `http://127.0.0.1:5000/api/` followed by the MSC ID, e.g. `http://127.0.0.1:5000/api/m1`. Example:
+
+```bash
+curl -u token:anything -X DELETE http://127.0.0.1:5000/api/g99
+```
+
+The response will be a JSON object, consisting of three keys:
+
+  - `success` indicates whether the record was deleted successfully;
+  - `id`, containing the MSC ID of the deleted record.
+
+```json
+{ "success": true, "id": "msc:g99" }
+```
