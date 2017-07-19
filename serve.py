@@ -2575,13 +2575,9 @@ def assess_conformance(series, element):
 conformance_levels = ['invalid', 'valid', 'useful', 'complete']
 
 
-# CREATE function
-@app.route('/api/<string(length=1):series>',
-           methods=['POST'])
-# @auth.login_required
-def create_record(series):
-    if series not in table_names:
-        abort(404)
+# Generic record editing function
+def create_or_update_record(series, number, element):
+    mscid = None
 
     # Retrieve JSON payload
     new_record = request.get_json()
@@ -2600,18 +2596,44 @@ def create_record(series):
         new_record['identifiers'].clear()
         for identifier in id_list:
             if 'scheme' in identifier and identifier['scheme'] == 'RDA-MSCWG':
+                if number:
+                    mscid = get_mscid(series, number)
+                    if 'id' in identifier and identifier['id'] != mscid:
+                        abort(422)  # Throw error if MSCIDs do not match
                 continue
             new_record['identifiers'].append(identifier)
 
     # Save record
-    msc_data = fix_admin_data(new_record, series, 0)
-    number = tables[series].insert(msc_data)
+    msc_data = fix_admin_data(new_record, series, number)
+    if number:
+        # Apply changes
+        with transaction(tables[series]) as t:
+            for key in (k for k in element if k not in msc_data):
+                t.update(delete(key), eids=[number])
+            t.update(msc_data, eids=[number])
+    else:
+        # Insert new record
+        number = tables[series].insert(msc_data)
 
-    # Return newly generated MSCID
+    if not mscid:
+        mscid = get_mscid(series, number)
+
+    # Return status, MSCID and conformance level
     return jsonify({
         'success': True,
-        'id': get_mscid(series, number),
+        'id': mscid,
         'conformance': conformance_levels[conformance['level']]})
+
+
+# CREATE function
+@app.route('/api/<string(length=1):series>',
+           methods=['POST'])
+# @auth.login_required
+def create_record(series):
+    if series not in table_names:
+        abort(404)
+
+    create_or_update_record(series, 0, None)
 
 
 # UPDATE function
@@ -2626,34 +2648,7 @@ def update_record(series, number):
     if not element:
         abort(404)
 
-    # Form MSC ID
-    mscid = get_mscid(series, number)
-
-    # Retrieve JSON payload
-    new_record = request.get_json()
-
-    # Validate JSON payload
-
-    # Filter out MSCID if present
-    if 'identifiers' in new_record:
-        id_list = new_record['identifiers'].copy()
-        new_record['identifiers'].clear()
-        for identifier in id_list:
-            if 'scheme' in identifier and identifier['scheme'] == 'RDA-MSCWG':
-                if 'id' in identifier and identifier['id'] != mscid:
-                    abort(422)  # Throw error if MSCIDs do not match
-                continue
-            new_record['identifiers'].append(identifier)
-
-    # Apply changes to record
-    msc_data = fix_admin_data(new_record, series, number)
-    with transaction(tables[series]) as t:
-        for key in (k for k in element if k not in msc_data):
-            t.update(delete(key), eids=[number])
-        t.update(msc_data, eids=[number])
-
-    # Return record with MSCID reinstated
-    display(series, number)
+    create_or_update_record(series, number, element)
 
 
 # DELETE function
