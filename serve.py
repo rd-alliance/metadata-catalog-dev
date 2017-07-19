@@ -2455,6 +2455,9 @@ def edit_record(series, number):
 
 # Generic API contribution handling
 # =================================
+#
+# Conformance checking function
+# -----------------------------
 def assess_conformance(series, element):
     """Examines the contents of an element and assesses its compliance with the
     MSC data model, giving the result as an integer score.
@@ -2550,7 +2553,7 @@ def assess_conformance(series, element):
         utility = 1
         completeness = 1
         for field in form_fields:
-            if field in data:
+            if field in converted:
                 validity = 1
             else:
                 completeness = 0
