@@ -1047,7 +1047,7 @@ def terms_of_use():
 # ==============
 @app.route('/msc/<string(length=1):series><int:number>')
 @app.route('/msc/<string(length=1):series><int:number>/<field>')
-def display(series, number, field=None):
+def display(series, number, field=None, api=False):
     # Is this record in the database?
     if series not in table_names:
         abort(404)
@@ -1060,6 +1060,8 @@ def display(series, number, field=None):
 
     # Return raw JSON if requested.
     if request_wants_json():
+        api = True
+    if api:
         if 'identifiers' not in element:
             element['identifiers'] = list()
         element['identifiers'].insert(0, {
@@ -2633,7 +2635,7 @@ def create_record(series):
     if series not in table_names:
         abort(404)
 
-    create_or_update_record(series, 0, None)
+    return create_or_update_record(series, 0, None)
 
 
 # UPDATE function
@@ -2648,7 +2650,7 @@ def update_record(series, number):
     if not element:
         abort(404)
 
-    create_or_update_record(series, number, element)
+    return create_or_update_record(series, number, element)
 
 
 # DELETE function
@@ -2670,6 +2672,12 @@ def delete_record(series, number):
         'success': True,
         'id': get_mscid(series, number)})
 
+
+# GET function for one record
+@app.route('/api/<string(length=1):series><int:number>',
+           methods=['GET'])
+def get_record(series, number):
+    return display(series, number, api=True)
 
 
 # Executing

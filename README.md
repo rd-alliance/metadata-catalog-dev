@@ -213,10 +213,12 @@ the script shows you, e.g. <http://127.0.0.1:5000/>.
 
 ### Display record
 
-To test retrieval of a record in JSON, use something like the following:
+To test retrieval of a record in JSON, send a GET request either to the URL of the corresponding GUI page, asking for JSON format, or to `http://127.0.0.1:5000/api/` followed by the MSC ID of the record. Examples:
 
 ```bash
 curl -H 'Accept: application/json' http://127.0.0.1:5000/msc/m13
+
+curl http://127.0.0.1:5000/api/m13
 ```
 
 The convention for dereferencing the MSC internal IDs is to replace the initial
