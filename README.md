@@ -213,7 +213,9 @@ the script shows you, e.g. <http://127.0.0.1:5000/>.
 
 ### Display record
 
-To test retrieval of a record in JSON, send a GET request either to the URL of the corresponding GUI page, asking for JSON format, or to `http://127.0.0.1:5000/api/` followed by the MSC ID of the record. Examples:
+To test retrieval of a record in JSON, send a GET request either to the URL of
+the corresponding GUI page, asking for JSON format, or to
+`http://127.0.0.1:5000/api/` followed by the MSC ID of the record. Examples:
 
 ```bash
 curl -H 'Accept: application/json' http://127.0.0.1:5000/msc/m13
@@ -260,6 +262,27 @@ as its value:
 ```json
 { "ids": [ "msc:m1", "msc:m2" ] }
 ```
+
+### List records
+
+To get a list of all the records of a particular type, send a GET request to one
+of the following URLs:
+
+  - `http://127.0.0.1:5000/api/m` for metadata schemes
+  - `http://127.0.0.1:5000/api/g` for organizations
+  - `http://127.0.0.1:5000/api/t` for tools
+  - `http://127.0.0.1:5000/api/c` for mappings
+  - `http://127.0.0.1:5000/api/e` for endorsements
+
+The response will be a JSON object, consisting of a key representing the type of
+record (e.g. `metadata-schemes`) with an array of objects as its value. Each
+object has two keys:
+
+  - `id`: the MSC ID of the record
+  - `slug`: a less opaque identifying string for the record, derived from the
+    title of a metadata scheme, the name of an organization, etc. This is the
+    same string used to generate YAML file names when dumping the database (see
+    above).
 
 ## Testing the restricted API
 
@@ -335,9 +358,11 @@ The response will be a JSON object, consisting of three keys:
 
 ### Modify an existing record
 
-To modify a record, send a PUT request to `http://127.0.0.1:5000/api/` followed by the MSC ID, e.g. `http://127.0.0.1:5000/api/m1`.
+To modify a record, send a PUT request to `http://127.0.0.1:5000/api/` followed
+by the MSC ID, e.g. `http://127.0.0.1:5000/api/m1`.
 
-The body of the request should be a JSON object representing the complete record. Example:
+The body of the request should be a JSON object representing the complete
+record. Example:
 
 ```bash
 curl -u token:anything -X PUT -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' http://127.0.0.1:5000/api/g99
@@ -347,7 +372,8 @@ The response is the same as for ‘Create a new record’.
 
 ### Delete an existing record
 
-To delete a record, send a DELETE request to `http://127.0.0.1:5000/api/` followed by the MSC ID, e.g. `http://127.0.0.1:5000/api/m1`. Example:
+To delete a record, send a DELETE request to `http://127.0.0.1:5000/api/`
+followed by the MSC ID, e.g. `http://127.0.0.1:5000/api/m1`. Example:
 
 ```bash
 curl -u token:anything -X DELETE http://127.0.0.1:5000/api/g99

@@ -2630,7 +2630,7 @@ def create_or_update_record(series, number, element):
 # CREATE function
 @app.route('/api/<string(length=1):series>',
            methods=['POST'])
-# @auth.login_required
+@auth.login_required
 def create_record(series):
     if series not in table_names:
         abort(404)
@@ -2678,6 +2678,20 @@ def delete_record(series, number):
            methods=['GET'])
 def get_record(series, number):
     return display(series, number, api=True)
+
+
+# GET function for all records in a series
+@app.route('/api/<string(length=1):series>',
+           methods=['GET'])
+def list_records(series):
+    if series not in table_names:
+        abort(404)
+
+    records = list()
+    for record in tables[series].all():
+        records.append({'id': record.eid, 'slug': record['slug']})
+
+    return jsonify({table_names[series]: records})
 
 
 # Executing
