@@ -153,11 +153,16 @@ class JSONStorageWithGit(Storage):
 
         # Prepare commit information
         committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
+        # This will either catch an API user or return None
+        user = g.get('user', None)
         if current_user.is_authenticated:
+            # If human user is logged in, use their record instead
+            user = current_user
+        if user:
             author = ('{} <{}>'.format(
-                current_user['name'], current_user['email']).encode('utf8'))
+                user['name'], user['email']).encode('utf8'))
             message = ('Update to {} from {}\n\nUser ID:\n{}'.format(
-                self.name, current_user['name'], current_user['userid'])
+                self.name, user['name'], user['userid'])
                 .encode('utf8'))
         else:
             author = committer
@@ -468,6 +473,34 @@ class ApiUser(Element):
         if self.get('blocked'):
             return False
         return True
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.eid)
+
+    def __eq__(self, other):
+        '''
+        Checks the equality of two `UserMixin` objects using `get_id`.
+        '''
+        if isinstance(other, User):
+            return self.get_id() == other.get_id()
+        return NotImplemented
+
+    def __ne__(self, other):
+        '''
+        Checks the inequality of two `UserMixin` objects using `get_id`.
+        '''
+        equal = self.__eq__(other)
+        if equal is NotImplemented:
+            return NotImplemented
+        return not equal
 
     def hash_password(self, password):
         self['password_hash'] = pwd_context.encrypt(password)
