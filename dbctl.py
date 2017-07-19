@@ -531,6 +531,7 @@ def dbDump(args):
             slug = record['slug']
             del record['slug']
             if 'relatedEntities' in record:
+                # This will work for serial numbers up to 99999
                 record['relatedEntities'].sort(
                     key=lambda k: k['id'][:5] + k['id'][5:].zfill(5))
             if 'identifiers' not in record:

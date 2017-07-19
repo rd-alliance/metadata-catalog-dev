@@ -330,3 +330,15 @@ The response will be a JSON object, consisting of three keys:
 ```json
 { "success": false, "conformance": "invalid", "errors": { "locations": [ { "type": [ "This field is required." ] } ] } }
 ```
+
+### Modify an existing record
+
+To modify a record, send a PUT request to `http://127.0.0.1:5000/api/` followed by the MSC ID, e.g. `http://127.0.0.1:5000/api/m1`.
+
+The body of the request should be a JSON object representing the complete record. Example:
+
+```bash
+curl -u token:anything -X PUT -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' http://127.0.0.1:5000/api/g99
+```
+
+The response is the same as for ‘Create a new record’.
