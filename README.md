@@ -186,6 +186,28 @@ These four are, respectively,
  3. The database that holds OAuth URLs discovered dynamically.
  4. A temporary folder used by the Open ID v2 library.
 
+To secure the installation, you should choose your own secret key:
+
+```python
+SECRET_KEY = 'secret string'
+```
+
+To be able to use Open ID Connect (OAuth), you will need to include IDs and
+secret codes from the Open ID providers in your configuration like this:
+
+```python
+OAUTH_CREDENTIALS = {
+    'google': {
+        'id': 'id string',
+        'secret': 'secret string'},
+    'linkedin': {
+        'id': 'id string',
+        'secret': 'secret string'},
+    'twitter': {
+        'id': 'id string',
+        'secret': 'secret string'}}
+```
+ 
 To ensure Flask sees your configuration file, set an environment variable that
 contains the full path to the file. On UNIX-like systems:
 
@@ -198,6 +220,11 @@ export MSC_SETTINGS=/path/to/settings.cfg
 ```batchfile
 set MSC_SETTINGS=\path\to\settings.cfg
 ```
+
+Alternatively, you can add your settings to a file `keys.cfg` directly within
+the `instance` folder; this will be read before (and overridden by) a settings
+file specified through an environment variable, but will override the values in
+the included `config` Python module.
 
 Open up a fresh terminal/command prompt (as it will block the command line for
 as long as the script is running) and run the [Python 3] script `serve.py`:
