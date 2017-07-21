@@ -173,10 +173,10 @@ You can change the locations of the database files by putting the paths in a
 configuration file, e.g. `settings.cfg`:
 
 ```python
-MAIN_DATABASE_PATH = os.path.join('path', 'to', 'file.json')
-USER_DATABASE_PATH = os.path.join('path', 'to', 'file.json')
-OAUTH_DATABASE_PATH = os.path.join('path', 'to', 'file.json')
-OPENID_PATH = os.path.join('path', 'to', 'folder')
+MAIN_DATABASE_PATH = os.path.join('path', 'to', 'file.json')  # default: instance/data/db.json
+USER_DATABASE_PATH = os.path.join('path', 'to', 'file.json')  # default: instance/data/users.json
+OAUTH_DATABASE_PATH = os.path.join('path', 'to', 'file.json') # default: instance/oauth-urls.json
+OPENID_PATH = os.path.join('path', 'to', 'folder')            # default: instance/open-id
 ```
 
 These four are, respectively,
