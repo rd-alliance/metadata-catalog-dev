@@ -1681,8 +1681,11 @@ def scheme_search():
                         concept_ids.add(concept_id)
         if 'keyword_id' in form.data and form.data['keyword_id']:
             no_of_queries += 1
-            if (form.data['keyword_id'], None, None) in thesaurus:
-                concept_ids.add(form.data['keyword_id'])
+            kw_ids = form.data['keyword_id'].split('|')
+            for kw_id in kw_ids:
+                kw_uri = rdflib.term.URIRef(kw_id)
+                if (kw_uri, None, None) in thesaurus:
+                    concept_ids.add(kw_uri)
         for concept_id in concept_ids:
             # - Find list of broader and narrower terms
             term_uri_list = get_term_list(concept_id)
