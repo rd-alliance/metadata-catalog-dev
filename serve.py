@@ -1618,12 +1618,14 @@ def get_choices(series):
 # ===========
 class SchemeSearchForm(Form):
     title = StringField('Name of scheme')
-    keyword = StringField('Subject area', validators=[
-        validators.Optional(),
-        validators.AnyOf(
-            get_subject_terms(complete=True),
-            'Schemes are classified according to the terms in the {}.'
-            .format(thesaurus_link))])
+    keywords = FieldList(
+        StringField('Subject area', validators=[
+            validators.Optional(),
+            validators.AnyOf(
+                get_subject_terms(complete=True),
+                'Value must match an English preferred label in the {}.'
+                .format(thesaurus_link))]),
+        'Subject area', min_entries=1)
     keyword_id = StringField('URI of subject area term')
     identifier = StringField('Identifier')
     funder = StringField('Funder')
@@ -1634,7 +1636,13 @@ class SchemeSearchForm(Form):
 @app.route('/query/schemes', methods=['POST'])
 @app.route('/search', methods=['GET', 'POST'])
 def scheme_search():
-    form = SchemeSearchForm(request.form)
+    # Enable multiple keywords to be specified at once
+    form_data = MultiDict(request.form)
+    if 'keyword' in form_data and form_data['keyword']:
+        keywords = form_data['keyword'].split('|')
+        for index, kw in enumerate(keywords):
+            form_data['keywords-{}'.format(index)] = kw
+    form = SchemeSearchForm(form_data)
     # Process form
     if request.method == 'POST' and form.validate():
         element_list = list()
@@ -1658,16 +1666,19 @@ def scheme_search():
 
         concept_ids = set()
         term_set = set()
-        if 'keyword' in form.data and form.data['keyword']:
+        raw_term_set = set()
+        if 'keywords' in form.data and form.data['keywords']:
             no_of_queries += 1
-            if form.data['keyword'] == 'Multidisciplinary':
-                # Use as is
-                term_set.add('Multidisciplinary')
-            else:
-                # Translate term into concept ID
-                concept_id = get_term_uri(form.data['keyword'])
-                if concept_id:
-                    concept_ids.add(concept_id)
+            for term in form.data['keywords']:
+                raw_term_set.add(term)
+                if term == 'Multidisciplinary':
+                    # Use as is
+                    term_set.add('Multidisciplinary')
+                else:
+                    # Translate term into concept ID
+                    concept_id = get_term_uri(term)
+                    if concept_id:
+                        concept_ids.add(concept_id)
         if 'keyword_id' in form.data and form.data['keyword_id']:
             no_of_queries += 1
             if (form.data['keyword_id'], None, None) in thesaurus:
@@ -1688,7 +1699,7 @@ def scheme_search():
                 matches, element_list, mscid_list)
             if isGui:
                 flash_result(matches, 'related to {}'
-                             .format(form.data['keyword']))
+                             .format(" and ".join(raw_term_set)))
 
         if 'identifier' in form.data and form.data['identifier']:
             no_of_queries += 1

@@ -269,7 +269,9 @@ Supported queries when retrieving a list of scheme IDs:
 
   * `title`: searches within the title using regular expression syntax.
 
-  * `keyword`: searches for an exact match within the list of keywords.
+  * `keyword`: searches for an exact match within the list of keywords. To
+    search for more than one keyword at once, separate the keywords with
+    pipes, e.g. `keyword=Astronomy|Biology`.
 
   * `keyword_id`: accepts a URI from the UNESCO Vocabulary, which is translated
     into a keyword and used as for `keyword` above.
