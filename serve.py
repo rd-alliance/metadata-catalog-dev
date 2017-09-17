@@ -1953,7 +1953,7 @@ def create_or_login(resp):
     '''
     session['openid'] = resp.identity_url
     User = Query()
-    profile = user_db.get(User.openid == resp.identity_url)
+    profile = user_db.get(User.userid == resp.identity_url)
     if profile:
         flash('Successfully signed in.')
         user = load_user(profile.eid)
