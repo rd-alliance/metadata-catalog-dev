@@ -24,23 +24,21 @@
         </datalist>
       </div>
     </div>
-    <div class="form-group {{ state(form.keyword) }}">
-      {{ form.keyword.label(class="col-sm-3 control-label") }}
+    <div class="form-group">
+      {{ form.keywords.label(class="col-sm-3 control-label") }}
+      <datalist id="keyword-list">
+        {% for item in subjects %}
+        <option>{{ item }}</option>
+        {% endfor %}
+      </datalist>
       <div class="col-sm-9">
-        {{ form.keyword(placeholder="Subject area", list="keywords", class="form-control") }}
-        {{ errors(form.keyword) }}
-        <datalist id="keywords">
-          <label for="keyword-list" class="col-sm-4">or select from the list</label>
-          <div class="col-sm-5">
-            <select id="keyword-list" name="keyword" class="form-control">
-              <option value=""></option>
-              {% for item in subjects %}
-              <option>{{ item }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </datalist>
+        {% for f in form.keywords %}
+        <span class="{{ state(f) }}">{{ f(list="keyword-list", class="form-control form-control-narrow") }}</span>
+        {% endfor %}
       </div>
+      {% for f in form.keywords %}
+      {{ errors(f) }}
+      {% endfor %}
     </div>
     <div class="form-group">
       {{ form.identifier.label(class="col-sm-3 control-label") }}
