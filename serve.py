@@ -2625,7 +2625,7 @@ def create_or_update_record(series, number, element):
         # Apply changes
         with transaction(tables[series]) as t:
             for key in (k for k in element if k not in msc_data):
-                t.update(delete(key), eids=[number])
+                t.update_callable(delete(key), eids=[number])
             t.update(msc_data, eids=[number])
     else:
         # Insert new record
