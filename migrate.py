@@ -71,6 +71,7 @@ sponsors = list()
 contacts = list()
 
 # Incremental ID integers
+n = dict()
 n['m'] = 0
 n['g'] = 0
 n['t'] = 0

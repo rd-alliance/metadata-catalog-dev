@@ -88,6 +88,16 @@ from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 import dulwich.porcelain as git
 
+# need to allow CORS for requests from js
+from flask_cors import CORS, cross_origin
+
+app = Flask(__name__)
+CORS(app)
+
+# and lets overwrite flask's jsonify for jsonp
+from flask.ext.jsonpify import jsonify
+
+
 
 # Customization
 # =============
@@ -1633,6 +1643,7 @@ class SchemeSearchForm(Form):
 
 @app.route('/query/schemes', methods=['POST'])
 @app.route('/search', methods=['GET', 'POST'])
+@cross_origin()
 def scheme_search():
     form = SchemeSearchForm(request.form)
     # Process form
@@ -2693,6 +2704,17 @@ def list_records(series):
 
     return jsonify({table_names[series]: records})
 
+# GET function for records by subject
+@app.route('/api/subject-index',
+            methods=['GET'])
+def subject_index_api():
+    full_keyword_uris = get_used_term_uris()
+    domains = thesaurus.subjects(RDF.type, UNO.Domain)
+    tree = get_term_tree(domains, filter=full_keyword_uris)
+    tree.insert(0, {
+        'name': 'Multidisciplinary',
+        'url': url_for('subject', subject='Multidisciplinary')})
+    return jsonify(tree)
 
 # Executing
 # =========
