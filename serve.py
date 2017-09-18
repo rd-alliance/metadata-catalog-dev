@@ -1295,7 +1295,7 @@ def scheme_index():
 @app.route('/tool-index')
 def tool_index():
     series = 't'
-    matches = tables[series].all()
+    matches = tables[series].search(Query().slug.exists())
     tree = get_db_tree(series, matches)
     return render_template(
         'contents.html', title='Index of metadata tools', tree=tree)
@@ -1604,7 +1604,7 @@ def get_choices(series):
         list: Tuples containing an MSC ID and a human-friendly string.
     """
     choices = [('', '')]
-    for element in tables[series].all():
+    for element in tables[series].search(Query().slug.exists()):
         mscid = get_mscid(series, element.eid)
         for field in ['title', 'name', 'citation', 'slug']:
             if field in element:
@@ -2679,7 +2679,11 @@ def delete_record(series, number):
     if not element:
         abort(404)
 
-    tables[series].remove(eids=[number])
+    # tables[series].remove(eids=[number])
+    # Should this empty the record instead, properly to prevent re-use?
+    with transaction(tables[series]) as t:
+        for key in element:
+            t.update_callable(delete(key), eids=[number])
 
     # Return status, MSCID and conformance level
     return jsonify({
@@ -2702,7 +2706,7 @@ def list_records(series):
         abort(404)
 
     records = list()
-    for record in tables[series].all():
+    for record in tables[series].search(Query().slug.exists()):
         records.append({'id': record.eid, 'slug': record['slug']})
 
     return jsonify({table_names[series]: records})
