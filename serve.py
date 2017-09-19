@@ -94,8 +94,6 @@ from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 CORS(app)
 
-# and lets overwrite flask's jsonify for jsonp
-from flask.ext.jsonpify import jsonify
 
 
 
@@ -2701,6 +2699,7 @@ def delete_record(series, number):
 # GET function for one record
 @app.route('/api/<string(length=1):series><int:number>',
            methods=['GET'])
+@cross_origin()
 def get_record(series, number):
     return display(series, number, api=True)
 
@@ -2708,6 +2707,7 @@ def get_record(series, number):
 # GET function for all records in a series
 @app.route('/api/<string(length=1):series>',
            methods=['GET'])
+@cross_origin()
 def list_records(series):
     if series not in table_names:
         abort(404)
@@ -2721,6 +2721,7 @@ def list_records(series):
 # GET function for records by subject
 @app.route('/api/subject-index',
             methods=['GET'])
+@cross_origin()
 def subject_index_api():
     full_keyword_uris = get_used_term_uris()
     domains = thesaurus.subjects(RDF.type, UNO.Domain)
