@@ -1831,6 +1831,33 @@ def scheme_search():
             dataTypes=type_list)
 
 
+class GroupSearchForm(Form):
+    name = StringField('Name of organization')
+    identifier = StringField('Identifier')
+    type = SelectMultipleField(
+        'Type of organization', choices=organization_types)
+
+
+class ToolSearchForm(Form):
+    title = StringField('Name of tool')
+    identifier = StringField('Identifier')
+    type = FieldList(
+        StringField('Type', validators=[
+            validators.Regexp(tool_type_regexp, message=tool_type_help)]),
+        'Type of tool', min_entries=1)
+
+
+class MappingSearchForm(Form):
+    identifier = StringField('Identifier')
+    input_scheme = StringField('Input metadata scheme')
+    output_scheme = StringField('Output metadata scheme')
+
+
+class EndorsementSearchForm(Form):
+    identifier = StringField('Identifier')
+    endorsed_scheme = StringField('Endorsed scheme')
+
+
 def add_matches(matches, element_list, mscid_list):
     """Scans list of database elements and adds them to a given list of
     elements and a given list of EIDs, but only if they are not already
