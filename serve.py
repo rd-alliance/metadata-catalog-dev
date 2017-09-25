@@ -91,9 +91,6 @@ import dulwich.porcelain as git
 # need to allow CORS for requests from js
 from flask_cors import CORS, cross_origin
 
-app = Flask(__name__)
-CORS(app)
-
 
 
 
