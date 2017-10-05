@@ -1659,7 +1659,7 @@ def scheme_search():
             matches.extend(tables['m'].search(Scheme.versions.any(
                 Version.title.search(title_query))))
             element_list, mscid_list = add_matches(
-                matches, element_list, mscid_list)
+                'm', matches, element_list, mscid_list)
             if isGui:
                 flash_result(matches, 'with title "{}"'
                              .format(form.data['title']))
@@ -1699,7 +1699,7 @@ def scheme_search():
             matches.extend(tables['m'].search(Scheme.versions.any(
                 Version.keywords.any(term_set))))
             element_list, mscid_list = add_matches(
-                matches, element_list, mscid_list)
+                'm', matches, element_list, mscid_list)
             if isGui:
                 flash_result(matches, 'related to {}'
                              .format(" and ".join(raw_term_set)))
@@ -1717,7 +1717,7 @@ def scheme_search():
                     Version.identifiers.any(
                         Identifier.id == form.data['identifier']))))
             element_list, mscid_list = add_matches(
-                matches, element_list, mscid_list)
+                'm', matches, element_list, mscid_list)
             if isGui:
                 flash_result(matches, 'with identifier "{}"'
                              .format(form.data['identifier']))
@@ -1763,7 +1763,7 @@ def scheme_search():
                         (Relation.role == 'funder') &
                         (Relation.id == funder_mscid)))))
             element_list, mscid_list = add_matches(
-                matches, element_list, mscid_list)
+                'm', matches, element_list, mscid_list)
             if isGui:
                 flash_result(
                     matches,
@@ -1777,7 +1777,7 @@ def scheme_search():
             matches.extend(tables['m'].search(Scheme.versions.any(
                 Version.dataTypes.any([form.data['dataType']]))))
             element_list, mscid_list = add_matches(
-                matches, element_list, mscid_list)
+                'm', matches, element_list, mscid_list)
             if isGui:
                 flash_result(matches, 'associated with {}'
                              .format(form.data['dataType']))
@@ -1858,7 +1858,137 @@ class EndorsementSearchForm(Form):
     endorsed_scheme = StringField('Endorsed scheme')
 
 
-def add_matches(matches, element_list, mscid_list):
+def api_query(series, form):
+    if not request_wants_json():
+        flash('The URL you requested is part of the Catalog API and has no'
+              ' HTML equivalent. <a href="mailto:{}">Let us know</a> if you'
+              ' would find an HTML search of {} useful.'
+              .format(mscwg_email, table_names[series]), 'error')
+        return redirect(url_for('hello'))
+    element_list = list()
+    mscid_list = list()
+    Record = Version = Identifier = Relation = Query()
+    title = 'Search results'
+    no_of_queries = 0
+
+    if 'name' in form.data and form.data['name']:
+        no_of_queries += 1
+        name_query = wild_to_regex(form.data['name'])
+        matches = tables[series].search(Record.name.search(name_query))
+        matches.extend(tables[series].search(Record.versions.any(
+            Version.name.search(name_query))))
+        element_list, mscid_list = add_matches(
+            series, matches, element_list, mscid_list)
+
+    if 'title' in form.data and form.data['title']:
+        no_of_queries += 1
+        title_query = wild_to_regex(form.data['title'])
+        matches = tables[series].search(Record.title.search(title_query))
+        matches.extend(tables[series].search(Record.versions.any(
+            Version.title.search(title_query))))
+        element_list, mscid_list = add_matches(
+            series, matches, element_list, mscid_list)
+
+    if 'identifier' in form.data and form.data['identifier']:
+        no_of_queries += 1
+        matches = list()
+        id_series, id_number = parse_mscid(form.data['identifier'])
+        if (id_series == series) and id_number:
+            matches.append(tables[series].get(eid=id_number))
+        else:
+            matches.extend(tables[series].search(Record.identifiers.any(
+                Identifier.id == form.data['identifier'])))
+            matches.extend(tables[series].search(Record.versions.any(
+                Version.identifiers.any(
+                    Identifier.id == form.data['identifier']))))
+        element_list, mscid_list = add_matches(
+            series, matches, element_list, mscid_list)
+
+    if 'type' in form.data and form.data['type']:
+        no_of_queries += 1
+        matches = tables[series].search(
+            Record.types.any([form.data['type']]))
+        matches.extend(tables[series].search(Record.versions.any(
+            Version.types.any([form.data['type']]))))
+        element_list, mscid_list = add_matches(
+            series, matches, element_list, mscid_list)
+
+    if 'input_scheme' in form.data and form.data['input_scheme']:
+        no_of_queries += 1
+        if 'output_scheme' in form.data and form.data['output_scheme']:
+            # Also match a version-level identifier
+            matches = tables[series].search(
+                Record.relatedEntities.any(
+                    (Relation.role == 'input scheme') &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data['input_scheme'])))) &
+                Record.relatedEntities.any(
+                    (Relation.role == 'output scheme') &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data['output_scheme'])))))
+            matches.extend(tables[series].search(Record.versions.any(
+                Version.relatedEntities.any(
+                    (Relation.role == 'input scheme') &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data['input_scheme'])))) &
+                Version.relatedEntities.any(
+                    (Relation.role == 'output scheme') &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data['output_scheme'])))))))
+            element_list, mscid_list = add_matches(
+                series, matches, element_list, mscid_list)
+        else:
+            # Also match a version-level identifier
+            matches = tables[series].search(
+                Record.relatedEntities.any(
+                    (Relation.role == 'input scheme') &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data['input_scheme'])))))
+            matches.extend(tables[series].search(Record.versions.any(
+                Version.relatedEntities.any(
+                    (Relation.role == 'input scheme') &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data['input_scheme'])))))))
+            element_list, mscid_list = add_matches(
+                series, matches, element_list, mscid_list)
+    elif 'output_scheme' in form.data and form.data['output_scheme']:
+        no_of_queries += 1
+        # Also match a version-level identifier
+        matches = tables[series].search(
+            Record.relatedEntities.any(
+                (Relation.role == 'output scheme') &
+                (Relation.id.search(
+                    '{}(#.*)?'.format(form.data['output_scheme'])))))
+        matches.extend(tables[series].search(Record.versions.any(
+            Version.relatedEntities.any(
+                (Relation.role == 'output scheme') &
+                (Relation.id.search(
+                    '{}(#.*)?'.format(form.data['output_scheme'])))))))
+        element_list, mscid_list = add_matches(
+            series, matches, element_list, mscid_list)
+
+    if 'endorsed_scheme' in form.data and form.data['endorsed_scheme']:
+        no_of_queries += 1
+        # Also match a version-level identifier
+        matches = tables[series].search(
+            Record.relatedEntities.any(
+                (Relation.role == 'endorsed scheme') &
+                (Relation.id.search(
+                    '{}(#.*)?'.format(form.data['endorsed_scheme'])))))
+        matches.extend(tables[series].search(Record.versions.any(
+            Version.relatedEntities.any(
+                (Relation.role == 'endorsed scheme') &
+                (Relation.id.search(
+                    '{}(#.*)?'.format(form.data['endorsed_scheme'])))))))
+        element_list, mscid_list = add_matches(
+            series, matches, element_list, mscid_list)
+
+    n = len(mscid_prefix) + 1
+    mscid_list.sort(key=lambda k: k[:n] + k[n:].zfill(5))
+    return jsonify({'ids': mscid_list})
+
+
+def add_matches(series, matches, element_list, mscid_list):
     """Scans list of database elements and adds them to a given list of
     elements and a given list of EIDs, but only if they are not already
     there.
@@ -1872,7 +2002,7 @@ def add_matches(matches, element_list, mscid_list):
         tuple: list of records and list of EIDs
     """
     for element in matches:
-        mscid = get_mscid('m', element.eid)
+        mscid = get_mscid(series, element.eid)
         if mscid not in mscid_list:
             element_list.append(element)
             mscid_list.append(mscid)
