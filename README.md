@@ -262,7 +262,7 @@ To test the retrieval of internal IDs in response to a query, use something
 like the following:
 
 ```bash
-curl -X POST -F 'title=ABCD' -H 'Accept: application/json' http://127.0.0.1:5000/query/schemes
+curl -X POST -F 'title=ABCD' http://127.0.0.1:5000/query/schemes
 curl -X POST -F 'name=University' http://127.0.0.1:5000/query/organizations
 curl -X POST -F 'supported_scheme=msc:m13' http://127.0.0.1:5000/query/tools
 curl -X POST -F 'input_scheme=msc:m15' -f 'output_scheme=msc:m11' http://127.0.0.1:5000/query/mappings

@@ -1634,8 +1634,12 @@ class SchemeSearchForm(Form):
 
 
 @app.route('/query/schemes', methods=['POST'])
+def api_query_scheme():
+    return scheme_search(isGui=False)
+
+
 @app.route('/search', methods=['GET', 'POST'])
-def scheme_search():
+def scheme_search(isGui=None):
     # Enable multiple keywords to be specified at once
     form_data = MultiDict(request.form)
     if 'keyword' in form_data and form_data['keyword']:
@@ -1648,7 +1652,8 @@ def scheme_search():
         element_list = list()
         mscid_list = list()
         Scheme = Version = Identifier = Funder = Relation = Query()
-        isGui = not request_wants_json()
+        if isGui is None:
+            isGui = not request_wants_json()
         title = 'Search results'
         no_of_queries = 0
 
