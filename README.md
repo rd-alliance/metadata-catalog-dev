@@ -263,7 +263,15 @@ like the following:
 
 ```bash
 curl -X POST -F 'title=ABCD' -H 'Accept: application/json' http://127.0.0.1:5000/query/schemes
+curl -X POST -F 'name=University' http://127.0.0.1:5000/query/organizations
+curl -X POST -F 'supported_scheme=msc:m13' http://127.0.0.1:5000/query/tools
+curl -X POST -F 'input_scheme=msc:m15' -f 'output_scheme=msc:m11' http://127.0.0.1:5000/query/mappings
+curl -X POST -F 'endorsed_scheme=msc:m46'  http://127.0.0.1:5000/query/endorsements
 ```
+
+Unless otherwise stated, if you search using more than one field, the result set
+will be broadened. In other words, it will be as if you searched using each
+field individually then combined the results.
 
 Supported queries when retrieving a list of scheme IDs:
 
@@ -289,6 +297,54 @@ Supported queries when retrieving a list of scheme IDs:
     organizations listed as funders of the scheme.
 
   * `dataType`: searches for an exact match within the list of data types.
+
+Supported queries when retrieving a list of organization IDs:
+
+  * `name`: searches within the name using regular expression syntax.
+
+  * `identifier`: searches for an exact match within the list of identifiers.
+    The primary use of this is to search for schemes by external identifier,
+    though it can also be used to test if an internal ID is in use.
+
+  * `type`: searches for organizations of the given type, drawn from the
+    controlled vocabulary.
+
+Supported queries when retrieving a list of tool IDs:
+
+  * `title`: searches within the title using regular expression syntax.
+
+  * `identifier`: searches for an exact match within the list of identifiers.
+    The primary use of this is to search for schemes by external identifier,
+    though it can also be used to test if an internal ID is in use.
+
+  * `type`: searches for tools of the given type, drawn from the controlled
+    vocabulary.
+
+  * `supported_scheme`: searches for tools that support the given scheme,
+    expressed as an internal identifier.
+
+Supported queries when retrieving a list of mapping IDs:
+
+  * `identifier`: searches for an exact match within the list of identifiers.
+    The primary use of this is to search for schemes by external identifier,
+    though it can also be used to test if an internal ID is in use.
+
+  * `input_scheme`: searches for mappings from the given scheme, expressed as
+    an internal identifier. Contrary to how other fields work, the search will
+    be narrowed if you also give an `output_scheme`.
+
+  * `output_scheme`: searches for mappings to the given scheme, expressed as
+    an internal identifier. Contrary to how other fields work, the search will
+    be narrowed if you also give an `input_scheme`.
+
+Supported queries when retrieving a list of endorsement IDs:
+
+  * `identifier`: searches for an exact match within the list of identifiers.
+    The primary use of this is to search for schemes by external identifier,
+    though it can also be used to test if an internal ID is in use.
+
+  * `endorsed_scheme`: searches for endorsements of the given scheme,
+    expressed as an internal identifier.
 
 The response will be a JSON object, consisting of the key `ids` with an array
 as its value:

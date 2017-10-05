@@ -1838,6 +1838,14 @@ class GroupSearchForm(Form):
         'Type of organization', choices=organization_types)
 
 
+@app.route('/query/organizations', methods=['POST'])
+def api_query_group():
+    form = GroupSearchForm(request.form)
+    # Process form
+    if request.method == 'POST' and form.validate():
+        return api_query('g', form)
+
+
 class ToolSearchForm(Form):
     title = StringField('Name of tool')
     identifier = StringField('Identifier')
@@ -1845,6 +1853,15 @@ class ToolSearchForm(Form):
         StringField('Type', validators=[
             validators.Regexp(tool_type_regexp, message=tool_type_help)]),
         'Type of tool', min_entries=1)
+    supported_scheme = StringField('Supported metadata scheme')
+
+
+@app.route('/query/tools', methods=['POST'])
+def api_query_tool():
+    form = ToolSearchForm(request.form)
+    # Process form
+    if request.method == 'POST' and form.validate():
+        return api_query('t', form)
 
 
 class MappingSearchForm(Form):
@@ -1853,9 +1870,25 @@ class MappingSearchForm(Form):
     output_scheme = StringField('Output metadata scheme')
 
 
+@app.route('/query/mappings', methods=['POST'])
+def api_query_mapping():
+    form = MappingSearchForm(request.form)
+    # Process form
+    if request.method == 'POST' and form.validate():
+        return api_query('c', form)
+
+
 class EndorsementSearchForm(Form):
     identifier = StringField('Identifier')
     endorsed_scheme = StringField('Endorsed scheme')
+
+
+@app.route('/query/endorsements', methods=['POST'])
+def api_query_endorsement():
+    form = EndorsementSearchForm(request.form)
+    # Process form
+    if request.method == 'POST' and form.validate():
+        return api_query('e', form)
 
 
 def api_query(series, form):
@@ -1961,21 +1994,22 @@ def api_query(series, form):
         element_list, mscid_list = add_matches(
             series, matches, element_list, mscid_list)
 
-    if 'endorsed_scheme' in form.data and form.data['endorsed_scheme']:
-        no_of_queries += 1
-        # Also match a version-level identifier
-        matches = tables[series].search(
-            Record.relatedEntities.any(
-                (Relation.role == 'endorsed scheme') &
-                (Relation.id.search(
-                    '{}(#.*)?'.format(form.data['endorsed_scheme'])))))
-        matches.extend(tables[series].search(Record.versions.any(
-            Version.relatedEntities.any(
-                (Relation.role == 'endorsed scheme') &
-                (Relation.id.search(
-                    '{}(#.*)?'.format(form.data['endorsed_scheme'])))))))
-        element_list, mscid_list = add_matches(
-            series, matches, element_list, mscid_list)
+    for role in ['supported_scheme', 'endorsed_scheme']:
+        if role in form.data and form.data[role]:
+            no_of_queries += 1
+            # Also match a version-level identifier
+            matches = tables[series].search(
+                Record.relatedEntities.any(
+                    (Relation.role == role.replace('_', ' ')) &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data[role])))))
+            matches.extend(tables[series].search(Record.versions.any(
+                Version.relatedEntities.any(
+                    (Relation.role == role.replace('_', ' ')) &
+                    (Relation.id.search(
+                        '{}(#.*)?'.format(form.data[role])))))))
+            element_list, mscid_list = add_matches(
+                series, matches, element_list, mscid_list)
 
     n = len(mscid_prefix) + 1
     mscid_list.sort(key=lambda k: k[:n] + k[n:].zfill(5))
