@@ -1859,12 +1859,6 @@ class EndorsementSearchForm(Form):
 
 
 def api_query(series, form):
-    if not request_wants_json():
-        flash('The URL you requested is part of the Catalog API and has no'
-              ' HTML equivalent. <a href="mailto:{}">Let us know</a> if you'
-              ' would find an HTML search of {} useful.'
-              .format(mscwg_email, table_names[series]), 'error')
-        return redirect(url_for('hello'))
     element_list = list()
     mscid_list = list()
     Record = Version = Identifier = Relation = Query()
