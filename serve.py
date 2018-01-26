@@ -2641,7 +2641,7 @@ def edit_record(series, number):
             msc_data = fix_admin_data(msc_data, series, number)
             with transaction(tables[series]) as t:
                 for key in (k for k in document if k not in msc_data):
-                    t.update(delete(key), eids=[number])
+                    t.update_callable(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
         else:
