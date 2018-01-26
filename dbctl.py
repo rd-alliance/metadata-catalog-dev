@@ -225,8 +225,8 @@ def scan_ids(args):
                   ''.format(folder))
             continue
 
-        highest_eid = 0
-        eid_list = list()
+        highest_doc_id = 0
+        doc_id_list = list()
 
         for entry in os.listdir(folder_path):
             name_tuple = os.path.splitext(entry)
@@ -245,15 +245,15 @@ def scan_ids(args):
             if not id_number:
                 print('WARNING: {}/{} has no identifier.'.format(folder, slug))
                 continue
-            eid = int(id_number)
-            if eid > highest_eid:
-                highest_eid = eid
-            eid_list.append(eid)
+            doc_id = int(id_number)
+            if doc_id > highest_doc_id:
+                highest_doc_id = doc_id
+            doc_id_list.append(doc_id)
 
         series = subfolders[folder]
-        for eid in range(1, highest_eid):
-            if eid not in eid_list:
-                missing_ids.append('msc:{}{}'.format(series, eid))
+        for doc_id in range(1, highest_doc_id):
+            if doc_id not in doc_id_list:
+                missing_ids.append('msc:{}{}'.format(series, doc_id))
 
     return missing_ids
 
@@ -537,7 +537,7 @@ def dbDump(args):
             if 'identifiers' not in record:
                 record['identifiers'] = list()
             record['identifiers'].insert(
-                0, {'id': 'msc:{}{}'.format(series, record.eid),
+                0, {'id': 'msc:{}{}'.format(series, record.doc_id),
                     'scheme': 'RDA-MSCWG'})
             dumped_record = os.path.join(folder_path, slug + '.yml')
             with open(dumped_record, 'w') as r:
@@ -622,7 +622,7 @@ def dbBlock(args, api=False, toggle=True):
     user = user_list[0]
 
     # Update user record
-    table.update({'blocked': toggle}, eids=[user.eid])
+    table.update({'blocked': toggle}, doc_ids=[user.doc_id])
 
     # Add file to Git index
     try:
