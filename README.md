@@ -61,7 +61,8 @@ need to compile it to a single app-friendly JSON file. For this you can use the
 [Python 3] script `dbctl.py`. You will again need [PyYAML] but you will also
 need some other non-standard libraries:
 
-- For reading/writing to the databases, you will need [TinyDB] and [RDFLib].
+- For reading/writing to the databases, you will need [TinyDB] v.3.6.0+ and
+  [RDFLib].
 - For version control of the databases, you will need [Dulwich].
 - For password hashing (see below), you will need [PassLib].
 
@@ -149,7 +150,8 @@ To run the prototype Catalog, you will need quite a lot of non-standard packages
   - For Open ID Connect (OAuth) support, you will need [RAuth] (and hence
     [Requests]), and Google's [oauth2client].
   - For API authentication, you will need [Flask-HTTPAuth] and [PassLib]
-  - For database capability, you will need [TinyDB], [tinyrecord], and [RDFLib].
+  - For database capability, you will need [TinyDB], v3.6.0+ [tinyrecord],
+    and [RDFLib].
   - For version control of the databases, you will need [Dulwich].
 
 [Flask]: http://flask.pocoo.org/

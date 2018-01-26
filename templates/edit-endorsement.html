@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% from "macros-forms.html" import state, errors %}
-{% block title %}{% if eid == 0 %}Add new endorsement{% else %}Edit endorsement msc:e{{ eid }}{% endif %}{% endblock %}
+{% block title %}{% if doc_id == 0 %}Add new endorsement{% else %}Edit endorsement msc:e{{ doc_id }}{% endif %}{% endblock %}
 {% block main %}
-  <form action="{{ url_for('edit_record', series='e', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
+  <form action="{{ url_for('edit_record', series='e', number=doc_id) }}" method="post"  accept-charset="utf-8" class="form-block">
     {{ form.hidden_tag() }}
     <div class="form-group">
       {{ form.citation.label(class="control-label") }}

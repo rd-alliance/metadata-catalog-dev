@@ -64,7 +64,7 @@ from wtforms.compat import string_types
 # See http://tinydb.readthedocs.io/
 # Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query, where
-from tinydb.database import Element
+from tinydb.database import Document
 from tinydb.operations import delete
 from tinydb.storages import Storage, touch
 
@@ -173,11 +173,11 @@ class JSONStorageWithGit(Storage):
                    committer=committer)
 
 
-class User(Element):
+class User(Document):
     '''This provides implementations for the methods that Flask-Login
     expects user objects to have.
     '''
-    __hash__ = Element.__hash__
+    __hash__ = Document.__hash__
 
     @property
     def is_active(self):
@@ -194,7 +194,7 @@ class User(Element):
         return False
 
     def get_id(self):
-        return str(self.eid)
+        return str(self.doc_id)
 
     def __eq__(self, other):
         '''
@@ -292,7 +292,7 @@ class GoogleSignIn(OAuthSignIn):
                 expiry_timestamp = mktime_tz(
                     parsedate_tz(r.headers['expires']))
                 discovery['timestamp'] = expiry_timestamp
-                oauth_db.update(discovery, eids=[discovery.eid])
+                oauth_db.update(discovery, doc_ids=[discovery.doc_id])
             except Exception as e:
                 print('WARNING: could not update URLs for {}.'
                       .format(self.provider_name))
@@ -464,7 +464,7 @@ oid = OpenID(app, app.config['OPENID_PATH'])
 auth = HTTPBasicAuth()
 
 
-class ApiUser(Element):
+class ApiUser(Document):
     '''For objects representing an application using the API. Source:
     https://blog.miguelgrinberg.com/post/restful-authentication-with-flask
     '''
@@ -483,7 +483,7 @@ class ApiUser(Element):
         return False
 
     def get_id(self):
-        return str(self.eid)
+        return str(self.doc_id)
 
     def __eq__(self, other):
         '''
@@ -505,7 +505,7 @@ class ApiUser(Element):
     def hash_password(self, password):
         self['password_hash'] = pwd_context.encrypt(password)
         user_db.table('api_users').update(
-            {'password_hash': self.get('password_hash')}, eids=[self.eid])
+            {'password_hash': self.get('password_hash')}, doc_ids=[self.doc_id])
         return True
 
     def verify_password(self, password):
@@ -514,7 +514,7 @@ class ApiUser(Element):
 
     def generate_auth_token(self, expiration=600):
         s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'id': self.eid})
+        return s.dumps({'id': self.doc_id})
 
     @staticmethod
     def verify_auth_token(token):
@@ -526,10 +526,10 @@ class ApiUser(Element):
         except BadSignature:
             return None  # invalid token
         api_users = user_db.table('api_users')
-        user_record = api_users.get(eid=int(data['id']))
+        user_record = api_users.get(doc_id=int(data['id']))
         if not user_record:
             return None
-        user = ApiUser(value=user_record, eid=user_record.eid)
+        user = ApiUser(value=user_record, doc_id=user_record.doc_id)
         return user
 
 
@@ -795,15 +795,15 @@ def get_used_term_uris():
     return full_keyword_uris
 
 
-def get_db_tree(series, element_list):
-    """Takes a list of database elements and recursively builds a list of
-    dictionaries providing each element's title, its corresponding URL in the
-    Catalog, and (if applicable) a list of elements that are 'children' of
-    the current element.
+def get_db_tree(series, document_list):
+    """Takes a list of database documents and recursively builds a list of
+    dictionaries providing each document's title, its corresponding URL in the
+    Catalog, and (if applicable) a list of documents that are 'children' of
+    the current document.
 
     Arguments:
         series (str): Record series
-        element_list (list of Elements): List of records
+        document_list (list of Documents): List of records
 
     Returns:
         list: List of dictionaries, each of which with two or three items:
@@ -812,12 +812,12 @@ def get_db_tree(series, element_list):
             only present if there are any)
     """
     tree = list()
-    for element in element_list:
+    for document in document_list:
         result = dict()
-        result['name'] = element['title']
-        result['url'] = url_for('display', series=series, number=element.eid)
+        result['name'] = document['title']
+        result['url'] = url_for('display', series=series, number=document.doc_id)
         if series == 'm':
-            mscid = get_mscid(series, element.eid)
+            mscid = get_mscid(series, document.doc_id)
             Main = Query()
             Related = Query()
             children = tables[series].search(Main.relatedEntities.any(
@@ -977,21 +977,21 @@ def get_mscid(series, number):
     return mscid_prefix + series + str(number)
 
 
-def get_relation(mscid, element):
-    """Looks within an element for a relation to a given entity (represented
+def get_relation(mscid, document):
+    """Looks within an document for a relation to a given entity (represented
     by MSC ID) and returns tuple where the first member is a role list and the
-    second is an Element.
+    second is an Document.
 
     Arguments:
         mscid (str): MSC ID of entity beign checked for
-        element (Element): TinyDB element being checked
+        document (Document): TinyDB document being checked
 
     Returns:
-        tuple: First member is a role list (str) and the second is an Element
+        tuple: First member is a role list (str) and the second is an Document
     """
     role_list = ''
     # We take a fresh copy so the adjustments we make don't accumulate
-    record = Element(value=element.copy(), eid=element.eid)
+    record = Document(value=document.copy(), doc_id=document.doc_id)
     for entity in record['relatedEntities']:
         role = entity['role']
         if entity['id'] == mscid:
@@ -1003,7 +1003,7 @@ def get_relation(mscid, element):
             if role_type not in record:
                 record[role_type] = list()
             record[role_type].append(tables[entity_series]
-                                     .get(eid=entity_number))
+                                     .get(doc_id=entity_number))
     if 'valid' in record:
         record['valid_from'], valid_until = parse_date_range(record['valid'])
         if valid_until:
@@ -1023,9 +1023,9 @@ def utility_processor():
 
 @lm.user_loader
 def load_user(id):
-    element = user_db.get(eid=int(id))
-    if element:
-        return User(value=element, eid=element.eid)
+    document = user_db.get(doc_id=int(id))
+    if document:
+        return User(value=document, doc_id=document.doc_id)
     return None
 
 
@@ -1051,8 +1051,8 @@ def display(series, number, field=None, api=False):
     # Is this record in the database?
     if series not in table_names:
         abort(404)
-    element = tables[series].get(eid=number)
-    if not element:
+    document = tables[series].get(doc_id=number)
+    if not document:
         abort(404)
 
     # Form MSC ID
@@ -1062,18 +1062,18 @@ def display(series, number, field=None, api=False):
     if request_wants_json():
         api = True
     if api:
-        if 'identifiers' not in element:
-            element['identifiers'] = list()
-        element['identifiers'].insert(0, {
+        if 'identifiers' not in document:
+            document['identifiers'] = list()
+        document['identifiers'].insert(0, {
             'id': mscid,
             'scheme': 'RDA-MSCWG'})
         if field:
-            if field in element:
-                return jsonify({field: element[field]})
+            if field in document:
+                return jsonify({field: document[field]})
             else:
                 return jsonify()
         else:
-            return jsonify(element)
+            return jsonify(document)
 
     # We only provide dedicated views for metadata schemes and tools
     if series not in ['m', 't']:
@@ -1085,9 +1085,9 @@ def display(series, number, field=None, api=False):
 
     # If the record has version information, interpret the associated dates.
     versions = None
-    if 'versions' in element:
+    if 'versions' in document:
         versions = list()
-        for v in element['versions']:
+        for v in document['versions']:
             if 'number' not in v:
                 continue
             this_version = v
@@ -1132,8 +1132,8 @@ def display(series, number, field=None, api=False):
     # a 'relations' dictionary.
     relations = dict()
     hasRelatedSchemes = False
-    if 'relatedEntities' in element:
-        for entity in element['relatedEntities']:
+    if 'relatedEntities' in document:
+        for entity in document['relatedEntities']:
             role = entity['role']
             if role not in relations_msc_form:
                 print('WARNING: Record {} has related entity with unrecognized'
@@ -1143,9 +1143,9 @@ def display(series, number, field=None, api=False):
             if relation_list not in relations:
                 relations[relation_list] = list()
             entity_series, entity_number = parse_mscid(entity['id'])
-            element_record = tables[entity_series].get(eid=entity_number)
-            if element_record:
-                relations[relation_list].append(element_record)
+            document_record = tables[entity_series].get(doc_id=entity_number)
+            if document_record:
+                relations[relation_list].append(document_record)
                 if entity_series == 'm':
                     hasRelatedSchemes = True
 
@@ -1159,18 +1159,18 @@ def display(series, number, field=None, api=False):
             matches = t.search(Query().relatedEntities.any(
                 Query()['id'].matches('{}(#v.*)?$'.format(mscid))))
             for match in matches:
-                role_list, element_record = get_relation(mscid, match)
+                role_list, document_record = get_relation(mscid, match)
                 if role_list:
                     if role_list in [
                             'child schemes', 'mappings_to', 'mappings_from']:
                         hasRelatedSchemes = True
                     if role_list not in relations:
                         relations[role_list] = list()
-                    relations[role_list].append(element_record)
+                    relations[role_list].append(document_record)
 
     # We are ready to display the information.
     return render_template(
-        'display-' + templates[series], record=element, versions=versions,
+        'display-' + templates[series], record=document, versions=versions,
         relations=relations, hasRelatedSchemes=hasRelatedSchemes)
 
 
@@ -1257,9 +1257,9 @@ def group(funder=None, maintainer=None, user=None):
         role = 'user'
         verb = 'used'
     # Do the search
-    element = tables['g'].get(eid=id)
+    document = tables['g'].get(doc_id=id)
     mscid = get_mscid('g', id)
-    title = element['name']
+    title = document['name']
     Scheme = Query()
     Relation = Query()
     results = tables['m'].search(Scheme.relatedEntities.any(
@@ -1432,13 +1432,13 @@ def msc_to_form(msc_data, padded=True):
     return form_data
 
 
-def form_to_msc(form_data, element):
+def form_to_msc(form_data, document):
     """Transforms data from web form into the MSC data model, supplemented by
     data that the form does not supply.
 
     Arguments:
         form_data (dict): Data from the form.
-        element (dict or None): Existing record from the database that the
+        document (dict or None): Existing record from the database that the
             form_data is intended to update.
 
     Returns:
@@ -1482,8 +1482,8 @@ def form_to_msc(form_data, element):
                         has_vn_valid_to = True
                     elif key == 'number_old':
                         # Restore information from existing record
-                        if element and 'versions' in element:
-                            for release in element['versions']:
+                        if document and 'versions' in document:
+                            for release in document['versions']:
                                 if 'number' in release and\
                                         str(release['number']) == str(value):
                                     overrides = {
@@ -1535,13 +1535,13 @@ def fix_admin_data(record, series, number):
     """
     # Restore any data not editable via the forms.
     table = tables[series]
-    element = None
+    document = None
     if number:
-        element = table.get(eid=number)
-    if element:
+        document = table.get(doc_id=number)
+    if document:
         for key in ['slug']:  # room for expansion!
-            if key in element:
-                record[key] = element[key]
+            if key in document:
+                record[key] = document[key]
         # Exit if slug has been restored
         if 'slug' in record:
             return record
@@ -1563,13 +1563,13 @@ def fix_admin_data(record, series, number):
             for entity in record['relatedEntities']:
                 entity_series, entity_number = parse_mscid(entity['id'])
                 if entity['role'] == 'input scheme':
-                    element = tables[entity_series].get(eid=entity_number)
-                    if 'slug' in element:
-                        slug_from = element['slug']
+                    document = tables[entity_series].get(doc_id=entity_number)
+                    if 'slug' in document:
+                        slug_from = document['slug']
                 elif entity['role'] == 'output scheme':
-                    element = tables[entity_series].get(eid=entity_number)
-                    if 'slug' in element:
-                        slug_to = element['slug']
+                    document = tables[entity_series].get(doc_id=entity_number)
+                    if 'slug' in document:
+                        slug_to = document['slug']
             if slug_from and slug_to:
                 slug = '-'.join(slug_from.split('-')[:3])
                 slug += '_TO_'
@@ -1604,11 +1604,11 @@ def get_choices(series):
         list: Tuples containing an MSC ID and a human-friendly string.
     """
     choices = [('', '')]
-    for element in tables[series].search(Query().slug.exists()):
-        mscid = get_mscid(series, element.eid)
+    for document in tables[series].search(Query().slug.exists()):
+        mscid = get_mscid(series, document.doc_id)
         for field in ['title', 'name', 'citation', 'slug']:
-            if field in element:
-                choices.append((mscid, element[field]))
+            if field in document:
+                choices.append((mscid, document[field]))
                 break
     choices.sort(key=lambda k: k[1].lower())
     return choices
@@ -1649,7 +1649,7 @@ def scheme_search(isGui=None):
     form = SchemeSearchForm(form_data)
     # Process form
     if request.method == 'POST' and form.validate():
-        element_list = list()
+        document_list = list()
         mscid_list = list()
         Scheme = Version = Identifier = Funder = Relation = Query()
         if isGui is None:
@@ -1663,8 +1663,8 @@ def scheme_search(isGui=None):
             matches = tables['m'].search(Scheme.title.search(title_query))
             matches.extend(tables['m'].search(Scheme.versions.any(
                 Version.title.search(title_query))))
-            element_list, mscid_list = add_matches(
-                'm', matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                'm', matches, document_list, mscid_list)
             if isGui:
                 flash_result(matches, 'with title "{}"'
                              .format(form.data['title']))
@@ -1703,8 +1703,8 @@ def scheme_search(isGui=None):
             matches = tables['m'].search(Scheme.keywords.any(term_set))
             matches.extend(tables['m'].search(Scheme.versions.any(
                 Version.keywords.any(term_set))))
-            element_list, mscid_list = add_matches(
-                'm', matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                'm', matches, document_list, mscid_list)
             if isGui:
                 flash_result(matches, 'related to {}'
                              .format(" and ".join(raw_term_set)))
@@ -1714,15 +1714,15 @@ def scheme_search(isGui=None):
             matches = list()
             series, number = parse_mscid(form.data['identifier'])
             if (series == 'm') and number:
-                matches.append(tables[series].get(eid=number))
+                matches.append(tables[series].get(doc_id=number))
             else:
                 matches.extend(tables['m'].search(Scheme.identifiers.any(
                     Identifier.id == form.data['identifier'])))
                 matches.extend(tables['m'].search(Scheme.versions.any(
                     Version.identifiers.any(
                         Identifier.id == form.data['identifier']))))
-            element_list, mscid_list = add_matches(
-                'm', matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                'm', matches, document_list, mscid_list)
             if isGui:
                 flash_result(matches, 'with identifier "{}"'
                              .format(form.data['identifier']))
@@ -1736,7 +1736,7 @@ def scheme_search(isGui=None):
                 funder_query))
             matches = list()
             for funder in funder_search:
-                funder_mscid = get_mscid('g', funder.eid)
+                funder_mscid = get_mscid('g', funder.doc_id)
                 matches.append(funder_mscid)
             if matches:
                 matching_funders.extend(matches)
@@ -1747,7 +1747,7 @@ def scheme_search(isGui=None):
             series, number = parse_mscid(form.data['funder_id'])
             matches = list()
             if (series == 'g') and number:
-                matches.append(tables[series].get(eid=number))
+                matches.append(tables[series].get(doc_id=number))
             else:
                 matches.extend(tables['g'].search(Funder.identifiers.any(
                     Identifier.id == form.data['funder_id'])))
@@ -1767,8 +1767,8 @@ def scheme_search(isGui=None):
                     Scheme.versions.any(Version.relatedEntities.any(
                         (Relation.role == 'funder') &
                         (Relation.id == funder_mscid)))))
-            element_list, mscid_list = add_matches(
-                'm', matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                'm', matches, document_list, mscid_list)
             if isGui:
                 flash_result(
                     matches,
@@ -1781,28 +1781,28 @@ def scheme_search(isGui=None):
                 Scheme.dataTypes.any([form.data['dataType']]))
             matches.extend(tables['m'].search(Scheme.versions.any(
                 Version.dataTypes.any([form.data['dataType']]))))
-            element_list, mscid_list = add_matches(
-                'm', matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                'm', matches, document_list, mscid_list)
             if isGui:
                 flash_result(matches, 'associated with {}'
                              .format(form.data['dataType']))
 
         # Show results
         if isGui:
-            no_of_hits = len(element_list)
+            no_of_hits = len(document_list)
             if no_of_queries > 1:
                 flash('Found {:N scheme/s} in total. '.format(
                     Pluralizer(no_of_hits)))
             if no_of_hits == 1:
                 # Go direct to that page
-                result = element_list.pop()
+                result = document_list.pop()
                 return redirect(
-                    url_for('display', series='m', number=result.eid))
+                    url_for('display', series='m', number=result.doc_id))
             # Otherwise return as a list
-            element_list.sort(key=lambda k: k['title'].lower())
+            document_list.sort(key=lambda k: k['title'].lower())
             # Show results list
             return render_template(
-                'search-results.html', title=title, results=element_list)
+                'search-results.html', title=title, results=document_list)
         else:
             n = len(mscid_prefix) + 1
             mscid_list.sort(key=lambda k: k[:n] + k[n:].zfill(5))
@@ -1816,7 +1816,7 @@ def scheme_search(isGui=None):
         type_set = set()
         funder_set = set()
         for scheme in all_schemes:
-            id_set.add(get_mscid('m', scheme.eid))
+            id_set.add(get_mscid('m', scheme.doc_id))
             title_set, id_set, type_set, funder_set = extract_hints(
                 scheme, title_set, id_set, type_set, funder_set)
         title_list = list(title_set)
@@ -1897,7 +1897,7 @@ def api_query_endorsement():
 
 
 def api_query(series, form):
-    element_list = list()
+    document_list = list()
     mscid_list = list()
     Record = Version = Identifier = Relation = Query()
     title = 'Search results'
@@ -1909,8 +1909,8 @@ def api_query(series, form):
         matches = tables[series].search(Record.name.search(name_query))
         matches.extend(tables[series].search(Record.versions.any(
             Version.name.search(name_query))))
-        element_list, mscid_list = add_matches(
-            series, matches, element_list, mscid_list)
+        document_list, mscid_list = add_matches(
+            series, matches, document_list, mscid_list)
 
     if 'title' in form.data and form.data['title']:
         no_of_queries += 1
@@ -1918,23 +1918,23 @@ def api_query(series, form):
         matches = tables[series].search(Record.title.search(title_query))
         matches.extend(tables[series].search(Record.versions.any(
             Version.title.search(title_query))))
-        element_list, mscid_list = add_matches(
-            series, matches, element_list, mscid_list)
+        document_list, mscid_list = add_matches(
+            series, matches, document_list, mscid_list)
 
     if 'identifier' in form.data and form.data['identifier']:
         no_of_queries += 1
         matches = list()
         id_series, id_number = parse_mscid(form.data['identifier'])
         if (id_series == series) and id_number:
-            matches.append(tables[series].get(eid=id_number))
+            matches.append(tables[series].get(doc_id=id_number))
         else:
             matches.extend(tables[series].search(Record.identifiers.any(
                 Identifier.id == form.data['identifier'])))
             matches.extend(tables[series].search(Record.versions.any(
                 Version.identifiers.any(
                     Identifier.id == form.data['identifier']))))
-        element_list, mscid_list = add_matches(
-            series, matches, element_list, mscid_list)
+        document_list, mscid_list = add_matches(
+            series, matches, document_list, mscid_list)
 
     if 'type' in form.data and form.data['type']:
         no_of_queries += 1
@@ -1942,8 +1942,8 @@ def api_query(series, form):
             Record.types.any([form.data['type']]))
         matches.extend(tables[series].search(Record.versions.any(
             Version.types.any([form.data['type']]))))
-        element_list, mscid_list = add_matches(
-            series, matches, element_list, mscid_list)
+        document_list, mscid_list = add_matches(
+            series, matches, document_list, mscid_list)
 
     if 'input_scheme' in form.data and form.data['input_scheme']:
         no_of_queries += 1
@@ -1967,8 +1967,8 @@ def api_query(series, form):
                     (Relation.role == 'output scheme') &
                     (Relation.id.search(
                         '{}(#.*)?'.format(form.data['output_scheme'])))))))
-            element_list, mscid_list = add_matches(
-                series, matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                series, matches, document_list, mscid_list)
         else:
             # Also match a version-level identifier
             matches = tables[series].search(
@@ -1981,8 +1981,8 @@ def api_query(series, form):
                     (Relation.role == 'input scheme') &
                     (Relation.id.search(
                         '{}(#.*)?'.format(form.data['input_scheme'])))))))
-            element_list, mscid_list = add_matches(
-                series, matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                series, matches, document_list, mscid_list)
     elif 'output_scheme' in form.data and form.data['output_scheme']:
         no_of_queries += 1
         # Also match a version-level identifier
@@ -1996,8 +1996,8 @@ def api_query(series, form):
                 (Relation.role == 'output scheme') &
                 (Relation.id.search(
                     '{}(#.*)?'.format(form.data['output_scheme'])))))))
-        element_list, mscid_list = add_matches(
-            series, matches, element_list, mscid_list)
+        document_list, mscid_list = add_matches(
+            series, matches, document_list, mscid_list)
 
     for role in ['supported_scheme', 'endorsed_scheme']:
         if role in form.data and form.data[role]:
@@ -2013,33 +2013,33 @@ def api_query(series, form):
                     (Relation.role == role.replace('_', ' ')) &
                     (Relation.id.search(
                         '{}(#.*)?'.format(form.data[role])))))))
-            element_list, mscid_list = add_matches(
-                series, matches, element_list, mscid_list)
+            document_list, mscid_list = add_matches(
+                series, matches, document_list, mscid_list)
 
     n = len(mscid_prefix) + 1
     mscid_list.sort(key=lambda k: k[:n] + k[n:].zfill(5))
     return jsonify({'ids': mscid_list})
 
 
-def add_matches(series, matches, element_list, mscid_list):
-    """Scans list of database elements and adds them to a given list of
-    elements and a given list of EIDs, but only if they are not already
+def add_matches(series, matches, document_list, mscid_list):
+    """Scans list of database documents and adds them to a given list of
+    documents and a given list of EIDs, but only if they are not already
     there.
 
     Arguments:
-        matches (list of Elements): New list of records
-        element_list (list of Elements): Existing list of records
-        eid_list (list of str): Existing list of MSC IDs
+        matches (list of Documents): New list of records
+        document_list (list of Documents): Existing list of records
+        doc_id_list (list of str): Existing list of MSC IDs
 
     Returns:
         tuple: list of records and list of EIDs
     """
-    for element in matches:
-        mscid = get_mscid(series, element.eid)
+    for document in matches:
+        mscid = get_mscid(series, document.doc_id)
         if mscid not in mscid_list:
-            element_list.append(element)
+            document_list.append(document)
             mscid_list.append(mscid)
-    return (element_list, mscid_list)
+    return (document_list, mscid_list)
 
 
 def extract_hints(scheme, title_set, id_set, type_set, funder_set):
@@ -2071,11 +2071,11 @@ def extract_hints(scheme, title_set, id_set, type_set, funder_set):
         for entity in scheme['relatedEntities']:
             if entity['role'] == 'funder':
                 org_series, org_number = parse_mscid(entity['id'])
-                funder = tables[org_series].get(eid=org_number)
+                funder = tables[org_series].get(doc_id=org_number)
                 if funder:
                     funder_set.add(funder['name'])
                 else:
-                    print('Could not look up organization with eid {}.'
+                    print('Could not look up organization with doc_id {}.'
                           .format(org_number))
     if 'versions' in scheme:
         for version in scheme['versions']:
@@ -2089,7 +2089,7 @@ def flash_result(matches, type):
     thing they are supposed to have in common.
 
     Arguments:
-        matches (list of Elements): List of records
+        matches (list of Documents): List of records
         type (str): Basis of matching, e.g. 'with title X'
     """
     no_of_hits = len(matches)
@@ -2146,7 +2146,7 @@ def create_or_login(resp):
     profile = user_db.get(User.userid == resp.identity_url)
     if profile:
         flash('Successfully signed in.')
-        user = load_user(profile.eid)
+        user = load_user(profile.doc_id)
         login_user(user)
         return redirect(oid.get_next_url())
     return redirect(url_for(
@@ -2181,7 +2181,7 @@ def oauth_callback(provider):
     profile = user_db.get(User.userid == openid)
     if profile:
         flash('Successfully signed in.')
-        user = load_user(profile.eid)
+        user = load_user(profile.doc_id)
         login_user(user)
         return redirect(url_for('hello'))
     return redirect(url_for(
@@ -2214,9 +2214,9 @@ def create_profile():
             'name': form.name.data,
             'email': form.email.data,
             'userid': session['openid']}
-        user_eid = user_db.insert(data)
+        user_doc_id = user_db.insert(data)
         flash('Profile successfully created.')
-        user = User(value=data, eid=user_eid)
+        user = User(value=data, doc_id=user_doc_id)
         login_user(user)
         return redirect(oid.get_next_url() or url_for('hello'))
     return render_template(
@@ -2255,7 +2255,7 @@ def edit_profile():
             'name': form.name.data,
             'email': form.email.data,
             'userid': current_user['userid']}
-        if user_db.update(data, eids=[current_user.eid]):
+        if user_db.update(data, doc_ids=[current_user.doc_id]):
             flash('Profile successfully updated.')
         else:
             flash('Profile could not be updated, sorry.')
@@ -2269,7 +2269,7 @@ def edit_profile():
 def remove_profile():
     '''Allows users to remove their profile from the system.
     '''
-    if user_db.remove(eids=[current_user.eid]):
+    if user_db.remove(doc_ids=[current_user.doc_id]):
         flash('Your profile was successfully deleted.')
         logout_user()
         session.pop('openid', None)
@@ -2321,7 +2321,7 @@ def verify_password(userid_or_token, password):
         user_record = api_users.get(User.userid == userid_or_token)
         if not user_record:
             return False
-        user = ApiUser(value=user_record, eid=user_record.eid)
+        user = ApiUser(value=user_record, doc_id=user_record.doc_id)
         if not user.verify_password(password) or not user.is_active:
             return False
         g.user = user
@@ -2500,7 +2500,7 @@ Forms = {
            methods=['GET', 'POST'])
 @login_required
 def edit_record(series, number):
-    element = tables[series].get(eid=number)
+    document = tables[series].get(doc_id=number)
     version = request.values.get('version')
     if version and request.referrer == request.base_url:
         # This is the version screen, opened from the main screen
@@ -2508,10 +2508,10 @@ def edit_record(series, number):
               ' information in the main (non-version-specific) record.')
 
     # Instantiate form
-    if element:
+    if document:
         # Translate from internal data model to form data
         if version:
-            for release in element['versions']:
+            for release in document['versions']:
                 if 'number' in release and\
                         str(release['number']) == str(version):
                     form = Forms[series](
@@ -2521,7 +2521,7 @@ def edit_record(series, number):
                 form = Forms[series](request.form)
             del form['versions']
         else:
-            form = Forms[series](request.form, data=msc_to_form(element))
+            form = Forms[series](request.form, data=msc_to_form(document))
     else:
         if number != 0:
             return redirect(url_for('edit_record', series=series, number=0))
@@ -2603,11 +2603,11 @@ def edit_record(series, number):
                     filtered_locations.append(location)
             form_data['locations'] = filtered_locations
         # Translate form data into internal data model
-        msc_data = form_to_msc(form_data, element)
+        msc_data = form_to_msc(form_data, document)
         if version:
             # Editing the version-specific overrides
-            if element and 'versions' in element:
-                version_list = element['versions']
+            if document and 'versions' in document:
+                version_list = document['versions']
                 for index, item in enumerate(version_list):
                     if str(item['number']) == str(version):
                         version_dict = {
@@ -2620,7 +2620,7 @@ def edit_record(series, number):
                         tables[series].update(
                             {'versions': version_list},
                             Record.versions.any(Version.number == version),
-                            eids=[number])
+                            doc_ids=[number])
                         flash('Successfully updated record for version {}.'
                               .format(version), 'success')
                         break
@@ -2636,11 +2636,11 @@ def edit_record(series, number):
                       'error')
             return redirect('{}?version={}'.format(url_for(
                 'edit_record', series=series, number=number), version))
-        elif element:
+        elif document:
             # Editing an existing record
             msc_data = fix_admin_data(msc_data, series, number)
             with transaction(tables[series]) as t:
-                for key in (k for k in element if k not in msc_data):
+                for key in (k for k in document if k not in msc_data):
                     t.update(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
             flash('Successfully updated record.', 'success')
@@ -2655,7 +2655,7 @@ def edit_record(series, number):
               ' See below for details.'.format(Pluralizer(len(form.errors))),
               'error')
     return render_template(
-        'edit-' + templates[series], form=form, eid=number, version=version,
+        'edit-' + templates[series], form=form, doc_id=number, version=version,
         idSchemes=id_scheme_list, **params)
 
 
@@ -2664,13 +2664,13 @@ def edit_record(series, number):
 #
 # Conformance checking function
 # -----------------------------
-def assess_conformance(series, element):
-    """Examines the contents of an element and assesses its compliance with the
+def assess_conformance(series, document):
+    """Examines the contents of an document and assesses its compliance with the
     MSC data model, giving the result as an integer score.
 
     Arguments:
         series (str): Record series
-        element (dict or Element): MSC record
+        document (dict or Document): MSC record
 
     Returns:
         dict: 'level' contains the conformance level of the record as an int,
@@ -2681,7 +2681,7 @@ def assess_conformance(series, element):
     errors = dict()
 
     # Convert JSON into MultiDict format expected by WTForms
-    converted = msc_to_form(element, padded=False)
+    converted = msc_to_form(document, padded=False)
     multi_dict_items = []
     for key in converted:
         value = converted[key]
@@ -2782,7 +2782,7 @@ conformance_levels = ['invalid', 'valid', 'useful', 'complete']
 
 
 # Generic record editing function
-def create_or_update_record(series, number, element):
+def create_or_update_record(series, number, document):
     mscid = None
 
     # Retrieve JSON payload
@@ -2814,7 +2814,7 @@ def create_or_update_record(series, number, element):
     if number:
         # Apply changes
         with transaction(tables[series]) as t:
-            for key in (k for k in element if k not in msc_data):
+            for key in (k for k in document if k not in msc_data):
                 t.update_callable(delete(key), eids=[number])
             t.update(msc_data, eids=[number])
     else:
@@ -2850,11 +2850,11 @@ def update_record(series, number):
     # Is this record in the database?
     if series not in table_names:
         abort(404)
-    element = tables[series].get(eid=number)
-    if not element:
+    document = tables[series].get(doc_id=number)
+    if not document:
         abort(404)
 
-    return create_or_update_record(series, number, element)
+    return create_or_update_record(series, number, document)
 
 
 # DELETE function
@@ -2865,14 +2865,14 @@ def delete_record(series, number):
     # Is this record in the database?
     if series not in table_names:
         abort(404)
-    element = tables[series].get(eid=number)
-    if not element:
+    document = tables[series].get(doc_id=number)
+    if not document:
         abort(404)
 
-    # tables[series].remove(eids=[number])
+    # tables[series].remove(doc_ids=[number])
     # Should this empty the record instead, properly to prevent re-use?
     with transaction(tables[series]) as t:
-        for key in element:
+        for key in document:
             t.update_callable(delete(key), eids=[number])
 
     # Return status, MSCID and conformance level
@@ -2897,7 +2897,7 @@ def list_records(series):
 
     records = list()
     for record in tables[series].search(Query().slug.exists()):
-        records.append({'id': record.eid, 'slug': record['slug']})
+        records.append({'id': record.doc_id, 'slug': record['slug']})
 
     return jsonify({table_names[series]: records})
 

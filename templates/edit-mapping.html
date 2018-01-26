@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% from "macros-forms.html" import state, errors %}
-{% block title %}{% if eid == 0 %}Add new mapping{% else %}Edit mapping msc:c{{ eid }}{% endif %}{% if version %}, version {{ version }}{% endif %}{% endblock %}
+{% block title %}{% if doc_id == 0 %}Add new mapping{% else %}Edit mapping msc:c{{ doc_id }}{% endif %}{% if version %}, version {{ version }}{% endif %}{% endblock %}
 {% block main %}
-  <form action="{{ url_for('edit_record', series='c', number=eid) }}" method="post"  accept-charset="utf-8" class="form-block">
+  <form action="{{ url_for('edit_record', series='c', number=doc_id) }}" method="post"  accept-charset="utf-8" class="form-block">
     {{ form.hidden_tag() }}
     <div class="form-group">
       {{ form.description.label(class="control-label") }}
@@ -140,7 +140,7 @@
               {{ f.number(class="form-control", style="width:auto;") }}
               {% if f.number_old.data %}
               {{ f.number_old() }}
-              <a href="{{ url_for('edit_record', series='c', number=eid) }}?version={{ f.number_old.data }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
+              <a href="{{ url_for('edit_record', series='c', number=doc_id) }}?version={{ f.number_old.data }}" target="_blank" class="btn btn-warning">Add version-specific details</a>
               {% endif %}
             </div>
             {{ errors(f.number) }}
@@ -162,7 +162,7 @@
     <div class="form-group">
       <button class="btn btn-primary">Save changes</button>
       {% if version %}
-      <a href="{{ url_for('edit_record', series='c', number=eid) }}" class="btn btn-default">Cancel &amp; edit main record</a>
+      <a href="{{ url_for('edit_record', series='c', number=doc_id) }}" class="btn btn-default">Cancel &amp; edit main record</a>
       {% else %}
       <a href="{{ url_for('hello') }}" class="btn btn-default">Cancel</a>
       {% endif %}
