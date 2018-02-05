@@ -423,7 +423,7 @@ app.config['OAUTH_DATABASE_PATH'] = os.path.join(
     app.instance_path, 'oauth-urls.json')
 app.config['OPENID_PATH'] = os.path.join(app.instance_path, 'open-id')
 # Variable config options go here:
-app.config.from_object('config.for.Development')
+app.config.from_object('config.for.Production')
 # Secret application keys go here:
 app.config.from_pyfile('keys.cfg', silent=True)
 # Any of these settings may be overridden in a .cfg file specified by the
