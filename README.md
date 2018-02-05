@@ -42,7 +42,7 @@ picture you will need to make multiple requests.
 Please indicate in the [issue tracker][issues] if you would like to us to
 provide a method for retrieving a composite record in one go.
 
-[dbguide]: https://github.com/rd-alliance/metadata-catalog-dev/tree/master/db
+[dbguide]: /db/README.md
 [issues]: https://github.com/rd-alliance/metadata-catalog-dev/issues
 
 ### Search for records
