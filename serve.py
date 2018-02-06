@@ -118,8 +118,9 @@ class JSONStorageWithGit(Storage):
             self.repo = Repo(git_repo)
         except NotGitRepository:
             self.repo = Repo.init(git_repo)
-        self.filename = os.path.basename(path)
-        self.name = os.path.splitext(self.filename)[0]
+        self.filename = path
+        basename = os.path.basename(path)
+        self.name = os.path.splitext(basename)[0]
 
     @property
     def _refname(self):
