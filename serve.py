@@ -2624,6 +2624,8 @@ def edit_record(series, number):
                             doc_ids=[number])
                         flash('Successfully updated record for version {}.'
                               .format(version), 'success')
+                        flash('If this page opened in a new window or tab, feel'
+                              ' free to close it now.')
                         break
                 else:
                     # This version is not in the list
