@@ -56,24 +56,42 @@
         <li>To give several terms, save after adding each one.</li>
       </ul>
     </div>
+    <fieldset>
+    <legend>{{ form.dataTypes.label.text }}</legend>
+    <datalist id="dataTypeLabel-list">
+      {% for item in dataTypeLabels %}
+      <option>{{ item }}</option>
+      {% endfor %}
+    </datalist>
+    <datalist id="dataTypeURL-list">
+      {% for item in dataTypeLabels %}
+      <option>{{ item }}</option>
+      {% endfor %}
+    </datalist>
     <div class="form-group">
-      {{ form.dataTypes.label(class="control-label") }}
-      <datalist id="dataType-list">
-        {% for item in dataTypes %}
-        <option>{{ item }}</option>
-        {% endfor %}
-      </datalist>
-      <div class="form-inline">
+      <ol class="form-list">
         {% for f in form.dataTypes %}
-        {{ f(list="dataType-list", class="form-control form-control-narrow") }}
+        <li>
+        <div class="{{ state(f['label']) }}">
+        {{ f['label'].label(class="control-label") }}
+        {{ f['label'](list="dataTypeLabel-list", class="form-control", style="width:auto;") }}
+        {{ errors(f['label']) }}
+        </div>
+        <div class="{{ state(f.url) }}">
+        {{ f.url.label(class="control-label") }}
+        {{ f.url(list="dataTypeURL-list", class="form-control") }}
+        {{ errors(f.url) }}
+        </div>
+        </li>
         {% endfor %}
-      </div>
+      </ol>
       <ul class="help-block">
         <li>Provide types of data which this scheme is usually used to describe.</li>
-        <li>You can provide either a link to a definition in a data type registry, or a plain term.</li>
+        <li>You can provide either a link to a definition in a data type registry, or a plain term, but preferably both.</li>
         <li>To give several terms, save after adding each one.</li>
       </ul>
     </div>
+    </fieldset>
     <fieldset>
     <legend>Relationships to other records</legend>
     <p class="help-block">
@@ -114,6 +132,7 @@
     </fieldset>
     <fieldset>
     <legend>{{ form.locations.label.text }}</legend>
+    <div class="form-group">
       <ol class="form-list">
         {% for f in form.locations %}
         <li>
@@ -137,6 +156,7 @@
     </fieldset>
     <fieldset>
     <legend>{{ form.samples.label.text }}</legend>
+    <div class="form-group">
       <ol class="form-list">
       {% for f in form.samples %}
         <li>

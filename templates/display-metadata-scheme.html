@@ -19,7 +19,11 @@
     <p class="col-sm-2">Used for</p>
     <ul class="col-sm-10 list-inline">
     {% for type in record['dataTypes'] %}
-      <li><a class="btn btn-special" href="{{ url_for('dataType', dataType=toURLSlug(type)) }}">{{ type }}</a></li>
+      {% if 'label' in type %}
+      <li><a class="btn btn-special" href="{{ url_for('dataType', dataType=toURLSlug(type['label'])) }}">{{ type['label'] }}</a></li>
+      {% else %}
+      <li><a class="btn btn-special" href="{{ url_for('dataType', dataType=toURLSlug(type['url'])) }}">{{ abbrevURL(type['url']) }}</a></li>
+      {% endif %}
     {% endfor %}
     </ul>
   </div>

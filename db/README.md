@@ -68,13 +68,14 @@ identifiers:
 versions:
   - number: 1.0
     issued: 2016-09-15
-description: >-
-    <p>This scheme is used to document itself.</p>
+description: >
+    This scheme is used to document itself.
 keywords:
   - keyword 1
   - keyword 2
 dataTypes:
-  - keyword
+  - url: http://
+    label: keyword
 locations:
   - url: http://...
     type: website
@@ -252,14 +253,20 @@ keyword *Multidisciplinary*.
 
 ### DataTypes
 
-This element contains a list of data types most commonly described by metadata
-records that conform to this scheme. Each value may be *either* a URL pointing
-to an entry in a data type registry (preferred) *or* a human-readable term.
+This element contains a list of associative arrays. Each array represents one of
+the data types most commonly described by metadata records that conform to this
+scheme:
+
+  * **url**  
+    Absolute URL pointing to an entry in a data type registry.
+
+  * **label**  
+    Human-readable term.
 
 The MSC will take a “folksonomic” approach to the human-readable values for this
 element: users will be able to supply any value but will be encouraged to reuse
 values already in the database. Trivially different values may be
-merged/normalized by the MSC editors.
+merged/normalized by the MSC editors, unless clarified with a URL.
 
 ### Locations
 
@@ -321,6 +328,9 @@ entity in the MSC database:
         development of the scheme, or helps to fund its continued maintenance.
       + *user*: The specified organization or service uses the current scheme
         in order to achieve its goals.
+      + *endorsement*: The current scheme (or version) is endorsed by the
+        specified endorsement. The originator of the endorsement must not be the
+        *maintainer*.
 
 ## Conformance levels
 
@@ -353,8 +363,6 @@ name: The Organization
 identifiers:
   - id: "msc:g1"
     scheme: RDA-MSCWG
-description: >-
-    <p>This group is committed to open data.</p>
 types:
   - standards body
 locations:
@@ -385,17 +393,6 @@ identifier:
 *Notes*
 
   * The same considerations apply as for “Metadata Scheme”.
-
-### Description
-
-A sentence or two introducing the organization.
-
-*Notes*
-
-  * This should give the reader an impression of what the organization does
-    and its role in the research environment.
-  * This could describe the organization's interest in metadata or metadata
-    standards.
 
 ### Types
 
@@ -456,7 +453,7 @@ identifiers:
     scheme: RDA-MSCWG
 versions:
   - number: 1.0
-    issued: 2016-09-15
+    date: 2016-09-15
 creators:
   - fullName: Jane Doe
     givenName: Jane
@@ -512,7 +509,7 @@ version:
   * **number**  
     The number, code or other string used to identify the version.
 
-  * **issued**  
+  * **date**  
     The date on which the version was published.
 
   * Other elements as required.
@@ -634,7 +631,7 @@ identifiers:
     scheme: RDA-MSCWG
 versions:
   - number: 1.0
-    issued: 2016-09-15
+    date: 2016-09-15
 creators:
   - fullName: Jane Doe
     givenName: Jane
@@ -679,7 +676,7 @@ version:
   * **number**  
     The number, code or other string used to identify the version.
 
-  * **issued**  
+  * **date**  
     The date on which the version was published.
 
   * Other elements as required.
@@ -897,10 +894,7 @@ entity in the MSC database:
   * **role**  
     The manner of the relationship between the entity and the mapping. Possible
     values:
-      + *endorsed scheme*: The scheme which is endorsed. To indicate that a
-        particular version was endorsed, append `#v` plus the version number
-        to the MSC ID. This must correspond to a version number recorded for
-        that entity.
+      + *endorsed scheme*: The scheme which is endorsed.
       + *originator*: The organization that made the endorsement.
 
 *Note*

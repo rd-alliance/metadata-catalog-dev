@@ -881,6 +881,18 @@ def from_url_slug(slug):
     return string
 
 
+def abbrev_url(url):
+    """Extracts last component of URL path. Useful for datatype URLs."""
+    url_tuple = urllib.parse.urlparse(url)
+    path = url_tuple.path
+    if not path:
+        return url
+    path_fragments = path.split("/")
+    if not path_fragments[-1] and len(path_fragments) > 1:
+        return path_fragments[-2]
+    return path_fragments[-1]
+
+
 def wild_to_regex(string):
     """Transforms wildcard searches to regular expressions."""
     regex = re.escape(string)
@@ -1019,6 +1031,7 @@ def utility_processor():
     return {
         'toURLSlug': to_url_slug,
         'fromURLSlug': from_url_slug,
+        'abbrevURL': abbrev_url,
         'parseDateRange': parse_date_range}
 
 
@@ -1219,11 +1232,13 @@ def subject(subject):
 
 # Per-datatype lists of standards
 # ===============================
-@app.route('/datatype/<dataType>')
+@app.route('/datatype/<path:dataType>')
 def dataType(dataType):
     query_string = from_url_slug(dataType)
-    Scheme = Query()
-    results = tables['m'].search(Scheme.dataTypes.any([query_string]))
+    Scheme = DataType = Query()
+    results = tables['m'].search(Scheme.dataTypes.any(
+        (DataType.url == query_string) |
+        (DataType.label == query_string)))
     no_of_hits = len(results)
     if no_of_hits:
         flash('Found {:N scheme/s} used for this type of data.'
@@ -1416,9 +1431,11 @@ def msc_to_form(msc_data, padded=True):
             form_data[k] = v
     # Ensure there is a blank entry at the end of the following lists
     if padded:
-        for l in ['keywords', 'dataTypes', 'types']:
+        for l in ['keywords', 'types']:
             if l in form_data:
                 form_data[l].append('')
+        if 'dataTypes' in form_data:
+            form_data['dataTypes'].append({'url': '', 'label': ''})
         if 'locations' in form_data:
             form_data['locations'].append({'url': '', 'type': ''})
         if 'identifiers' in form_data:
@@ -1503,7 +1520,7 @@ def form_to_msc(form_data, document):
                     else:
                         mapped_version['valid'] = version['valid_from']
                 msc_data[k].append(mapped_version)
-        elif k in ['keywords', 'dataTypes']:
+        elif k in ['keywords']:
             term_set = set()
             for term in v:
                 term_set.add(term)
@@ -1652,7 +1669,7 @@ def scheme_search(isGui=None):
     if request.method == 'POST' and form.validate():
         document_list = list()
         mscid_list = list()
-        Scheme = Version = Identifier = Funder = Relation = Query()
+        Scheme = Version = Identifier = DataType = Funder = Relation = Query()
         if isGui is None:
             isGui = not request_wants_json()
         title = 'Search results'
@@ -1779,9 +1796,13 @@ def scheme_search(isGui=None):
         if 'dataType' in form.data and form.data['dataType']:
             no_of_queries += 1
             matches = tables['m'].search(
-                Scheme.dataTypes.any([form.data['dataType']]))
+                Scheme.dataTypes.any(
+                    (DataType.url == form.data['dataType']) |
+                    (DataType.label == form.data['dataType'])))
             matches.extend(tables['m'].search(Scheme.versions.any(
-                Version.dataTypes.any([form.data['dataType']]))))
+                Version.dataTypes.any(
+                    (DataType.url == form.data['dataType']) |
+                    (DataType.label == form.data['dataType'])))))
             document_list, mscid_list = add_matches(
                 'm', matches, document_list, mscid_list)
             if isGui:
@@ -2067,7 +2088,8 @@ def extract_hints(scheme, title_set, id_set, type_set, funder_set):
             id_set.add(identifier['id'])
     if 'dataTypes' in scheme:
         for type in scheme['dataTypes']:
-            type_set.add(type)
+            type_set.add(type['url'])
+            type_set.add(type['label'])
     if 'relatedEntities' in scheme:
         for entity in scheme['relatedEntities']:
             if entity['role'] == 'funder':
@@ -2339,6 +2361,11 @@ class NativeDateField(StringField):
     validators = [validators.Optional(), W3CDate]
 
 
+class DataTypeForm(Form):
+    label = StringField('Data type', default='')
+    url = StringField('URL of definition', validators=[EmailOrURL])
+
+
 class LocationForm(Form):
     url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
     type = SelectField('Type', validators=[RequiredIf('url')], default='')
@@ -2392,7 +2419,7 @@ class SchemeForm(FlaskForm):
                 .format(thesaurus_link))]),
         'Subject areas', min_entries=1)
     dataTypes = FieldList(
-        StringField('URL or term'), 'Data types', min_entries=1)
+        FormField(DataTypeForm), 'Data types', min_entries=1)
     parent_schemes = SelectMultipleField('Parent metadata scheme(s)')
     maintainers = SelectMultipleField(
         'Organizations that maintain this scheme')
@@ -2495,6 +2522,69 @@ Forms = {
     'e': EndorsementForm}
 
 
+# Ensuring consistency of data type/URL pairs
+# -------------------------------------------
+def propagate_data_types(msc_data, table, t):
+    """Takes a record, a table, and a transaction. For each data type URL/label
+    pair, ensures all other occurrences of the URL in the table are accompanied
+    by the same label. Returns the number of updated records."""
+    changes_made = 0
+
+    if 'dataTypes' not in msc_data:
+        return changes_made
+
+    Scheme = Version = DataType = Query()
+    for dataType in msc_data['dataTypes']:
+        if not dataType.get('url'):
+            continue
+        if not dataType.get('label'):
+            continue
+        matches = table.search(
+            Scheme.dataTypes.any(
+                (DataType.url == dataType['url'])))
+        for match in matches:
+            needs_updating = False
+            old_dataTypes = match['dataTypes']
+            new_dataTypes = list()
+            for type in old_dataTypes:
+                if (type.get('url') == dataType['url'] and
+                        type.get('label') != dataType['label']):
+                    needs_updating = True
+                    new_dataTypes.append(dataType)
+                else:
+                    new_dataTypes.append(type)
+            if needs_updating:
+                t.update({'dataTypes': new_dataTypes}, eids=[match.doc_id])
+                changes_made += 1
+        matches = table.search(
+            Scheme.versions.any(
+                Version.dataType.any(
+                    (DataType.url == dataType['url']))))
+        for match in matches:
+            needs_updating = False
+            new_versions = list()
+            for version in match['versions']:
+                if 'dataTypes' not in version:
+                    new_versions.append(version)
+                    continue
+                old_dataTypes = version['dataTypes']
+                new_dataTypes = list()
+                for type in old_dataTypes:
+                    if (type.get('url') == dataType['url'] and
+                            type.get('label') != dataType['label']):
+                        needs_updating = True
+                        new_dataTypes.append(dataType)
+                    else:
+                        new_dataTypes.append(type)
+                new_version = version
+                new_version['dataTypes'] = new_dataTypes
+                new_versions.append(new_version)
+            if needs_updating:
+                t.update({'versions': new_versions}, eids=[match.doc_id])
+                changes_made += 1
+    return changes_made
+
+
 # Generic editing form view
 # -------------------------
 @app.route('/edit/<string(length=1):series><int:number>',
@@ -2537,14 +2627,19 @@ def edit_record(series, number):
         subject_list = get_subject_terms(complete=True)
         params['subjects'] = subject_list
         # Data type help
-        type_set = set()
+        type_url_set = set()
+        type_label_set = set()
         for scheme in tables['m'].all():
             if 'dataTypes' in scheme:
                 for type in scheme['dataTypes']:
-                    type_set.add(type)
-        type_list = list(type_set)
-        type_list.sort(key=lambda k: k.lower())
-        params['dataTypes'] = type_list
+                    type_url_set.add(type['url'])
+                    type_label_set.add(type['label'])
+        type_url_list = list(type_url_set)
+        type_label_list = list(type_label_set)
+        type_url_list.sort(key=lambda k: k.lower())
+        type_label_list.sort(key=lambda k: k.lower())
+        params['dataTypeURLs'] = type_url_list
+        params['dataTypeLabels'] = type_label_list
         # Validation for parent schemes
         form.parent_schemes.choices = scheme_choices
         # Validation for organizations
@@ -2622,8 +2717,18 @@ def edit_record(series, number):
                             {'versions': version_list},
                             Record.versions.any(Version.number == version),
                             doc_ids=[number])
+                        records_updated = 0
+                        if 'dataTypes' in msc_data:
+                            with transaction(tables[series]) as t:
+                                records_updated = propagate_data_types(
+                                    msc_data, tables[series], t)
                         flash('Successfully updated record for version {}.'
                               .format(version), 'success')
+                        if records_updated:
+                            flash('Also updated the data types of {:/1 other'
+                                  ' record/N other records}.'
+                                  .format(Pluralizer(records_updated)),
+                                  'success')
                         flash('If this page opened in a new window or tab, feel'
                               ' free to close it now.')
                         break
@@ -2646,7 +2751,17 @@ def edit_record(series, number):
                 for key in (k for k in document if k not in msc_data):
                     t.update_callable(delete(key), eids=[number])
                 t.update(msc_data, eids=[number])
+            # Ensure consistency of dataType url/label pairs
+            records_updated = 0
+            if 'dataTypes' in msc_data:
+                with transaction(tables[series]) as t:
+                    records_updated = propagate_data_types(
+                        msc_data, tables[series], t)
             flash('Successfully updated record.', 'success')
+            if records_updated:
+                flash('Also updated the data types of {:/1 other record/N other'
+                      ' records}.'.format(Pluralizer(records_updated)),
+                      'success')
         else:
             # Adding a new record
             msc_data = fix_admin_data(msc_data, series, number)
@@ -2657,6 +2772,7 @@ def edit_record(series, number):
         flash('Could not save changes as there {:/was an error/were N errors}.'
               ' See below for details.'.format(Pluralizer(len(form.errors))),
               'error')
+        print(form.errors)
     return render_template(
         'edit-' + templates[series], form=form, doc_id=number, version=version,
         idSchemes=id_scheme_list, **params)
@@ -2823,6 +2939,18 @@ def create_or_update_record(series, number, document):
     else:
         # Insert new record
         number = tables[series].insert(msc_data)
+
+    # Ensure consistency of dataType url/label pairs
+    if series == 'm':
+        with transaction(tables[series]) as t:
+            if 'dataTypes' in msc_data:
+                records_updated = propagate_data_types(
+                    msc_data, tables[series], t)
+            if 'versions' in msc_data:
+                for version in msc_data:
+                    if 'dataTypes' in version:
+                        records_updated = propagate_data_types(
+                            version, tables[series], t)
 
     if not mscid:
         mscid = get_mscid(series, number)

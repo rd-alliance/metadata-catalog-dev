@@ -68,14 +68,14 @@ div.keywords li a.btn-special:focus {
 div.dataTypes li a.btn-special {
 	border: 1px solid #FFE082;
 	background-color: #FFECB3;
-	color: white;
+	color: black;
 }
 div.dataTypes li a.btn-special:active,
 div.dataTypes li a.btn-special:hover,
 div.dataTypes li a.btn-special:focus {
 	border: 1px solid #FFD54F;
 	background-color: #FFE082;
-	color: white;
+	color: black;
 }
 ul.locations li a.btn-special {
 	border: 1px solid #90CAF9;
