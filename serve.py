@@ -2363,7 +2363,8 @@ class NativeDateField(StringField):
 
 class DataTypeForm(Form):
     label = StringField('Data type', default='')
-    url = StringField('URL of definition', validators=[EmailOrURL])
+    url = StringField('URL of definition', validators=[
+        validators.Optional(), EmailOrURL])
 
 
 class LocationForm(Form):
@@ -2558,7 +2559,7 @@ def propagate_data_types(msc_data, table, t):
                 changes_made += 1
         matches = table.search(
             Scheme.versions.any(
-                Version.dataType.any(
+                Version.dataTypes.any(
                     (DataType.url == dataType['url']))))
         for match in matches:
             needs_updating = False
