@@ -2088,8 +2088,12 @@ def extract_hints(scheme, title_set, id_set, type_set, funder_set):
             id_set.add(identifier['id'])
     if 'dataTypes' in scheme:
         for type in scheme['dataTypes']:
-            type_set.add(type['url'])
-            type_set.add(type['label'])
+            type_url = type.get('url')
+            if type_url:
+                type_set.add(type_url)
+            type_label = type.get('label')
+            if type_label:
+                type_set.add(type_label)
     if 'relatedEntities' in scheme:
         for entity in scheme['relatedEntities']:
             if entity['role'] == 'funder':
@@ -2633,8 +2637,12 @@ def edit_record(series, number):
         for scheme in tables['m'].all():
             if 'dataTypes' in scheme:
                 for type in scheme['dataTypes']:
-                    type_url_set.add(type['url'])
-                    type_label_set.add(type['label'])
+                    type_url = type.get('url')
+                    if type_url:
+                        type_url_set.add(type_url)
+                    type_label = type.get('label')
+                    if type_label:
+                        type_label_set.add(type_label)
         type_url_list = list(type_url_set)
         type_label_list = list(type_label_set)
         type_url_list.sort(key=lambda k: k.lower())
