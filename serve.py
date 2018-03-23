@@ -11,6 +11,7 @@ import re
 import urllib
 import json
 import unicodedata
+import html
 from datetime import datetime, timezone
 from email.utils import parsedate_tz, mktime_tz
 
@@ -623,9 +624,9 @@ for platform in computing_platforms:
 
 mapping_location_regexp = (
     r'(document|library \([^)]+\)|executable \([^)]+\)|^$)')
-mapping_location_help = (
+mapping_location_help = (html.escape(
     'Must be one of "document", "library (<language>)",'
-    ' "executable (<platform>)".')
+    ' "executable (<platform>)".'))
 mapping_location_list = ['document']
 for language in programming_languages:
     mapping_location_list.append('library ({})'.format(language))
@@ -2376,6 +2377,11 @@ class LocationForm(Form):
     type = SelectField('Type', validators=[RequiredIf('url')], default='')
 
 
+class FreeLocationForm(Form):
+    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
+    type = StringField('Type', validators=[RequiredIf('url')], default='')
+
+
 class SampleForm(Form):
     title = StringField('Title', validators=[RequiredIf('url')])
     url = StringField('URL', validators=[RequiredIf('title'), EmailOrURL])
@@ -2494,7 +2500,7 @@ class MappingForm(FlaskForm):
         choices=get_choices('g'))
     funders = SelectMultipleField('Organizations that funded this mapping')
     locations = FieldList(
-        FormField(LocationForm), 'Links to this mapping', min_entries=1)
+        FormField(FreeLocationForm), 'Links to this mapping', min_entries=1)
     identifiers = FieldList(
         FormField(IdentifierForm), 'Identifiers for this mapping',
         min_entries=1)
@@ -2684,7 +2690,7 @@ def edit_record(series, number):
         for f in form.locations:
             f['type'].validators.append(
                 validators.Regexp(
-                    mapping_location_regexp, message=mapping_location_help))
+                    regex=mapping_location_regexp, message=mapping_location_help))
         params['locationTypes'] = mapping_location_list
     elif series == 'e':
         # Validation for organizations
@@ -2781,7 +2787,6 @@ def edit_record(series, number):
         flash('Could not save changes as there {:/was an error/were N errors}.'
               ' See below for details.'.format(Pluralizer(len(form.errors))),
               'error')
-        print(form.errors)
     return render_template(
         'edit-' + templates[series], form=form, doc_id=number, version=version,
         idSchemes=id_scheme_list, **params)
