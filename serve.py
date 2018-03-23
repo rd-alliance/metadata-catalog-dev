@@ -930,8 +930,8 @@ class RequiredIf(object):
     """
     field_flags = ('optional', )
 
-    def __init__(self, other_field_name, message=None, strip_whitespace=True):
-        self.other_field_name = other_field_name
+    def __init__(self, other_field_list, message=None, strip_whitespace=True):
+        self.other_field_list = other_field_list
         self.message = message
         if strip_whitespace:
             self.string_check = lambda s: s.strip()
@@ -939,23 +939,27 @@ class RequiredIf(object):
             self.string_check = lambda s: s
 
     def __call__(self, form, field):
-        other_field = form._fields.get(self.other_field_name)
-        if other_field is None:
-            raise Exception(
-                'No field named "{}" in form'.format(self.other_field_name))
-        if bool(other_field.data):
-            self.field_flags = ('required', )
-            if not field.raw_data or not field.raw_data[0]:
-                if self.message is None:
-                    message = field.gettext('This field is required.')
-                else:
-                    message = self.message
+        other_fields_empty = True
+        for other_field_name in self.other_field_list:
+            other_field = form._fields.get(other_field_name)
+            if other_field is None:
+                raise Exception(
+                    'No field named "{}" in form'.format(other_field_name))
+            if bool(other_field.data):
+                self.field_flags = ('required', )
+                if not field.raw_data or not field.raw_data[0]:
+                    if self.message is None:
+                        message = field.gettext('This field is required.')
+                    else:
+                        message = self.message
+                    field.errors[:] = []
+                    other_fields_empty = False
+                    raise validators.StopValidation(message)
+            elif (not field.raw_data) or (
+                    isinstance(field.raw_data[0], string_types) and
+                    not self.string_check(field.raw_data[0])):
                 field.errors[:] = []
-                raise validators.StopValidation(message)
-        elif (not field.raw_data) or (
-                isinstance(field.raw_data[0], string_types) and
-                not self.string_check(field.raw_data[0])):
-            field.errors[:] = []
+        if other_fields_empty:
             raise validators.StopValidation()
 
 
@@ -2373,18 +2377,18 @@ class DataTypeForm(Form):
 
 
 class LocationForm(Form):
-    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
-    type = SelectField('Type', validators=[RequiredIf('url')], default='')
+    url = StringField('URL', validators=[RequiredIf(['type']), EmailOrURL])
+    type = SelectField('Type', validators=[RequiredIf(['url'])], default='')
 
 
 class FreeLocationForm(Form):
-    url = StringField('URL', validators=[RequiredIf('type'), EmailOrURL])
-    type = StringField('Type', validators=[RequiredIf('url')], default='')
+    url = StringField('URL', validators=[RequiredIf(['type']), EmailOrURL])
+    type = StringField('Type', validators=[RequiredIf(['url'])], default='')
 
 
 class SampleForm(Form):
-    title = StringField('Title', validators=[RequiredIf('url')])
-    url = StringField('URL', validators=[RequiredIf('title'), EmailOrURL])
+    title = StringField('Title', validators=[RequiredIf(['url'])])
+    url = StringField('URL', validators=[RequiredIf(['title']), EmailOrURL])
 
 
 class IdentifierForm(Form):
@@ -2394,8 +2398,7 @@ class IdentifierForm(Form):
 
 class VersionForm(Form):
     number = StringField('Version number', validators=[
-        RequiredIf('issued'), RequiredIf('available'),
-        RequiredIf('valid_from'), validators.Length(max=20)])
+        RequiredIf(['issued', 'available', 'valid_from']), validators.Length(max=20)])
     number_old = HiddenField(validators=[validators.Length(max=20)])
     issued = NativeDateField('Date published')
     available = NativeDateField('Date released as draft/proposal')
