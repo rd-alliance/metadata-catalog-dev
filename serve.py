@@ -2787,9 +2787,27 @@ def edit_record(series, number):
         flash('Could not save changes as there {:/was an error/were N errors}.'
               ' See below for details.'.format(Pluralizer(len(form.errors))),
               'error')
+        for field, errors in form.errors.items():
+            if len(errors) > 0:
+                if isinstance(errors[0], str):
+                    # Simple field
+                    form[field].errors = clean_error_list(form[field])
+                else:
+                    # Subform
+                    for subform in errors:
+                        for subfield, suberrors in subform.items():
+                            for f in form[field]:
+                                f[subfield].errors = clean_error_list(f[subfield])
     return render_template(
         'edit-' + templates[series], form=form, doc_id=number, version=version,
         idSchemes=id_scheme_list, **params)
+
+
+def clean_error_list(field):
+    seen_errors = set()
+    for error in field.errors:
+        seen_errors.add(error)
+    return list(seen_errors)
 
 
 # Generic API contribution handling
