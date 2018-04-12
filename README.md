@@ -9,7 +9,7 @@ see the [Installation Guide].
 For information on how to administer a running instance of the Catalog, see the
 [Administrator's Guide].
 
-[Metadata Standards Catalog]: http://rdamsc.dcc.ac.uk/
+[Metadata Standards Catalog]: https://rdamsc.dcc.ac.uk/
 [Installation Guide]: INSTALLATION.md
 [Administrator's Guide]: ADMINISTRATION.md
 
@@ -24,13 +24,13 @@ by either
   - `/msc/`, in which case you have to specify JSON format in the headers, e.g.
 
     ```bash
-    curl -H 'Accept: application/json' http://rdamsc.dcc.ac.uk/msc/m13
+    curl -H 'Accept: application/json' https://rdamsc.dcc.ac.uk/msc/m13
     ```
 
   - `/api/`, in which case you get JSON automatically, e.g.
 
     ```bash
-    curl http://rdamsc.dcc.ac.uk/api/m13
+    curl https://rdamsc.dcc.ac.uk/api/m13
     ```
 
 The response you will get will be a JSON object that is structurally similar to
@@ -51,11 +51,11 @@ To perform a search of the database, and receive a list of internal MSC IDs in
 return, use something like the following:
 
 ```bash
-curl -X POST -F 'title=ABCD' http://rdamsc.dcc.ac.uk/query/schemes
-curl -X POST -F 'name=University' http://rdamsc.dcc.ac.uk/query/organizations
-curl -X POST -F 'supported_scheme=msc:m13' http://rdamsc.dcc.ac.uk/query/tools
-curl -X POST -F 'input_scheme=msc:m15' -F 'output_scheme=msc:m11' http://rdamsc.dcc.ac.uk/query/mappings
-curl -X POST -F 'endorsed_scheme=msc:m46'  http://rdamsc.dcc.ac.uk/query/endorsements
+curl -X POST -F 'title=ABCD' https://rdamsc.dcc.ac.uk/query/schemes
+curl -X POST -F 'name=University' https://rdamsc.dcc.ac.uk/query/organizations
+curl -X POST -F 'supported_scheme=msc:m13' https://rdamsc.dcc.ac.uk/query/tools
+curl -X POST -F 'input_scheme=msc:m15' -F 'output_scheme=msc:m11' https://rdamsc.dcc.ac.uk/query/mappings
+curl -X POST -F 'endorsed_scheme=msc:m46'  https://rdamsc.dcc.ac.uk/query/endorsements
 ```
 
 Unless otherwise stated, if you search using more than one field, the result set
@@ -147,11 +147,11 @@ as its value:
 To get a list of all the records of a particular type, send a GET request to one
 of the following URLs:
 
-  - `http://rdamsc.dcc.ac.uk/api/m` for metadata schemes
-  - `http://rdamsc.dcc.ac.uk/api/g` for organizations
-  - `http://rdamsc.dcc.ac.uk/api/t` for tools
-  - `http://rdamsc.dcc.ac.uk/api/c` for mappings
-  - `http://rdamsc.dcc.ac.uk/api/e` for endorsements
+  - `https://rdamsc.dcc.ac.uk/api/m` for metadata schemes
+  - `https://rdamsc.dcc.ac.uk/api/g` for organizations
+  - `https://rdamsc.dcc.ac.uk/api/t` for tools
+  - `https://rdamsc.dcc.ac.uk/api/c` for mappings
+  - `https://rdamsc.dcc.ac.uk/api/e` for endorsements
 
 The response will be a JSON object, consisting of a key representing the type of
 record (e.g. `metadata-schemes`) with an array of objects as its value. Each
@@ -181,7 +181,7 @@ otherwise your username and password may be at risk of interception.
 To change the password, use something like the following:
 
 ```bash
-curl -u userid:password -X POST -H "Content-Type: application/json" -d '{"new_password": "your_new_password"}' http://rdamsc.dcc.ac.uk/api/reset-password
+curl -u userid:password -X POST -H "Content-Type: application/json" -d '{"new_password": "your_new_password"}' https://rdamsc.dcc.ac.uk/api/reset-password
 ```
 
 If successful , the response will be a JSON object like this:
@@ -195,7 +195,7 @@ If successful , the response will be a JSON object like this:
 To receive an authorization token, use something like the following:
 
 ```bash
-curl -u userid:password -X GET http://rdamsc.dcc.ac.uk/api/token
+curl -u userid:password -X GET https://rdamsc.dcc.ac.uk/api/token
 ```
 
 If authentication is successful, the response will be a JSON object, consisting
@@ -211,17 +211,17 @@ The token will be valid for 600 seconds.
 
 To create a new record, send a POST request to one of the following URLs:
 
-  - `http://rdamsc.dcc.ac.uk/api/m` for a metadata scheme
-  - `http://rdamsc.dcc.ac.uk/api/g` for an organization
-  - `http://rdamsc.dcc.ac.uk/api/t` for a tool
-  - `http://rdamsc.dcc.ac.uk/api/c` for a mapping
-  - `http://rdamsc.dcc.ac.uk/api/e` for an endorsement
+  - `https://rdamsc.dcc.ac.uk/api/m` for a metadata scheme
+  - `https://rdamsc.dcc.ac.uk/api/g` for an organization
+  - `https://rdamsc.dcc.ac.uk/api/t` for a tool
+  - `https://rdamsc.dcc.ac.uk/api/c` for a mapping
+  - `https://rdamsc.dcc.ac.uk/api/e` for an endorsement
 
 The body of the request should be a JSON object representing the complete
 record; see the [database documentation][dbguide] for details. Example:
 
 ```bash
-curl -u token:anything -X POST -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' http://rdamsc.dcc.ac.uk/api/g
+curl -u token:anything -X POST -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' https://rdamsc.dcc.ac.uk/api/g
 ```
 
 The response will be a JSON object, consisting of three keys:
@@ -242,25 +242,25 @@ The response will be a JSON object, consisting of three keys:
 
 ### Modify an existing record
 
-To modify a record, send a PUT request to `http://rdamsc.dcc.ac.uk/api/` followed
-by the MSC ID, e.g. `http://rdamsc.dcc.ac.uk/api/m1`.
+To modify a record, send a PUT request to `https://rdamsc.dcc.ac.uk/api/` followed
+by the MSC ID, e.g. `https://rdamsc.dcc.ac.uk/api/m1`.
 
 The body of the request should be a JSON object representing the complete
 record; see the [database documentation][dbguide] for details. Example:
 
 ```bash
-curl -u token:anything -X PUT -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' http://rdamsc.dcc.ac.uk/api/g99
+curl -u token:anything -X PUT -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' https://rdamsc.dcc.ac.uk/api/g99
 ```
 
 The response is the same as for ‘Create a new record’.
 
 ### Delete an existing record
 
-To delete a record, send a DELETE request to `http://rdamsc.dcc.ac.uk/api/`
-followed by the MSC ID, e.g. `http://rdamsc.dcc.ac.uk/api/m1`. Example:
+To delete a record, send a DELETE request to `https://rdamsc.dcc.ac.uk/api/`
+followed by the MSC ID, e.g. `https://rdamsc.dcc.ac.uk/api/m1`. Example:
 
 ```bash
-curl -u token:anything -X DELETE http://rdamsc.dcc.ac.uk/api/g99
+curl -u token:anything -X DELETE https://rdamsc.dcc.ac.uk/api/g99
 ```
 
 The response will be a JSON object, consisting of three keys:

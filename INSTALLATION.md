@@ -139,7 +139,7 @@ OAUTH_CREDENTIALS = {
 ```
 
 I have registered a set of these for use in the official instance at
-<http://rdamsc.dcc.ac.uk>, should there be demand.
+<https://rdamsc.dcc.ac.uk>, should there be demand.
 
 ## Running the Catalog
 
