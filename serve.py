@@ -89,6 +89,9 @@ from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 import dulwich.porcelain as git
 
+# See https://github.com/bloomberg/python-github-webhook
+# Installed locally
+from github_webhook import Webhook
 
 # Customization
 # =============
@@ -464,6 +467,8 @@ thesaurus_link = ('<a href="http://vocabularies.unesco.org/browser/thesaurus/'
 oid = OpenID(app, app.config['OPENID_PATH'])
 
 auth = HTTPBasicAuth()
+
+webhook = Webhook(app, secret=app.config['WEBHOOK_SECRET'])
 
 
 class ApiUser(Document):
@@ -3066,6 +3071,23 @@ def list_records(series):
         records.append({'id': record.doc_id, 'slug': record['slug']})
 
     return jsonify({table_names[series]: records})
+
+
+# Automatic self-updating
+# =======================
+@webhook.hook()
+def on_push(data):
+    print("DEBUG: Got push with: {0}".format(data))
+    print("DEBUG: Opening own git repo: {}".format(app.config['APPLICATION_ROOT']))
+    try:
+        repo = Repo(app.config['APPLICATION_ROOT'])
+    except NotGitRepository:
+        print('DEBUG: Failed.')
+        return
+
+    print("DEBUG: about to pull")
+    git.pull(repo)
+    print("DEBUG: have just pulled")
 
 
 # Executing

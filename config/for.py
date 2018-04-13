@@ -7,6 +7,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     JSON_AS_ASCII = False
+    WEBHOOK_SECRET = 'This is another key for testing only'
 
 
 class Production(Config):
