@@ -12,6 +12,7 @@ import urllib
 import json
 import unicodedata
 import html
+import subprocess
 from datetime import datetime, timezone
 from email.utils import parsedate_tz, mktime_tz
 
@@ -3077,20 +3078,13 @@ def list_records(series):
 # =======================
 @webhook.hook()
 def on_push(data):
-    print("DEBUG: Got push with: {0}".format(data))
-    print("DEBUG: Opening own git repo: {}".format(app.config['APPLICATION_ROOT']))
-    try:
-        repo = Repo(app.config['APPLICATION_ROOT'])
-    except NotGitRepository:
-        print('DEBUG: Failed.')
-        return
-
-    print("DEBUG: about to pull")
-    git.pull(repo)
-    print("DEBUG: have just pulled")
+    print("Upstream code repository has been updated.")
+    print("Initiating git pull to update codebase.")
+    call = subprocess.run(['git', 'pull', '--rebase'], stderr=subprocess.STDOUT)
+    print("Git pull completed with exit code {}.".format(call.returncode))
 
 
 # Executing
 # =========
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
