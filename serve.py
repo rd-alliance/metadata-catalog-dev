@@ -822,6 +822,8 @@ def get_db_tree(series, document_list):
     tree = list()
     for document in document_list:
         result = dict()
+        if 'title' not in document:
+            continue
         result['name'] = document['title']
         result['url'] = url_for('display', series=series, number=document.doc_id)
         if series == 'm':
