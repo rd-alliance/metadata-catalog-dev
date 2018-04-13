@@ -2,3 +2,4 @@
 /db/migration-log.txt
 /instance
 /config/__pycache__
+/github_webhook/__pycache__
