@@ -12,6 +12,7 @@ import urllib
 import json
 import unicodedata
 import html
+import subprocess
 from datetime import datetime, timezone
 from email.utils import parsedate_tz, mktime_tz
 
@@ -89,6 +90,9 @@ from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 import dulwich.porcelain as git
 
+# See https://github.com/bloomberg/python-github-webhook
+# Installed locally
+from github_webhook import Webhook
 
 # Customization
 # =============
@@ -464,6 +468,8 @@ thesaurus_link = ('<a href="http://vocabularies.unesco.org/browser/thesaurus/'
 oid = OpenID(app, app.config['OPENID_PATH'])
 
 auth = HTTPBasicAuth()
+
+webhook = Webhook(app, secret=app.config['WEBHOOK_SECRET'])
 
 
 class ApiUser(Document):
@@ -3066,6 +3072,16 @@ def list_records(series):
         records.append({'id': record.doc_id, 'slug': record['slug']})
 
     return jsonify({table_names[series]: records})
+
+
+# Automatic self-updating
+# =======================
+@webhook.hook()
+def on_push(data):
+    print("Upstream code repository has been updated.")
+    print("Initiating git pull to update codebase.")
+    call = subprocess.run(['git', 'pull', '--rebase'], stderr=subprocess.STDOUT)
+    print("Git pull completed with exit code {}.".format(call.returncode))
 
 
 # Executing
