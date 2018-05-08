@@ -90,9 +90,12 @@ from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 import dulwich.porcelain as git
 
+
 # See https://github.com/bloomberg/python-github-webhook
 # Installed locally
 from github_webhook import Webhook
+# need to allow CORS for requests from js
+from flask_cors import CORS, cross_origin
 
 # Customization
 # =============
@@ -1670,6 +1673,8 @@ def api_query_scheme():
 
 
 @app.route('/search', methods=['GET', 'POST'])
+
+@cross_origin()
 def scheme_search(isGui=None):
     # Enable multiple keywords to be specified at once
     form_data = MultiDict(request.form)
@@ -3058,6 +3063,7 @@ def delete_record(series, number):
 # GET function for one record
 @app.route('/api/<string(length=1):series><int:number>',
            methods=['GET'])
+@cross_origin()
 def get_record(series, number):
     return display(series, number, api=True)
 
@@ -3065,6 +3071,7 @@ def get_record(series, number):
 # GET function for all records in a series
 @app.route('/api/<string(length=1):series>',
            methods=['GET'])
+@cross_origin()
 def list_records(series):
     if series not in table_names:
         abort(404)
@@ -3075,6 +3082,18 @@ def list_records(series):
 
     return jsonify({table_names[series]: records})
 
+# GET function for records by subject
+@app.route('/api/subject-index',
+            methods=['GET'])
+@cross_origin()
+def subject_index_api():
+    full_keyword_uris = get_used_term_uris()
+    domains = thesaurus.subjects(RDF.type, UNO.Domain)
+    tree = get_term_tree(domains, filter=full_keyword_uris)
+    tree.insert(0, {
+        'name': 'Multidisciplinary',
+        'url': url_for('subject', subject='Multidisciplinary')})
+    return jsonify(tree)
 
 # Automatic self-updating
 # =======================
