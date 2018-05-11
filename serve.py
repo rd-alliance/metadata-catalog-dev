@@ -90,10 +90,12 @@ from dulwich.repo import Repo
 from dulwich.errors import NotGitRepository
 import dulwich.porcelain as git
 
-
 # See https://github.com/bloomberg/python-github-webhook
 # Installed locally
 from github_webhook import Webhook
+
+# See http://flask-cors.readthedocs.io/
+# Install from PyPi: sudo -H pip3 install flask-cors
 # need to allow CORS for requests from js
 from flask_cors import CORS, cross_origin
 

@@ -16,6 +16,7 @@ utility:
   - For database capability, you will need [TinyDB] v3.6.0+, [tinyrecord],
     and [RDFLib].
   - For version control of the databases, you will need [Dulwich].
+  - To allow requests from JavaScript, you will need [Flask-CORS].
 
 [Python 3]: https://www.python.org/
 [Flask]: http://flask.pocoo.org/
@@ -32,6 +33,7 @@ utility:
 [tinyrecord]: https://github.com/eugene-eeo/tinyrecord
 [RDFLib]: http://rdflib.readthedocs.io/
 [Dulwich]: https://www.dulwich.io/
+[Flask-CORS]: http://flask-cors.readthedocs.io/
 
 The Catalog is compatible with Flask 0.10 (this is what `python3-flask` gives
 you in Ubuntu 16.04 LTS), but can be used with later versions.
