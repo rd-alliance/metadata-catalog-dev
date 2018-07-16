@@ -28,6 +28,21 @@ ol ol {
 	margin-bottom: 11px;
 }
 
+ul ul ul ul > li {
+	list-style-type: disc;
+	list-style-type: "–  ";
+}
+
+ul ul ul ul ul > li {
+	list-style-type: circle;
+	list-style-type: "»  ";
+}
+
+ul ul ul ul ul ul > li {
+	list-style-type: square;
+	list-style-type: "›  ";
+}
+
 div.types {
 	padding-top: 16px;
 }
