@@ -911,7 +911,7 @@ def wild_to_regex(string):
     """Transforms wildcard searches to regular expressions."""
     regex = re.escape(string)
     regex = regex.replace('\*', '.*')
-    regex = regex.replace('\?', '.?')
+    regex = regex.replace('\?', '.')
     return regex
 
 
