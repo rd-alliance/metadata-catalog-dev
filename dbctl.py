@@ -461,6 +461,10 @@ def dbCompile(args):
                       ensure_ascii=False)
 
         # Add file to Git index
+        try:
+            repo = Repo(os.path.dirname(args.db))
+        except NotGitRepository:
+            repo = Repo.init(os.path.dirname(args.db))
         git.add(repo=os.path.dirname(args.db), paths=[args.db])
 
         # Prepare commit information
