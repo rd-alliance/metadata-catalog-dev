@@ -164,9 +164,11 @@ class JSONStorageWithGit(Storage):
 
         # Prepare commit information
         committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')
-        # This will either catch an API user or return None
-        user = g.get('user', None)
-        if current_user.is_authenticated:
+        user = None
+        if g:
+            # This will either catch an API user or return None
+            user = g.get('user', None)
+        if current_user and current_user.is_authenticated:
             # If human user is logged in, use their record instead
             user = current_user
         if user:
