@@ -19,15 +19,14 @@ from datetime import date
 import yaml
 
 # See http://tinydb.readthedocs.io/en/latest/intro.html
-# Install from PyPi: sudo pip3 install tinydb
-# sudo apt install python3-ujson
+# Install from PyPi: sudo -H pip3 install tinydb
 from tinydb import TinyDB, Query
 from tinydb.storages import Storage, touch
 
 # See http://rdflib.readthedocs.io/
 # On Debian, Ubuntu, etc.:
 #   - old version: sudo apt-get install python3-rdflib
-#   - latest version: sudo pip3 install rdflib
+#   - latest version: sudo -H pip3 install rdflib
 import rdflib
 from rdflib import Literal, Namespace, URIRef
 from rdflib.namespace import SKOS, RDF
@@ -91,6 +90,15 @@ class RealJSONStorage(Storage):
         self._handle.truncate()
 
 
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code."""
+
+    if isinstance(obj, date):
+        serial = obj.isoformat()
+        return serial
+    raise TypeError("Type not serializable")
+
+
 # Initializing
 # ============
 
@@ -119,9 +127,11 @@ db_format = {'storage': RealJSONStorage, 'sort_keys': True, 'indent': 2,
 # Command-line arguments
 # ----------------------
 parser = argparse.ArgumentParser(
-    description='Converts a collection of YAML files into TinyDB database or'
+    description='Metadata Standards Catalog Database Control Tool.'
+                ' Converts a collection of YAML files into TinyDB database or'
                 ' vice versa. The YAML files should be arranged in subfolders'
-                ' according to type, i.e. {}.'
+                ' according to type, i.e. {}. Can also be used to register API'
+                ' users, and block/unblock both API and regular users.'
                 ''.format(', '.join(sorted(subfolders))))
 parser.add_argument(
     '-f', '--folder',
@@ -201,16 +211,12 @@ parser_addapiuser.add_argument(
 
 # Operations
 # ==========
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code."""
-
-    if isinstance(obj, date):
-        serial = obj.isoformat()
-        return serial
-    raise TypeError("Type not serializable")
-
-
+# Tidying database ID numbers
+# ---------------------------
 def scan_ids(args):
+    """Scans directories of YAML files and returns list of missing MSC IDs in
+    ascending order (alphabetical by series, then numerical).
+    """
     if not os.path.isdir(args.folder):
         print('Cannot find YAML files; please check folder location and try'
               ' again.')
@@ -259,6 +265,12 @@ def scan_ids(args):
 
 
 def fix_ids(args, missing_ids):
+    """Reassigns numerical IDs within all series where there are missing
+    numbers. They are assigned such that numerical order matches the
+    alphabetical order of their slugs. Metadata schemes have an additional level
+    of ordering such that parent schemes are handled first, then profiles, then
+    stub records (auto-generated ones without descriptions).
+    """
     if not missing_ids:
         return None
 
@@ -484,7 +496,8 @@ parser_compile.set_defaults(func=dbCompile)
 
 # Dump to files
 # -------------
-def createSlug(string):
+def create_slug(string):
+    """Takes regular string and returns one suitable for use as a slug."""
     output = string.strip().lower().replace(' ', '-')
     output = re.sub(r'-+', '-', output)
     output = re.sub(r'[^-A-Za-z0-9_]+', '', output)
@@ -726,7 +739,14 @@ def dbAdd(args):
 
 parser_addapiuser.set_defaults(func=dbAdd)
 
+
 # Processing
 # ==========
-args = parser.parse_args()
-args.func(args)
+def main():
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    # Execute when run as a script
+    main()
