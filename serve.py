@@ -2373,8 +2373,8 @@ def verify_password(userid_or_token, password):
         user = ApiUser(value=user_record, doc_id=user_record.doc_id)
         if not user.verify_password(password) or not user.is_active:
             return False
-        g.user = user
-        return True
+    g.user = user
+    return True
 
 
 # Forms: editing
