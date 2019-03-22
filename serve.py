@@ -6,6 +6,7 @@
 # Standard
 # --------
 import os
+import os.path
 import sys
 import re
 import urllib
@@ -495,6 +496,7 @@ class TwitterSignIn(OAuthSignIn):
 
 # Basic setup
 # ===========
+script_dir = os.path.dirname(sys.argv[0])
 app = Flask(__name__, instance_relative_config=True)
 # Data storage path defaults:
 app.config['MAIN_DATABASE_PATH'] = os.path.join(
@@ -3108,7 +3110,8 @@ def subject_index_api():
 def on_push(data):
     print("Upstream code repository has been updated.")
     print("Initiating git pull to update codebase.")
-    call = subprocess.run(['git', 'pull', '--rebase'], stderr=subprocess.STDOUT)
+    call = subprocess.run(['git', '-C', script_dir, 'pull', '--rebase'],
+                          stderr=subprocess.STDOUT)
     print("Git pull completed with exit code {}.".format(call.returncode))
 
 
