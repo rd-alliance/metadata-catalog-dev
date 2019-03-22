@@ -3035,7 +3035,7 @@ def update_record(series, number):
     if series not in table_names:
         abort(404)
     document = tables[series].get(doc_id=number)
-    if not document:
+    if document is None:
         abort(404)
 
     return create_or_update_record(series, number, document)
