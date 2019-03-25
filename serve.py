@@ -496,7 +496,7 @@ class TwitterSignIn(OAuthSignIn):
 
 # Basic setup
 # ===========
-script_dir = os.path.dirname(sys.argv[0])
+script_dir = os.path.dirname(__file__)
 app = Flask(__name__, instance_relative_config=True)
 # Data storage path defaults:
 app.config['MAIN_DATABASE_PATH'] = os.path.join(
@@ -538,7 +538,8 @@ user_db = TinyDB(
 oauth_db = TinyDB(app.config['OAUTH_DATABASE_PATH'])
 
 thesaurus = rdflib.Graph()
-thesaurus.parse('simple-unesco-thesaurus.ttl', format='turtle')
+thesaurus.parse(os.path.join(script_dir, 'simple-unesco-thesaurus.ttl'),
+                format='turtle')
 UNO = Namespace('http://vocabularies.unesco.org/ontology#')
 thesaurus_link = ('<a href="http://vocabularies.unesco.org/browser/thesaurus/'
                   'en/">UNESCO Thesaurus</a>')
