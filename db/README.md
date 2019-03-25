@@ -360,6 +360,7 @@ in YAML.
 
 ~~~{.yaml}
 name: The Organization
+description: This organization has been handling metadata for decades.
 identifiers:
   - id: "msc:g1"
     scheme: RDA-MSCWG
@@ -377,6 +378,11 @@ The elements making up this part of the data model are as follows.
 ### Name
 
 The full name of the organization as it is usually given.
+
+### Description
+
+A sentence or several describing the organization and its relevance to research
+data and metadata.
 
 ### Identifiers
 
