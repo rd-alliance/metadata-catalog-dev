@@ -122,7 +122,7 @@ class JSONStorageWithGit(Storage):
         # Create file if not exists
         touch(path, create_dirs=create_dirs)
         self.kwargs = kwargs
-        self._handle = open(path, 'r+')
+        self._handle = open(path, 'r+', encoding='utf8')
         # Ensure Git is configured properly
         git_repo = os.path.dirname(path)
         try:
