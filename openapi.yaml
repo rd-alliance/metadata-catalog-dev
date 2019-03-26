@@ -1,0 +1,116 @@
+openapi: 3.0.1
+info:
+  title: Metadata Standards Catalog
+  description: "The RDA [Metadata Standards Catalog](https://rdamsc.dcc.ac.uk/) is a collaborative, open directory of metadata standards applicable to research data. It is offered to the international academic community to help address infrastructure challenges."
+  termsOfService: https://rdamsc.dcc.ac.uk/terms-of-use
+  version: 1.0.0
+externalDocs:
+  description: Browse the source code
+  url: https://www.github.com/rd-alliance/metadata-catalog-dev
+servers:
+- url: https://rdamsc.dcc.ac.uk
+tags:
+- name: query
+  description: Search the catalog
+- name: api
+  description: Read and edit the catalog
+- name: m
+  description: Metadata schemes
+- name: g
+  description: Organizations (groups)
+- name: t
+  description: Tools
+- name: c
+  description: Mappings (crosswalks)
+- name: e
+  description: Endorsements
+paths:
+  /query/schemes:
+    post:
+      tags:
+      - query
+      - m
+      summary: "Search for metadata schemes."
+      requestBody:
+        description: "You must provide one or more parameters. Parameters are combined with Boolean OR."
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Python-compatible [regular expression](https://docs.python.org/3/library/re.html), for searching within titles."
+                keyword:
+                  type: string
+                  description: "Pipe-separated list of keywords to search for, e.g. Astronomy|Biology. Returns schemes tagged with at least one of the exact given keywords or one of their narrower or broader terms."
+                keyword_id:
+                  type: string
+                  description: "Pipe separated list of URIs from the UNESCO Vocabulary. Returns schemes tagged with at least one of the exact given keywords or one of their narrower or broader terms. (You may notice a difference in behaviour from `keyword` since it skips an initial translation step.)"
+                identifier:
+                  type: string
+                  description: "Single, exact identifier to search for. DOIs should start `10.` and internal identifiers with `msc:m`."
+                funder:
+                  type: string
+                  description: "Python-compatible [regular expression](https://docs.python.org/3/library/re.html), for searching within names of organizations listed as funders of the scheme."
+                funder_id:
+                  type: string
+                  description: "Single, exact identifier for searching within the IDs of organizations listed as funders of the scheme."
+                dataType:
+                  type: string
+                  description: "Single, exact data type label or URI to search for within the list of data types."
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+  /query/organizations:
+    post:
+      tags:
+      - query
+      - g
+      summary: "Search for organizations."
+      requestBody:
+        description: "You must provide one or more parameters. Parameters are combined with Boolean OR."
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: "Python-compatible [regular expression](https://docs.python.org/3/library/re.html), for searching within organization names."
+                identifier:
+                  type: string
+                  description: "Single, exact identifier to search for. DOIs should start `10.` and internal identifiers with `msc:g`."
+                type:
+                  type: string
+                  description: "Type of organization to search for: standards body, archive, professional group, coordination group."
+                  pattern: '^(standards body|archive|professional group|coordination group)$'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+components:
+  schemas:
+    QueryResponse:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+            description: MSC ID
+            pattern: '^msc:(m|g|t|c|e)\d+$'
+  securitySchemes:
+    api_user:
+      type: http
+      description: "If using an API token, use this as the username and any arbitrary string as the password."
+      scheme: Basic
