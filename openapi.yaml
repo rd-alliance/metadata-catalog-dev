@@ -279,6 +279,67 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ItemResponse'
+  /api/reset-password:
+    post:
+      tags:
+      - api
+      - user
+      summary: "Change API user password"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_password:
+                  type: string
+                  description: "New password to use for subsequent calls."
+              required:
+              - new_password
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: "Confirmation of the username for which the password was reset."
+                  password_reset:
+                    type: boolean
+                    description: "True if the reset was successful."
+        401:
+          description: "Unauthorized access"
+          content: {}
+        500:
+          description: "Internal Server Error: password could not be reset"
+          content: {}
+      security:
+      - api_user: []
+  /api/token:
+    get:
+      tags:
+      - api
+      - user
+      summary: "Request an authorization token"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: "Authorization token valid for 600 seconds."
+        401:
+          description: "Unauthorized access"
+          content: {}
+      security:
+      - api_user: []
 components:
   schemas:
     ItemResponse:
