@@ -24,13 +24,15 @@ tags:
   description: Mappings (crosswalks)
 - name: e
   description: Endorsements
+- name: user
+  description: Manage your API account
 paths:
   /query/schemes:
     post:
       tags:
       - query
       - m
-      summary: "Search for metadata schemes."
+      summary: "Search for metadata schemes"
       requestBody:
         description: "You must provide one or more parameters. Parameters are combined with Boolean OR."
         required: true
@@ -53,10 +55,10 @@ paths:
                   description: "Single, exact identifier to search for. DOIs should start `10.` and internal identifiers with `msc:m`."
                 funder:
                   type: string
-                  description: "Python-compatible [regular expression](https://docs.python.org/3/library/re.html), for searching within names of organizations listed as funders of the scheme."
+                  description: "Python-compatible [regular expression](https://docs.python.org/3/library/re.html), to search for within names of organizations listed as funders of the scheme."
                 funder_id:
                   type: string
-                  description: "Single, exact identifier for searching within the IDs of organizations listed as funders of the scheme."
+                  description: "Single, exact identifier to search for within the IDs of organizations listed as funders of the scheme."
                 dataType:
                   type: string
                   description: "Single, exact data type label or URI to search for within the list of data types."
@@ -72,7 +74,7 @@ paths:
       tags:
       - query
       - g
-      summary: "Search for organizations."
+      summary: "Search for organizations"
       requestBody:
         description: "You must provide one or more parameters. Parameters are combined with Boolean OR."
         required: true
@@ -90,7 +92,6 @@ paths:
                 type:
                   type: string
                   description: "Type of organization to search for: standards body, archive, professional group, coordination group."
-                  pattern: '^(standards body|archive|professional group|coordination group)$'
       responses:
         200:
           description: Success
@@ -98,8 +99,197 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResponse'
+  /query/tools:
+    post:
+      tags:
+      - query
+      - t
+      summary: "Search for tools"
+      requestBody:
+        description: "You must provide one or more parameters. Parameters are combined with Boolean OR."
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Python-compatible [regular expression](https://docs.python.org/3/library/re.html), for searching within titles."
+                identifier:
+                  type: string
+                  description: "Single, exact identifier to search for. DOIs should start `10.` and internal identifiers with `msc:t`."
+                type:
+                  type: string
+                  description: "Type of tool to search for: terminal(⟨platform⟩), graphical(⟨platform⟩), web service, web application."
+                supported_scheme:
+                  type: string
+                  description: "Internal metadata scheme identifier to search for among the schemes supported by the tool: msc:m⟨number⟩."
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+  /query/mappings:
+    post:
+      tags:
+      - query
+      - c
+      summary: "Search for metadata mappings"
+      requestBody:
+        description: "You must provide one or more parameters. `input_scheme` and `output_scheme` are combined with Boolean AND if both are given, while `identifier` combines with the others with Boolean OR."
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                identifier:
+                  type: string
+                  description: "Single, exact identifier to search for. DOIs should start `10.` and internal identifiers with `msc:c`."
+                input_scheme:
+                  type: string
+                  description: "Internal metadata scheme identifier to search for among the schemes that can be used as input by the mapping: msc:m⟨number⟩."
+                output_scheme:
+                  type: string
+                  description: "Internal metadata scheme identifier to search for among the schemes that can be constructed as output by the mapping: msc:m⟨number⟩."
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+  /query/endorsements:
+    post:
+      tags:
+      - query
+      - e
+      summary: "Search for endorsements"
+      requestBody:
+        description: "You must provide one or more parameters. Parameters are combined with Boolean OR."
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                identifier:
+                  type: string
+                  description: "Single, exact identifier to search for. DOIs should start `10.` and internal identifiers with `msc:e`."
+                endorsed_scheme:
+                  type: string
+                  description: "Internal metadata scheme identifier to search for among the schemes endorsed by the endorsement: msc:m⟨number⟩."
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+  /api/m:
+    get:
+      tags:
+      - api
+      - m
+      summary: "List all metadata schemes"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata-schemes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ItemResponse'
+  /api/g:
+    get:
+      tags:
+      - api
+      - g
+      summary: "List all organizations"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ItemResponse'
+  /api/t:
+    get:
+      tags:
+      - api
+      - t
+      summary: "List all tools"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ItemResponse'
+  /api/c:
+    get:
+      tags:
+      - api
+      - c
+      summary: "List all mappings"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mappings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ItemResponse'
+  /api/e:
+    get:
+      tags:
+      - api
+      - e
+      summary: "List all endorsements"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  endorsements:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ItemResponse'
 components:
   schemas:
+    ItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "Numeric portion of the MSC ID."
+        slug:
+          type: string
+          description: "A less opaque identifying string for the record, derived from the title of a metadata scheme, the name of an organization, etc."
     QueryResponse:
       type: object
       properties:
@@ -107,7 +297,7 @@ components:
           type: array
           items:
             type: string
-            description: MSC ID
+            description: "Full MSC ID."
             pattern: '^msc:(m|g|t|c|e)\d+$'
   securitySchemes:
     api_user:
