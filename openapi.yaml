@@ -91,7 +91,12 @@ paths:
                   description: "Single, exact identifier to search for. DOIs should start `10.` and internal identifiers with `msc:g`."
                 type:
                   type: string
-                  description: "Type of organization to search for: standards body, archive, professional group, coordination group."
+                  description: "Type of organization to search for"
+                  enum:
+                  - standards body
+                  - archive
+                  - professional group
+                  - coordination group
       responses:
         200:
           description: Success
@@ -211,7 +216,7 @@ paths:
       tags:
       - api
       - m
-      summary: "Submit a new metadata scheme"
+      summary: "Submit a new metadata scheme record"
       requestBody:
         description: "Complete record in JSON."
         required: true
@@ -242,7 +247,7 @@ paths:
       tags:
       - api
       - m
-      summary: "Modify an existing metadata scheme"
+      summary: "Modify an existing metadata scheme record"
       parameters:
       - name: int
         in: path
@@ -278,7 +283,7 @@ paths:
       tags:
       - api
       - m
-      summary: "Remove an existing metadata scheme"
+      summary: "Remove an existing metadata scheme record"
       parameters:
       - name: int
         in: path
@@ -315,6 +320,96 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ItemResponse'
+    post:
+      tags:
+      - api
+      - g
+      summary: "Submit a new organization record"
+      requestBody:
+        description: "Complete record in JSON."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponseSuccess'
+        400:
+          description: Failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponseFailure'
+        401:
+          description: "Unauthorized access"
+          content: {}
+      security:
+      - api_user: []
+  /api/g{int}:
+    put:
+      tags:
+      - api
+      - g
+      summary: "Modify an existing organization record"
+      parameters:
+      - name: int
+        in: path
+        description: "Numeric portion of the MSC ID."
+        schema:
+          type: integer
+      requestBody:
+        description: "Complete record in JSON."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponseSuccess'
+        400:
+          description: Failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponseFailure'
+        401:
+          description: "Unauthorized access"
+          content: {}
+      security:
+      - api_user: []
+    delete:
+      tags:
+      - api
+      - g
+      summary: "Remove an existing organization record"
+      parameters:
+      - name: int
+        in: path
+        description: "Numeric portion of the MSC ID."
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        401:
+          description: "Unauthorized access"
+          content: {}
+      security:
+      - api_user: []
   /api/t:
     get:
       tags:
@@ -466,6 +561,58 @@ components:
                       pattern: '^\d{4}(-\d{2}(-\d{2})?)?(/\d{4}(-\d{2}(-\d{2})?)?)?$'
                       description: "A version of a scheme is assumed to be approved for use by its maintainer from its `issued` date until the issued date of a subsequent version. If this is not the case, (for example, where multiple versions are approved simultaneously), `valid` expresses the period for which a version is approved for use. A single date indicates that the version is still approved for use, despite the issue of subsequent versions. The second date in a range indicates the date on which approval was withdrawn."
                 - $ref: '#/components/schemas/MetadataSchemePart'
+    Organization:
+      type: object
+      properties:
+        slug:
+          type: string
+          description: "Semantic identifier for the record."
+          pattern: '^[-a-z0-9]{1,71}$'
+        identifiers:
+          type: array
+          description: "Strings used to identify the organization."
+          items:
+            $ref: '#/components/schemas/Identifier'
+        name:
+          type: string
+          description: "The full name of the organization as it is usually given."
+        description:
+          type: string
+          description: "A sentence or several describing the organization and its relevance to research data and metadata."
+        types:
+          type: array
+          items:
+            type: string
+            description: "A term that describes the organization."
+            enum:
+            - standards body
+            - archive
+            - professional group
+            - coordination group
+        locations:
+          type: array
+          description: "Locations where further information about the organization may be accessed."
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                description: "URL of the Web resource."
+              type:
+                type: string
+                description: "A term describing the type of resource."
+                enum:
+                  - email
+                  - website
+    Identifier:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The identifier string. DOIs should start `10.`."
+        scheme:
+          type: string
+          description: "A keyword indicating the scheme from which the identifier is drawn. Must be ‘RDA-MSCWG’ for internal identifiers and ‘DOI’ for DOIs. Otherwise optional and unrestricted."
     MetadataSchemePart:
       type: object
       properties:
@@ -552,15 +699,6 @@ components:
                 - "funder"
                 - "user"
                 - "endorsement"
-    Identifier:
-      type: object
-      properties:
-        id:
-          type: string
-          description: "The identifier string. DOIs should start `10.`."
-        scheme:
-          type: string
-          description: "A keyword indicating the scheme from which the identifier is drawn. Must be ‘RDA-MSCWG’ for internal identifiers and ‘DOI’ for DOIs. Otherwise optional and unrestricted."
     DeleteResponse:
       type: object
       properties:
