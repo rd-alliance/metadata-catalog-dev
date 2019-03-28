@@ -2983,7 +2983,7 @@ def create_or_update_record(series, number, document):
         return jsonify({
             'success': False,
             'errors': conformance['errors'],
-            'conformance': conformance_levels[conformance['level']]})
+            'conformance': conformance_levels[conformance['level']]}), 400
 
     # Filter out MSCID if present
     if 'identifiers' in new_record:
