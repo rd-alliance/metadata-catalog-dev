@@ -277,6 +277,9 @@ paths:
         401:
           description: "Unauthorized access"
           content: {}
+        404:
+          description: "Metadata scheme not found"
+          content: {}
       security:
       - api_user: []
     delete:
@@ -299,6 +302,9 @@ paths:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
           description: "Unauthorized access"
+          content: {}
+        404:
+          description: "Metadata scheme not found"
           content: {}
       security:
       - api_user: []
@@ -385,6 +391,9 @@ paths:
         401:
           description: "Unauthorized access"
           content: {}
+        404:
+          description: "Organization not found"
+          content: {}
       security:
       - api_user: []
     delete:
@@ -407,6 +416,9 @@ paths:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
           description: "Unauthorized access"
+          content: {}
+        404:
+          description: "Organization not found"
           content: {}
       security:
       - api_user: []
@@ -493,6 +505,9 @@ paths:
         401:
           description: "Unauthorized access"
           content: {}
+        404:
+          description: "Tool not found"
+          content: {}
       security:
       - api_user: []
     delete:
@@ -515,6 +530,9 @@ paths:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
           description: "Unauthorized access"
+          content: {}
+        404:
+          description: "Tool not found"
           content: {}
       security:
       - api_user: []
@@ -601,6 +619,9 @@ paths:
         401:
           description: "Unauthorized access"
           content: {}
+        404:
+          description: "Mapping not found"
+          content: {}
       security:
       - api_user: []
     delete:
@@ -623,6 +644,9 @@ paths:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
           description: "Unauthorized access"
+          content: {}
+        404:
+          description: "Mapping not found"
           content: {}
       security:
       - api_user: []
@@ -692,7 +716,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Mapping'
+              $ref: '#/components/schemas/Endorsement'
       responses:
         200:
           description: Success
@@ -708,6 +732,9 @@ paths:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
           description: "Unauthorized access"
+          content: {}
+        404:
+          description: "Endorsement not found"
           content: {}
       security:
       - api_user: []
@@ -731,6 +758,9 @@ paths:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
           description: "Unauthorized access"
+          content: {}
+        404:
+          description: "Endorsement not found"
           content: {}
       security:
       - api_user: []
@@ -1269,7 +1299,8 @@ If a date range is provided, the first date expresses when the endorsement was m
             - invalid
         errors:
           type: object
-          description: "Errors returned by form validation."
+          description: "Errors returned by form validation, listed under the places where they occurred."
+          example: { "locations": [ { "type": [ "Not a valid choice" ] } ] }
   securitySchemes:
     api_user:
       type: http
