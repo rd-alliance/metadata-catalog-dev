@@ -110,7 +110,7 @@ class JSONStorageWithGit(Storage):
     """Store the data in a JSON file and log the change in a Git repo.
     """
 
-    def __init__(self, path, create_dirs=False, **kwargs):
+    def __init__(self, path, create_dirs=False, encoding='utf8', **kwargs):
         """Create a new instance.
         Also creates the storage file, if it doesn't exist.
 
@@ -122,7 +122,7 @@ class JSONStorageWithGit(Storage):
         # Create file if not exists
         touch(path, create_dirs=create_dirs)
         self.kwargs = kwargs
-        self._handle = open(path, 'r+', encoding='utf8')
+        self._handle = open(path, 'r+', encoding=encoding)
         # Ensure Git is configured properly
         git_repo = os.path.dirname(path)
         try:
@@ -158,10 +158,24 @@ class JSONStorageWithGit(Storage):
         serialized = json.dumps(data, **self.kwargs)
         self._handle.write(serialized)
         self._handle.flush()
+        os.fsync(self._handle.fileno())
         self._handle.truncate()
 
-        # Add file to Git index
-        git.add(repo=self.repo, paths=[self.filename])
+        # Add file to Git staging area
+        added, ignored = git.add(repo=self.repo, paths=[self.filename])
+
+        # Avoid empty commits
+        if not added:
+            print("WARNING: Failed to stage changes to {}."
+                  .format(self.filename))
+            if ignored:
+                print("DEBUG: Operation blocked by gitignore pattern.")
+            return
+        changes = 0
+        for groupname, group in git.status(repo=self.repo)[0].items():
+            changes += len(group)
+        if not changes:
+            return
 
         # Prepare commit information
         committer = 'MSCWG <{}>'.format(mscwg_email).encode('utf8')

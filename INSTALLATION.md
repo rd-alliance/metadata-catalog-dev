@@ -168,3 +168,9 @@ the script shows you, e.g. <http://127.0.0.1:5000/>.
 
 Again, please refer to the [deployment options] documented by the Flask
 developers for how to run the Catalog in production.
+
+## Things to watch out for
+
+The Dulwich library for working with Git is quite sensitive, and will not stage
+any commits if a `gitignore` file (local or global) contains lines consisting
+solely of space characters.
