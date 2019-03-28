@@ -9,9 +9,16 @@ see the [Installation Guide].
 For information on how to administer a running instance of the Catalog, see the
 [Administrator's Guide].
 
+This page provides an overview of the Catalog's API, while the [Database Guide]
+describes the data model in use behind the scenes. The salient points have also
+been documented in OpenAPI format so you can explore them interactively on
+[SwaggerHub].
+
 [Metadata Standards Catalog]: https://rdamsc.dcc.ac.uk/
 [Installation Guide]: INSTALLATION.md
 [Administrator's Guide]: ADMINISTRATION.md
+[Database Guide]: /db/README.md
+[SwaggerHub]: https://app.swaggerhub.com/apis-docs/alex-ball/rda-metadata-standards-catalog/1.0.0
 
 ## Using the public API
 
@@ -34,15 +41,14 @@ by either
     ```
 
 The response you will get will be a JSON object that is structurally similar to
-the YAML files in the `db` directory in this repository; see the [database
-documentation][dbguide] for details. Unlike the HTML equivalent, it will not
-pull in information from other records in the database, so to get the full
-picture you will need to make multiple requests.
+the YAML files in the `db` directory in this repository; see the [Database
+Guide] for details. Unlike the HTML equivalent, it will not pull in information
+from other records in the database, so to get the full picture you will need to
+make multiple requests.
 
 Please indicate in the [issue tracker][issues] if you would like to us to
 provide a method for retrieving a composite record in one go.
 
-[dbguide]: /db/README.md
 [issues]: https://github.com/rd-alliance/metadata-catalog-dev/issues
 
 ### Search for records
@@ -218,7 +224,7 @@ To create a new record, send a POST request to one of the following URLs:
   - `https://rdamsc.dcc.ac.uk/api/e` for an endorsement
 
 The body of the request should be a JSON object representing the complete
-record; see the [database documentation][dbguide] for details. Example:
+record; see the [Database Guide] for details. Example:
 
 ```bash
 curl -u token:anything -X POST -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' https://rdamsc.dcc.ac.uk/api/g
@@ -246,7 +252,7 @@ To modify a record, send a PUT request to `https://rdamsc.dcc.ac.uk/api/` follow
 by the MSC ID, e.g. `https://rdamsc.dcc.ac.uk/api/m1`.
 
 The body of the request should be a JSON object representing the complete
-record; see the [database documentation][dbguide] for details. Example:
+record; see the [Database Guide] for details. Example:
 
 ```bash
 curl -u token:anything -X PUT -H 'Content-Type: application/json' -d '{"name": "Test group", "description": "This is a test.", "types": [ "coordination group" ] }' https://rdamsc.dcc.ac.uk/api/g99
