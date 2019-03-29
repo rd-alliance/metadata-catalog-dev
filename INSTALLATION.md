@@ -167,7 +167,175 @@ the script shows you, e.g. <http://127.0.0.1:5000/>.
 ### Production
 
 Again, please refer to the [deployment options] documented by the Flask
-developers for how to run the Catalog in production.
+developers for how to run the Catalog in production. Here is one way of doing
+it, as a WSGI application on Apache, on an Ubuntu server.
+
+Install the requisite packages:
+
+```bash
+sudo apt install apache2 openssl-blacklist libapache2-mod-wsgi-py3 python3-venv build-essential python3-dev
+```
+
+Create a user as whom to run the app:
+
+```bash
+sudo adduser --system --group rdamsc
+```
+
+If you are behind a web proxy, you can save some typing by setting some
+variables. In the user's `$HOME/.profile`:
+
+```bash
+export http_proxy=http://proxy.example.com:99999/
+export https_proxy=http://proxy.example.com:99999/
+```
+
+For Git:
+```bash
+sudo -Hu rdamsc git config --global http.proxy http://proxy.example.com:99999/
+sudo -Hu rdamsc git config --global https.proxy http://proxy.example.com:99999/
+```
+
+The app will be split across three locations: the source code folder, the data
+folder, and the WSGI app folder.
+
+Set up the source code folder in, say, `/opt/rdamsc`:
+
+```bash
+sudo mkdir /opt/rdamsc
+sudo chown rdamsc /opt/rdamsc
+sudo -Hu rdamsc git clone https://github.com/rd-alliance/metadata-catalog-dev.git /opt/rdamsc
+```
+
+Set up the data folder in, say, `/var/rdamsc`:
+
+```bash
+sudo mkdir /var/rdamsc
+sudo chown rdamsc /var/rdamsc
+cd /opt/rdamsc
+sudo ln -s /var/rdamsc instance
+```
+
+Create a file `/var/rdamsc/keys.cfg` with content such as the following:
+
+```config
+SECRET_KEY = 'your secret string'
+```
+
+Set up the WSGI app folder in, say, `/var/www/rdamsc`:
+
+```bash
+sudo mkdir /var/www/rdamsc
+sudo chown rdamsc /var/www/rdamsc
+```
+
+While still in the source code (`opt`) folder, set up the Python dependencies:
+
+```bash
+sudo -Hsu rdamsc
+python3 -m venv venv
+. venv/bin/activate
+pip3 install Flask Flask-WTF flask-login Flask-OpenID rauth oauth2client Flask-HTTPAuth passlib tinydb tinyrecord rdflib dulwich flask-cors pyyaml
+```
+
+Copy the `activate_this.py` script from the [virtualenv] repository to
+`venv/bin/activate_this.py`.
+
+[virtualenv]: https://github.com/pypa/virtualenv/blob/master/virtualenv_embedded/activate_this.py
+
+You now have the libraries you need to restore the database from the backup in
+the Git repo:
+
+```bash
+rdamsc python3 dbctl.py compile
+```
+
+(You will see a warning about IDs missing from the sequence. These are gaps left
+behind from erroneously added records that have since been deleted. Continue
+anyway to preserve the current internal IDs.)
+
+Install the WSGI app by creating a file `/var/www/rdamsc/rdamsc.wsgi`:
+
+```python
+activate_this = '/opt/rdamsc/venv/bin/activate_this.py'
+with open(activate_this) as file_:
+    exec(file_.read(), dict(__file__=activate_this))
+
+import sys
+sys.path.insert(0, '/opt/rdamsc')
+
+from serve import app as application
+```
+
+Exit the app user account:
+
+```bash
+exit
+```
+
+As root, create a site configuration file at
+`/etc/apache2/sites-available/rdamsc.conf`, remembering to give the actual
+domain name you'll be using:
+
+```apache
+WSGIPassAuthorization On
+
+<VirtualHost *:80>
+    ServerName (whatever it is)
+
+    WSGIDaemonProcess rdamsc user=rdamsc group=rdamsc threads=5
+    WSGIScriptAlias / /var/www/rdamsc/rdamsc.wsgi
+
+    <Directory /var/www/rdamsc>
+        WSGIProcessGroup rdamsc
+        WSGIApplicationGroup %{GLOBAL}
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+    <VirtualHost *:443>
+        ServerName (whatever it is)
+
+        WSGIScriptAlias / /var/www/rdamsc/rdamsc.wsgi
+
+        <Directory /var/www/rdamsc>
+            WSGIProcessGroup rdamsc
+            WSGIApplicationGroup %{GLOBAL}
+            Require all granted
+        </Directory>
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        SSLEngine on
+        SSLCertificateFile /path/to/fullchain.pem
+        SSLCertificateKeyFile /path/to/privkey.pem
+
+    </VirtualHost>
+</IfModule>
+```
+
+Activate the regular HTTP virtual host:
+
+```bash
+sudo a2ensite rdamsc
+# If replacing the default site:
+sudo a2dissite 000-default
+sudo service apache2 graceful
+```
+
+Once you have that working, install your SSL certificates and activate the
+HTTPS virtual host:
+
+```bash
+sudo a2enmod ssl
+sudo service apache2 graceful
+```
 
 ## Things to watch out for
 
