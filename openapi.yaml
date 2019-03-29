@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
   title: Metadata Standards Catalog
-  description: "The RDA [Metadata Standards Catalog](https://rdamsc.dcc.ac.uk/) is a collaborative, open directory of metadata standards applicable to research data. It is offered to the international academic community to help address infrastructure challenges."
-  termsOfService: https://rdamsc.dcc.ac.uk/terms-of-use
+  description: "The RDA [Metadata Standards Catalog](https://rdamsc.bath.ac.uk/) is a collaborative, open directory of metadata standards applicable to research data. It is offered to the international academic community to help address infrastructure challenges."
+  termsOfService: https://rdamsc.bath.ac.uk/terms-of-use
   version: 1.0.0
 externalDocs:
   description: Browse the source code
@@ -11,7 +11,7 @@ servers:
 - description: SwaggerHub API Auto Mocking
   url: https://virtserver.swaggerhub.com/alex-ball/rda-metadata-standards-catalog/1.0.0
 - description: Live server
-  url: https://rdamsc.dcc.ac.uk
+  url: https://rdamsc.bath.ac.uk
 tags:
 - name: query
   description: Search the catalog
