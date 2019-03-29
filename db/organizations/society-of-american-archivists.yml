@@ -1,0 +1,13 @@
+description: The Society of American Archivists is a professional association dedicated
+  to the needs and interests of archives and archivists across the USA. It was founded
+  in 1936, and represents more than 6,200 professional archivists employed by governments,
+  universities, businesses, libraries, and historical organizations nationally.
+identifiers:
+- id: msc:g114
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://www2.archivists.org/
+name: Society of American Archivists
+types:
+- professional group

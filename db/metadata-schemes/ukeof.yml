@@ -26,6 +26,8 @@ relatedEntities:
   role: maintainer
 - id: msc:g109
   role: maintainer
+- id: msc:g115
+  role: user
 title: UKEOF
 versions:
 - issued: '2014-03-31'

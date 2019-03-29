@@ -29,6 +29,8 @@ relatedEntities:
   role: user
 - id: msc:g73
   role: user
+- id: msc:g112
+  role: user
 - id: msc:g90
   role: user
 title: Dublin Core

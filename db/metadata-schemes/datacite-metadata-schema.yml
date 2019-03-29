@@ -18,6 +18,8 @@ relatedEntities:
   role: user
 - id: msc:g64
   role: user
+- id: msc:g112
+  role: user
 title: DataCite Metadata Schema
 versions:
 - identifiers:

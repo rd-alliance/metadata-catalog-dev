@@ -1,0 +1,46 @@
+description: 'A standard for encoding archival finding aids using XML in archival
+  and manuscript repositories, implementing the recommendations of the International
+  Council on Archives <a href="https://www.ica.org/en/isadg-general-international-standard-archival-description-second-edition">ISAD(G):
+  General International Standard Archival Description</a>.'
+identifiers:
+- id: msc:m96
+  scheme: RDA-MSCWG
+keywords:
+- History
+locations:
+- type: website
+  url: https://www.loc.gov/ead/
+relatedEntities:
+- id: msc:g104
+  role: maintainer
+- id: msc:g114
+  role: maintainer
+title: EAD (Encoded Archival Description)
+versions:
+- issued: '1998-08-01'
+  locations:
+  - type: document
+    url: https://www.loc.gov/ead/tglib1998/
+  - type: document
+    url: https://www.loc.gov/ead/ag/aghome.html
+  number: '1.0'
+- issued: '2002-10-01'
+  locations:
+  - type: XSD
+    url: https://www.loc.gov/ead/ead.xsd
+  - type: DTD
+    url: ftp://ftp.loc.gov/pub/ead/ead.dtd
+  - type: document
+    url: https://www.loc.gov/ead/tglib/
+  number: '2002'
+- issued: '2015-08-17'
+  number: 3-1.0.0
+- issued: '2018-04-18'
+  locations:
+  - type: XSD
+    url: https://www.loc.gov/ead/ead3.xsd
+  - type: DTD
+    url: https://www.loc.gov/ead/ead3.dtd
+  - type: document
+    url: https://www.loc.gov/ead/EAD3taglib/EAD3.html
+  number: 3-1.1.0

@@ -6,7 +6,7 @@ description: <p>An information model for describing the elements of the heliophy
   expression form is XML.</p><p>The Space Physics Archive Search and Extract (SPASE)
   effort is implemented by the SPASE Consortium which is composed of representatives
   of the international Heliophysics data community. The Current Release of the data
-  model (2.2.2) was updated in October 2012.</p>
+  model (2.2.9) was updated in January 2018.</p>
 identifiers:
 - id: msc:m39
   scheme: RDA-MSCWG
@@ -25,3 +25,44 @@ relatedEntities:
 - id: msc:g87
   role: user
 title: SPASE Data Model
+versions:
+- issued: '2012-10-16'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_2.pdf
+  number: 2.2.2
+- issued: '2015-03-11'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_3.pdf
+  number: 2.2.3
+- issued: '2015-06-01'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_4.pdf
+  number: 2.2.4
+- issued: '2015-07-14'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_5.pdf
+  number: 2.2.5
+- issued: '2015-09-09'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_6.pdf
+  number: 2.2.6
+- issued: '2016-07-21'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_7.pdf
+  number: 2.2.7
+- issued: '2018-01-30'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_9.pdf
+  number: 2.2.9
+- issued: '2016-10-27'
+  locations:
+  - type: document
+    url: http://www.spase-group.org/data/model/spase-2_2_8.pdf
+  number: 2.2.8

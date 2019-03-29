@@ -412,9 +412,11 @@ def dbCompile(args):
 
     missing_ids = scan_ids(args)
     if missing_ids:
-        print('Database has missing IDs. Run "{}" to fix problem.'
-              ''.format(parser_checkids.prog))
-        sys.exit(1)
+        print('Database has missing IDs. Continue anyway? [y/N]')
+        reply = input("> ")
+        if reply[:1].lower() != 'y':
+            print('Run "{}" to fix problem.'.format(parser_checkids.prog))
+            sys.exit(0)
 
     if os.path.isfile(args.db):
         print('Database file already exists at {}.'.format(args.db))
@@ -454,19 +456,27 @@ def dbCompile(args):
                 record['identifiers'] = id_list
             else:
                 del record['identifiers']
-            for key in ['keywords', 'dataTypes']:
-                if key in record:
-                    term_set = set()
-                    for term in record[key]:
+            if 'keywords' in record:
+                # Deduplicate and sort
+                term_set = set()
+                for term in record['keywords']:
+                    if term:
                         term_set.add(term)
                     terms = list(term_set)
-                    terms.sort()
-                    record[key] = terms
+                terms.sort()
+                record['keywords'] = terms
             db[folder][id_number] = record
 
         isCompiled = True
 
     if isCompiled:
+        # Add blanks
+        subfolder_lookup = {v: k for k, v in subfolders.items()}
+        for mscid in missing_ids:
+            folder = mscid[4:5]
+            id_number = mscid[5:]
+            db[subfolder_lookup.get(folder)][id_number] = dict()
+
         # Write the json file
         with open(args.db, 'w') as f:
             json.dump(db, f, default=json_serial, sort_keys=True, indent=2,

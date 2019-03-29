@@ -8,5 +8,5 @@ locations:
 relatedEntities:
 - id: msc:m21
   role: input scheme
-- id: msc:m86
+- id: msc:m87
   role: output scheme

@@ -5,19 +5,11 @@ description: <p>The UKEOF Catalogue contains over 2000 metadata records of envir
   planning, giving a holistic overview of environmental observations as well as a
   place to discover who is doing what, where, why and when.</p>
 identifiers:
-- id: msc:m41
+- id: msc:g115
   scheme: RDA-MSCWG
-keywords:
-- Biogeography
-- Biological diversity
-- Climatology
-- Ecology
-- Geology
-- Hydrology
-- Meteorology
-- Remote sensing
-- Soil sciences
+types:
+- archive
 locations:
 - type: website
-  url: https://catalogue.ukeof.org.uk
-title: UKEOF Monitoring Catalogue
+  url: https://catalogue.ukeof.org.uk/
+name: UKEOF Monitoring Catalogue

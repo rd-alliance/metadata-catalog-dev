@@ -11,15 +11,17 @@ keywords:
 - Multidisciplinary
 locations:
 - type: document
-  url: http://specs.frictionlessdata.io/data-packages/
+  url: https://frictionlessdata.io/specs/data-package/
 - type: website
-  url: http://frictionlessdata.io/data-packages/
+  url: https://frictionlessdata.io/data-packages/
 relatedEntities:
-- id: msc:g29
-  role: user
 - id: msc:g101
   role: maintainer
+- id: msc:g29
+  role: user
 title: Data Package
 versions:
 - issued: '2016-03-23'
   number: 1.0.0-beta.17
+- issued: '2017-05-02'
+  number: 1.0.0-rc.2

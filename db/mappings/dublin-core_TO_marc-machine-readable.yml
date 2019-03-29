@@ -10,18 +10,18 @@ locations:
 relatedEntities:
 - id: msc:m15
   role: input scheme
-- id: msc:m91
+- id: msc:m88
   role: output scheme
 versions:
 - issued: '2008-04-23'
-  number: 2008
+  number: '2008'
 - issued: '2001-03-12'
   locations:
   - type: document
     url: http://www.loc.gov/marc/dccross_20010312.html
-  number: 2001
+  number: '2001'
 - issued: '1999-11-19'
   locations:
   - type: document
     url: http://www.loc.gov/marc/dccross_199911.html
-  number: 1999
+  number: '1999'

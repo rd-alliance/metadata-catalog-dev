@@ -17,5 +17,5 @@ relatedEntities:
 - id: msc:m15
   role: output scheme
 versions:
-- issued: 2011-07
-  number: 2.2
+- issued: '2011-07-01'
+  number: '2.2'

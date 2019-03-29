@@ -1,0 +1,11 @@
+description: Refers to a concept for the use of linked data. It is based on the JSON
+  format and extends this. With JSON-LD , data can be annotated for automatic exchange
+  between web applications and web services, and properly used, data in JSON-LD can
+  be expressed as Linked Data triples.
+identifiers:
+- id: msc:m95
+  scheme: RDA-MSCWG
+keywords:
+- Information/library standards
+- Standards
+title: JSON-LD (JavaScript Object Notation for Linked Data)

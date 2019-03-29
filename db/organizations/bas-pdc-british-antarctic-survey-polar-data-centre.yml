@@ -6,5 +6,5 @@ identifiers:
   scheme: RDA-MSCWG
 locations:
 - type: website
-  url: http://www.antarctica.ac.uk/dms/
-name: BAS PDC - British Antarctic Survey Polar Data Centre
+  url: https://data.bas.ac.uk/
+name: UK Polar Data Centre

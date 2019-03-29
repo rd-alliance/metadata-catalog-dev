@@ -1,15 +1,31 @@
-description: <p>By using DCAT to describe datasets in data catalogs, publishers increase
-  discoverability and enable applications easily to consume metadata from multiple
-  catalogs. It further enables decentralized publishing of catalogs and facilitates
-  federated dataset search across sites. Aggregated DCAT metadata can serve as a manifest
-  file to facilitate digital preservation.</p>
+dataTypes:
+- label: Dataset
+  url: 'https://www.w3.org/TR/vocab-dcat/#class-dataset'
+- label: Catalog
+  url: 'https://www.w3.org/TR/vocab-dcat/#class-catalog'
+description: <p>By using DCAT to describe datasets in data catalogs, publishers are
+  using a standard model and vocabulary that facilitates the consumption and aggregation
+  of metadata from multiple catalogs, and in doing so can increase the discoverability
+  of datasets. It also makes it possible to have a decentralized approach to publishing
+  data catalogs and makes federated search for datasets across catalogs in multiple
+  sites possible using the same query mechanism and structure. Aggregated DCAT metadata
+  can serve as a manifest file as part of the digital preservation process.</p>
 identifiers:
 - id: msc:m12
   scheme: RDA-MSCWG
 locations:
 - type: website
   url: http://www.w3.org/TR/vocab-dcat/
+- type: RDFS
+  url: https://www.w3.org/ns/dcat.ttl
+- type: website
+  url: https://www.w3.org/2017/dxwg/wiki/Main_Page
 relatedEntities:
-- id: msc:g102
+- id: msc:m15
+  role: parent scheme
+- id: msc:g106
   role: maintainer
 title: DCAT (Data Catalog Vocabulary)
+versions:
+- issued: '2014-01-16'
+  number: '2014'

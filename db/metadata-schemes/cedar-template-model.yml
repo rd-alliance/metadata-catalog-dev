@@ -1,0 +1,13 @@
+description: Describes the format of the generic metadata artifacts—the templates,
+  elements, and instances—that make up the CEDAR metadata framework and allow for
+  exchange of the metadata artifacts with external systems.
+identifiers:
+- id: msc:m94
+  scheme: RDA-MSCWG
+keywords:
+- Administration
+- Agricultural research
+- Clinical medicine
+- Earth sciences
+- Medical information systems
+title: CEDAR Template Model
