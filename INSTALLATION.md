@@ -261,8 +261,11 @@ activate_this = '/opt/rdamsc/venv/bin/activate_this.py'
 with open(activate_this) as file_:
     exec(file_.read(), dict(__file__=activate_this))
 
+import os
 import sys
 sys.path.insert(0, '/opt/rdamsc')
+os.environ['http_proxy'] = 'http://proxy.example.com:99999/'
+os.environ['https_proxy'] = 'http://proxy.example.com:99999/'
 
 from serve import app as application
 ```
@@ -342,3 +345,6 @@ sudo service apache2 graceful
 The Dulwich library for working with Git is quite sensitive, and will not stage
 any commits if a `gitignore` file (local or global) contains lines consisting
 solely of space characters.
+
+If you have problems with authenticating through a proxy, you may need to
+install the `pycurl` library as well.
