@@ -978,7 +978,6 @@ class RequiredIf(object):
                 raise Exception(
                     'No field named "{}" in form'.format(other_field_name))
             if bool(other_field.data):
-                self.field_flags = ('required', )
                 if not field.raw_data or not field.raw_data[0]:
                     if self.message is None:
                         message = field.gettext('This field is required.')
