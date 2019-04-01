@@ -242,6 +242,27 @@ paths:
       security:
       - api_user: []
   /api/m{int}:
+    get:
+      tags:
+      - m
+      summary: "Retrieve an existing metadata scheme record"
+      parameters:
+      - name: int
+        in: path
+        required: true
+        description: "Numeric portion of the MSC ID."
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        404:
+          description: "Metadata scheme not found"
+          content: {}
     put:
       tags:
       - m
@@ -354,6 +375,27 @@ paths:
       security:
       - api_user: []
   /api/g{int}:
+    get:
+      tags:
+      - g
+      summary: "Retrieve an existing organization record"
+      parameters:
+      - name: int
+        in: path
+        required: true
+        description: "Numeric portion of the MSC ID."
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        404:
+          description: "Organization not found"
+          content: {}
     put:
       tags:
       - g
@@ -466,6 +508,27 @@ paths:
       security:
       - api_user: []
   /api/t{int}:
+    get:
+      tags:
+      - t
+      summary: "Retrieve an existing tool record"
+      parameters:
+      - name: int
+        in: path
+        required: true
+        description: "Numeric portion of the MSC ID."
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        404:
+          description: "Tool not found"
+          content: {}
     put:
       tags:
       - t
@@ -578,6 +641,27 @@ paths:
       security:
       - api_user: []
   /api/c{int}:
+    get:
+      tags:
+      - c
+      summary: "Retrieve an existing mapping record"
+      parameters:
+      - name: int
+        in: path
+        required: true
+        description: "Numeric portion of the MSC ID."
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        404:
+          description: "Mapping not found"
+          content: {}
     put:
       tags:
       - c
@@ -690,6 +774,27 @@ paths:
       security:
       - api_user: []
   /api/e{int}:
+    get:
+      tags:
+      - e
+      summary: "Retrieve an existing endorsement record"
+      parameters:
+      - name: int
+        in: path
+        required: true
+        description: "Numeric portion of the MSC ID."
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        404:
+          description: "Endorsement not found"
+          content: {}
     put:
       tags:
       - e
