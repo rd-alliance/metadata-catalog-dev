@@ -43,9 +43,9 @@
         {% endfor %}
       </datalist>
       <div class="form-inline">
-        {% for f in form.keywords %}
+        {% for f in form.keywords -%}
         <span class="{{ state(f) }}">{{ f(list="keyword-list", class="form-control form-control-narrow") }}</span>
-        {% endfor %}
+        {%- endfor %}
       </div>
       {% for f in form.keywords %}
       {{ errors(f) }}
