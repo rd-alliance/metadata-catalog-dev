@@ -36,3 +36,18 @@ $( ".form-list > li:last-child" )
 
 $( "input[list='keyword-list']" ).parent().filter(":last-child")
   .one( "change", autoduplicate );
+
+/* Cleaning help text */
+
+$( ".form-group" ).find( ".help-block" ).hide();
+
+$( ":input" ).focus(function() {
+  $( this ).closest( ".form-group" ).find( ".help-block" )
+  .filter( ":hidden" ).show(400);
+});
+
+$( ".form-group" ).focusout(function (event) {
+  if ( $( this ).has( event.relatedTarget ).length == 0 ) {
+    $( this ).find( ".help-block" ).hide(400);
+  }
+});
