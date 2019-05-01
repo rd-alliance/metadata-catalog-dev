@@ -2654,17 +2654,17 @@ def edit_record(series, number):
                 if 'number' in release and\
                         str(release['number']) == str(version):
                     form = Forms[series](
-                        request.form, data=msc_to_form(release))
+                        data=msc_to_form(release))
                     break
             else:
-                form = Forms[series](request.form)
+                form = Forms[series]()
             del form['versions']
         else:
-            form = Forms[series](request.form, data=msc_to_form(document))
+            form = Forms[series](data=msc_to_form(document))
     else:
         if number != 0:
             return redirect(url_for('edit_record', series=series, number=0))
-        form = Forms[series](request.form)
+        form = Forms[series]()
 
     # Form-specific value lists
     params = dict()
