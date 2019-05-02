@@ -12,6 +12,7 @@ import json
 import re
 import random
 import string
+import codecs
 from datetime import date
 
 # Non-standard
@@ -52,7 +53,7 @@ class RealJSONStorage(Storage):
     Store the data in a JSON file.
     """
 
-    def __init__(self, path, create_dirs=False, **kwargs):
+    def __init__(self, path, create_dirs=False, encoding=None, **kwargs):
         """
         Create a new instance.
 
@@ -65,7 +66,7 @@ class RealJSONStorage(Storage):
         super(RealJSONStorage, self).__init__()
         touch(path, create_dirs=create_dirs)  # Create file if not exists
         self.kwargs = kwargs
-        self._handle = open(path, 'r+')
+        self._handle = codecs.open(path, 'r+', encoding=encoding)
 
     def close(self):
         self._handle.close()
@@ -87,6 +88,7 @@ class RealJSONStorage(Storage):
         serialized = json.dumps(data, **self.kwargs)
         self._handle.write(serialized)
         self._handle.flush()
+        os.fsync(self._handle.fileno())
         self._handle.truncate()
 
 
@@ -121,8 +123,11 @@ subfolders = {
 
 mscwg_email = 'mscwg@rda-groups.org'
 
-db_format = {'storage': RealJSONStorage, 'sort_keys': True, 'indent': 2,
-             'ensure_ascii': False}
+db_format = {
+    'storage': RealJSONStorage,
+    'indent': 2,
+    'ensure_ascii': False
+}
 
 # Command-line arguments
 # ----------------------

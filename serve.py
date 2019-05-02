@@ -544,11 +544,11 @@ lm.login_message_category = "error"
 
 db = TinyDB(
     app.config['MAIN_DATABASE_PATH'], storage=JSONStorageWithGit,
-    sort_keys=True, indent=2, ensure_ascii=False)
+    indent=2, ensure_ascii=False)
 
 user_db = TinyDB(
     app.config['USER_DATABASE_PATH'], storage=JSONStorageWithGit,
-    sort_keys=True, indent=2, ensure_ascii=False)
+    indent=2, ensure_ascii=False)
 oauth_db = TinyDB(app.config['OAUTH_DATABASE_PATH'])
 
 thesaurus = rdflib.Graph()
