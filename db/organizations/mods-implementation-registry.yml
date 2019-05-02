@@ -1,0 +1,13 @@
+description: The MODS Implementation Registry contains descriptions of MODS projects
+  planned, in progress, and fully implemented. The registry is maintained by the Library
+  of Congress Network Development and MARC Standards Office and contains around 40
+  examples of repositories, institutions, and tools that use MODS-encoded metadata.
+identifiers:
+- id: msc:g117
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://www.loc.gov/standards/mods/registry.php
+name: MODS Implementation Registry
+types:
+- coordination group

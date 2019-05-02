@@ -1,3 +1,9 @@
+description: This metadata scheme is a profile of ISO 19115 and ISO 19119 intended
+  for use by the US Geoscience Information Network to describe a broad range of geoscience
+  information resources. It provides guidance for the population of metadata documents
+  to enable interoperability of catalog service clients with multiple servers conforming
+  to this profile. It specifically targets serialization in XML compliant with ISO
+  19139.
 identifiers:
 - id: msc:m81
   scheme: RDA-MSCWG
@@ -6,7 +12,28 @@ keywords:
 locations:
 - type: website
   url: http://repository.stategeothermaldata.org/repository/resource/98ddf901b9782a25982e01af3b0bda50/
+- type: document
+  url: http://usgin.github.io/usginspecs/USGIN_ISO_Metadata.htm
 relatedEntities:
+- id: msc:g116
+  role: maintainer
+- id: msc:g116
+  role: user
 - id: msc:m22
   role: parent scheme
-title: USGIN ISO profile
+title: USGIN (US Geoscience Information Network) Metadata Profile
+versions:
+- available: '2009-12-04'
+  number: 0.9.1
+- available: '2010-01-11'
+  number: 1.0.0
+- issued: '2010-02-02'
+  number: 1.1.0
+- issued: '2010-03-04'
+  number: 1.1.2
+- issued: '2010-11-18'
+  number: 1.1.4
+- issued: '2013-10-08'
+  number: '1.2'
+- issued: '2018-06-25'
+  number: '1.3'

@@ -1,0 +1,22 @@
+description: This document maps from the elements in the Metadata Object Description
+  Schema (MODS) to those in the Dublin Core Metadata Element Set, version 1.1. One
+  application of the mapping might be to expose MODS records for OAI harvesting in
+  Dublin Core syntax.
+identifiers:
+- id: msc:c26
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.loc.gov/standards/mods/dcsimple-mods.html
+- type: library (XML)
+  url: http://www.loc.gov/standards/mods/v3/MODS3-5_DC_XSLT2-0.xsl
+relatedEntities:
+- id: msc:g104
+  role: maintainer
+- id: msc:m15
+  role: input scheme
+- id: msc:m97
+  role: output scheme
+versions:
+- issued: '2012-08-12'
+  number: '2012'

@@ -1,0 +1,25 @@
+description: This document is intended for use in first converting a MODS record to
+  MARCXML and then to a MARC 21 (ISO 2709) record. MARC 21 includes many more data
+  elements than MODS, so although this mapping suggests a single MARC 21 equivalent
+  for each MODS element, there may be other equivalents that are more appropriate
+  for particular pieces of information. Additionally, MARC 21 is more granular than
+  MODS so some data may map to inappropriate MARC 21 fields or subfields. Consequently,
+  some conversions will result in some loss of data identification.
+identifiers:
+- id: msc:c29
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.loc.gov/standards/mods/v3/mods2marc-mapping-3-5.html
+- type: library (XML)
+  url: http://www.loc.gov/standards/mods/v3/MODS3-4_MARC21slim_XSLT2-0.xsl
+relatedEntities:
+- id: msc:g104
+  role: maintainer
+- id: msc:m88
+  role: output scheme
+- id: msc:m97
+  role: input scheme
+versions:
+- issued: '2015-02-01'
+  number: '2015'

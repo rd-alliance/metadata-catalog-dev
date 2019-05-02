@@ -1,0 +1,16 @@
+description: <p>The U.S. Geoscience Information Network (USGIN) Foundation is a non-profit
+  organization set up to help users join or build networks that can be used to share
+  earth science data. USGIN is a federated information-sharing framework that uses
+  free and open-source technology to enable data to be exposed, discovered, and accessed.</p><p>USGIN’s
+  suite of standards, protocols, and practice is the framework behind the National
+  Geothermal Data System (NGDS), a data sharing system that provides access to information
+  about geothermal resources.</p>
+identifiers:
+- id: msc:g116
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://usgin.org/
+name: USGIN (US Geoscience Information Network)
+types:
+- professional group

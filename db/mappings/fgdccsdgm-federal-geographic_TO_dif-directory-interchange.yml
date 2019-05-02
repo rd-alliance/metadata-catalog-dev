@@ -1,5 +1,5 @@
 description: <p>This document describes how to map from FGDC/CSDGM to DIF, including
-  a comparison of their respective mandatory fields</p>.
+  a comparison of their respective mandatory fields.</p>
 identifiers:
 - id: msc:c16
   scheme: RDA-MSCWG

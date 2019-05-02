@@ -1,0 +1,25 @@
+description: This document is intended for use in converting MARC 21 bibliographic
+  records to MODS. Where multiple subfields are specified or implied in MARC, data
+  will be concatenated with a space substituted for the subfield delimiter and subfield
+  code. Where multiple MARC fields correspond to a single MODS element, each will
+  be mapped to a separate instance of the element (with subfields concatenated). Because
+  of this, it is not generally possible to perform a round-trip conversion without
+  loss of specificity.
+identifiers:
+- id: msc:c28
+  scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.loc.gov/standards/mods/v3/mods-mapping-3-6.html
+- type: library (XML)
+  url: http://www.loc.gov/standards/mods/v3/MARC21slim_MODS3-6_XSLT2-0.xsl
+relatedEntities:
+- id: msc:g104
+  role: maintainer
+- id: msc:m88
+  role: input scheme
+- id: msc:m97
+  role: output scheme
+versions:
+- issued: '2016-02-01'
+  number: '2016'

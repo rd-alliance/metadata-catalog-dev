@@ -1,0 +1,57 @@
+description: "The Metadata Object Description Schema (MODS) is a bibliographic metadata\
+  \ standard implemented in XML. It reimplements a subset of the elements of MARC\
+  \ (Machine Readable Cataloging) using language-based tags instead of numeric ones,\
+  \ and groups them somewhat differently. It is intended both as a simplified version\
+  \ of MARC 21 and as a richer alternative to Dublin Core for applications such as\
+  \ metadata syndication/harvesting and the documentation of digital information packages.\r\
+  \n\r\nIt was developed in 2002 by the Library of Congress Network Development and\
+  \ MARC Standards Office along with a group of interested experts."
+identifiers:
+- id: msc:m97
+  scheme: RDA-MSCWG
+keywords:
+- Bibliographic standards
+- Information/library standards
+locations:
+- type: website
+  url: http://www.loc.gov/standards/mods/
+relatedEntities:
+- id: msc:g104
+  role: maintainer
+- id: msc:m88
+  role: parent scheme
+title: MODS (Metadata Object Description Schema)
+versions:
+- issued: '2007-08-22'
+  locations:
+  - type: XSD
+    url: http://www.loc.gov/standards/mods/v3/mods-3-3.xsd
+  number: '3.3'
+- issued: '2010-06-10'
+  locations:
+  - type: document
+    url: http://www.loc.gov/standards/mods/mods-outline-3-4.html
+  - type: XSD
+    url: http://www.loc.gov/standards/mods/v3/mods-3-4.xsd
+  number: '3.4'
+- issued: '2013-07-09'
+  locations:
+  - type: document
+    url: http://www.loc.gov/standards/mods/mods-outline-3-5.html
+  - type: XSD
+    url: http://www.loc.gov/standards/mods/v3/mods-3-5.xsd
+  number: '3.5'
+- issued: '2015-05-05'
+  locations:
+  - type: document
+    url: http://www.loc.gov/standards/mods/mods-outline-3-6.html
+  - type: XSD
+    url: http://www.loc.gov/standards/mods/v3/mods-3-6.xsd
+  number: '3.6'
+- issued: '2018-01-04'
+  locations:
+  - type: document
+    url: http://www.loc.gov/standards/mods/mods-outline-3-7.html
+  - type: XSD
+    url: http://www.loc.gov/standards/mods/v3/mods-3-7.xsd
+  number: '3.7'

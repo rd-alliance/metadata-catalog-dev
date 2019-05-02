@@ -10,4 +10,13 @@ keywords:
 - Clinical medicine
 - Earth sciences
 - Medical information systems
+locations:
+- type: website
+  url: https://more.metadatacenter.org/tools-training/outreach/cedar-template-model
 title: CEDAR Template Model
+versions:
+- issued: '2018-10-15'
+  locations:
+  - type: document
+    url: https://more.metadatacenter.org/sites/default/files/artifact/CEDAR%20Template%20Model%20v1.5.0_0.pdf
+  number: 1.5.0

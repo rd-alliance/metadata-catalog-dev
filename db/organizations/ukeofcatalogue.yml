@@ -7,9 +7,9 @@ description: <p>The UKEOF Catalogue contains over 2000 metadata records of envir
 identifiers:
 - id: msc:g115
   scheme: RDA-MSCWG
-types:
-- archive
 locations:
 - type: website
   url: https://catalogue.ukeof.org.uk/
 name: UKEOF Monitoring Catalogue
+types:
+- archive

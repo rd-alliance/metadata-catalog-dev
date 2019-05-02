@@ -12,7 +12,7 @@ locations:
 relatedEntities:
 - id: msc:m22
   role: output scheme
-- id: msc:m87
+- id: msc:m89
   role: input scheme
 versions:
 - issued: '2016-02-10'

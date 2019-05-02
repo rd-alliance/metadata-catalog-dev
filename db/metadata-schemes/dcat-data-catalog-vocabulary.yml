@@ -1,8 +1,8 @@
 dataTypes:
 - label: Dataset
-  url: 'https://www.w3.org/TR/vocab-dcat/#class-dataset'
+  url: https://www.w3.org/TR/vocab-dcat/#class-dataset
 - label: Catalog
-  url: 'https://www.w3.org/TR/vocab-dcat/#class-catalog'
+  url: https://www.w3.org/TR/vocab-dcat/#class-catalog
 description: <p>By using DCAT to describe datasets in data catalogs, publishers are
   using a standard model and vocabulary that facilitates the consumption and aggregation
   of metadata from multiple catalogs, and in doing so can increase the discoverability
@@ -21,10 +21,10 @@ locations:
 - type: website
   url: https://www.w3.org/2017/dxwg/wiki/Main_Page
 relatedEntities:
-- id: msc:m15
-  role: parent scheme
 - id: msc:g106
   role: maintainer
+- id: msc:m15
+  role: parent scheme
 title: DCAT (Data Catalog Vocabulary)
 versions:
 - issued: '2014-01-16'
