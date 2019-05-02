@@ -178,9 +178,8 @@ name, email address and password.
 These accounts must be set up by an administrator, and cannot be added through
 the Web interface.
 
-WARNING: It is not recommended to use the restricted API of the live system yet.
-Please wait until an SSL certificate has been set up so you can use HTTPS,
-otherwise your username and password may be at risk of interception.
+WARNING: You should only use the restricted API via HTTPS, otherwise your
+password may be intercepted.
 
 ### Change password
 

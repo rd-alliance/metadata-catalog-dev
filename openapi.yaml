@@ -237,8 +237,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
       security:
       - api_user: []
   /api/m{int}:
@@ -295,8 +294,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Metadata scheme not found"
           content: {}
@@ -321,8 +319,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Metadata scheme not found"
           content: {}
@@ -370,8 +367,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
       security:
       - api_user: []
   /api/g{int}:
@@ -428,8 +424,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Organization not found"
           content: {}
@@ -454,8 +449,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Organization not found"
           content: {}
@@ -503,8 +497,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
       security:
       - api_user: []
   /api/t{int}:
@@ -561,8 +554,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Tool not found"
           content: {}
@@ -587,8 +579,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Tool not found"
           content: {}
@@ -636,8 +627,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
       security:
       - api_user: []
   /api/c{int}:
@@ -694,8 +684,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Mapping not found"
           content: {}
@@ -720,8 +709,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Mapping not found"
           content: {}
@@ -769,8 +757,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
       security:
       - api_user: []
   /api/e{int}:
@@ -827,8 +814,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubmissionResponseFailure'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Endorsement not found"
           content: {}
@@ -853,8 +839,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeleteResponse'
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: "Endorsement not found"
           content: {}
@@ -891,8 +876,7 @@ paths:
                     type: boolean
                     description: "True if the reset was successful."
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
         500:
           description: "Internal Server Error: password could not be reset"
           content: {}
@@ -915,8 +899,7 @@ paths:
                     type: string
                     description: "Authorization token valid for 600 seconds."
         401:
-          description: "Unauthorized access"
-          content: {}
+          $ref: '#/components/responses/UnauthorizedError'
       security:
       - api_user: []
 components:
@@ -1395,8 +1378,15 @@ If a date range is provided, the first date expresses when the endorsement was m
           type: object
           description: "Errors returned by form validation, listed under the places where they occurred."
           example: { "locations": [ { "type": [ "Not a valid choice" ] } ] }
+  responses:
+    UnauthorizedError:
+      description: Unauthorized access
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
   securitySchemes:
     api_user:
       type: http
       description: "If using an API token, use this as the username and any arbitrary string as the password."
-      scheme: Basic
+      scheme: basic
