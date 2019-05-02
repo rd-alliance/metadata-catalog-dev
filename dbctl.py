@@ -560,6 +560,15 @@ def dbDump(args):
         tbl = db.table(folder)
         records = tbl.all()
         for record in records:
+            # Sanity checking
+            if not record:
+                continue
+
+            if 'slug' not in record:
+                print("ERROR: Found a record with no slug.")
+                print(record)
+                sys.exit(1)
+
             slug = record['slug']
             del record['slug']
             if 'relatedEntities' in record:
