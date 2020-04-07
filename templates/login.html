@@ -11,11 +11,18 @@
     {% endfor %}
   </ul>
   {% endif %}
+  <div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <p>Support for logging in with your Research Data Alliance account has been
+    withdrawn by the RDA. We are looking into whether this might be restored.</p>
+  </div>
+  {# Commented out pending restoration of service.
   <p>{% if providers %}Alternatively, you can{% else %}Please{% endif %} sign in through the Research Data Alliance website.
     To find the URL for your OpenID account, log in to the Research Data Alliance
     website and view your own profile. Take the URL of that page and add
     <code>/openid</code>.</p>
-  <p>If you have an account with another OpenID v2 provider, you can use that
+  #}
+  <p>If you have an account with an{# other #} OpenID v2 provider, you can use that
     instead. Please consult your provider's documentation for the right URL to
     use; some known URL patterns are provided below.</p>
   <form action="{{ url_for('login') }}" method=post class="form-inline">
@@ -33,10 +40,12 @@
     {{ errors(form.openid) }}
   </form>
   <table class="table table-striped" style="margin-top:16px;">
+    {#
     <tr>
       <th>Research Data Alliance</th>
       <td><code>https://www.rd-alliance.org/users/</code>(username)<code>/openid</code></td>
     </tr>
+    #}
     <tr>
       <th>AOL</th>
       <td><code>https://openid.aol.com/</code>(screenname)</td>
