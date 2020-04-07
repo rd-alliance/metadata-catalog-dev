@@ -508,6 +508,47 @@ class TwitterSignIn(OAuthSignIn):
             None)
 
 
+class GithubSignIn(OAuthSignIn):
+    def __init__(self):
+        super(GithubSignIn, self).__init__('github')
+        self.formatted_name = 'GitHub'
+        self.service = OAuth2Service(
+            name=self.provider_name,
+            client_id=self.consumer_id,
+            client_secret=self.consumer_secret,
+            authorize_url='https://github.com/login/oauth/authorize',
+            access_token_url='https://github.com/login/oauth/access_token',
+            base_url='https://api.github.com/')
+
+    def authorize(self):
+        return redirect(self.service.get_authorize_url(
+            scope='read:user user:email',
+            redirect_uri=self.get_callback_url()))
+
+    def callback(self):
+        if 'code' not in request.args:
+            return (None, None, None)
+        access_token = self.service.get_access_token(
+            method='POST',
+            data={'code': request.args['code'],
+                  'redirect_uri': self.get_callback_url()})
+        oauth_session = self.service.get_session(access_token)
+        idinfo = oauth_session.get('user').json()
+        if not idinfo.get('email'):
+            email_address = ''
+            emailinfo = oauth_session.get('user/emails').json()
+            for email_object in emailinfo:
+                email_address = email_object.get('email')
+                if email_object.get('primary', False):
+                    break
+            if email_address:
+                idinfo['email'] = email_address
+        return (
+            self.provider_name + '$' + idinfo['login'],
+            idinfo.get('name'),
+            idinfo.get('email'))
+
+
 # Basic setup
 # ===========
 script_dir = os.path.dirname(__file__)
