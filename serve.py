@@ -325,6 +325,9 @@ class OAuthSignIn(object):
                   ' authentication method.')
             self.consumer_id = None
             self.consumer_secret = None
+        elif provider_name not in app.config['OAUTH_CREDENTIALS']:
+            self.consumer_id = None
+            self.consumer_secret = None
         else:
             credentials = app.config['OAUTH_CREDENTIALS'][provider_name]
             self.consumer_id = credentials['id']
@@ -2236,6 +2239,9 @@ def login():
     if 'OAUTH_CREDENTIALS' in app.config:
         for provider_class in OAuthSignIn.__subclasses__():
             provider = provider_class()
+            if provider.provider_name not in app.config.get(
+                    'OAUTH_CREDENTIALS'):
+                continue
             providers.append({
                 'name': provider.formatted_name,
                 'slug': provider.provider_name})
