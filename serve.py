@@ -629,7 +629,6 @@ class GitlabSignIn(OAuthSignIn):
         id_token = oauth_info['id_token']
         oauth_session = self.service.get_session(access_token)
         idinfo = oauth_session.get(self.userinfo).json()
-        print(idinfo)
         return (
             self.provider_name + '$' + idinfo['sub'],
             idinfo.get('name'),
@@ -3260,6 +3259,7 @@ def on_push(data):
     print("Git pull completed with exit code {}.".format(call.returncode))
     wsgi_path = app.config.get('WSGI_PATH')
     if wsgi_path:
+        print("Touching {}...".format(wsgi_path))
         if os.path.isfile(wsgi_path):
             os.utime(wsgi_path, None)
         else:
