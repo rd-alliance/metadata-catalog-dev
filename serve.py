@@ -3258,6 +3258,13 @@ def on_push(data):
     call = subprocess.run(['git', '-C', script_dir, 'pull', '--rebase'],
                           stderr=subprocess.STDOUT)
     print("Git pull completed with exit code {}.".format(call.returncode))
+    wsgi_path = app.config.get('WSGI_PATH')
+    if wsgi_path:
+        if os.path.isfile(wsgi_path):
+            os.utime(wsgi_path, None)
+        else:
+            print("Value of WSGI_PATH ({}) is not a valid file."
+                  .format(wsgi_path))
 
 
 # Executing

@@ -270,6 +270,13 @@ os.environ['https_proxy'] = 'http://proxy.example.com:99999/'
 from serve import app as application
 ```
 
+To enable automatic reloading of the application, add the path of the WSGI file
+to your application configuration:
+
+```python
+WSGI_PATH = '/var/www/rdamsc/rdamsc.wsgi'
+```
+
 Exit the app user account:
 
 ```bash
@@ -292,6 +299,7 @@ WSGIPassAuthorization On
     <Directory /var/www/rdamsc>
         WSGIProcessGroup rdamsc
         WSGIApplicationGroup %{GLOBAL}
+        WSGIScriptReloading On
         Require all granted
     </Directory>
 
@@ -309,6 +317,7 @@ WSGIPassAuthorization On
         <Directory /var/www/rdamsc>
             WSGIProcessGroup rdamsc
             WSGIApplicationGroup %{GLOBAL}
+            WSGIScriptReloading On
             Require all granted
         </Directory>
 
