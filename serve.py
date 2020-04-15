@@ -373,12 +373,7 @@ class GoogleSignIn(OAuthSignIn):
                 print('WARNING: could not retrieve URLs for {}.'
                       .format(self.provider_name))
                 print(e)
-                discovery = {
-                    'issuer': 'https://accounts.google.com',
-                    'authorization_endpoint': 'https://accounts.google.com/'
-                    'o/oauth2/v2/auth',
-                    'token_endpoint': 'https://www.googleapis.com/oauth2/v4/'
-                    'token'}
+                discovery = dict()
         elif (datetime.now(timezone.utc).timestamp() > discovery['timestamp']):
             try:
                 last_expiry_date = datetime.fromtimestamp(
@@ -402,9 +397,15 @@ class GoogleSignIn(OAuthSignIn):
             name=self.provider_name,
             client_id=self.consumer_id,
             client_secret=self.consumer_secret,
-            authorize_url=discovery['authorization_endpoint'],
-            access_token_url=discovery['token_endpoint'],
-            base_url=discovery['issuer'])
+            authorize_url=discovery.get(
+                'authorization_endpoint',
+                'https://accounts.google.com/o/oauth2/v2/auth'),
+            access_token_url=discovery.get(
+                'token_endpoint',
+                'https://www.googleapis.com/oauth2/v4/token'),
+            base_url=discovery.get(
+                'issuer',
+                'https://accounts.google.com'))
 
     def authorize(self):
         return redirect(self.service.get_authorize_url(
@@ -548,6 +549,89 @@ class GithubSignIn(OAuthSignIn):
                 idinfo['email'] = email_address
         return (
             self.provider_name + '$' + idinfo['login'],
+            idinfo.get('name'),
+            idinfo.get('email'))
+
+
+class GitlabSignIn(OAuthSignIn):
+    def __init__(self):
+        super(GitlabSignIn, self).__init__('gitlab')
+        self.formatted_name = 'GitLab'
+        discovery = oauth_db.get(Query().provider == self.provider_name)
+        discovery_url = ('https://gitlab.com/.well-known/'
+                         'openid-configuration')
+        if not discovery:
+            try:
+                r = requests.get(discovery_url)
+                discovery = r.json()
+                discovery['provider'] = self.provider_name
+                expiry_timestamp = mktime_tz(
+                    parsedate_tz(r.headers['date'])) + 3600
+                discovery['timestamp'] = expiry_timestamp
+                oauth_db.insert(discovery)
+            except Exception as e:
+                print('WARNING: could not retrieve URLs for {}.'
+                      .format(self.provider_name))
+                print(e)
+                discovery = dict()
+        elif (datetime.now(timezone.utc).timestamp() > discovery['timestamp']):
+            try:
+                last_expiry_date = datetime.fromtimestamp(
+                    discovery['timestamp'], timezone.utc)
+                headers = {
+                    'If-Modified-Since': last_expiry_date
+                    .strftime('%a, %d %b %Y %H:%M:%S %Z')}
+                r = requests.get(discovery_url, headers=headers)
+                if r.status_code != requests.codes.not_modified:
+                    discovery.update(r.json())
+                expiry_timestamp = mktime_tz(
+                    parsedate_tz(r.headers['date'])) + 3600
+                discovery['timestamp'] = expiry_timestamp
+                oauth_db.update(discovery, doc_ids=[discovery.doc_id])
+            except Exception as e:
+                print('WARNING: could not update URLs for {}.'
+                      .format(self.provider_name))
+                print(e)
+
+        self.userinfo = discovery.get(
+            'userinfo_endpoint',
+            'https://gitlab.com/oauth/userinfo')
+        self.service = OAuth2Service(
+            name=self.provider_name,
+            client_id=self.consumer_id,
+            client_secret=self.consumer_secret,
+            authorize_url=discovery.get(
+                'authorization_endpoint',
+                'https://gitlab.com/oauth/authorize'),
+            access_token_url=discovery.get(
+                'token_endpoint',
+                'https://gitlab.com/oauth/token'),
+            base_url=discovery.get(
+                'issuer',
+                'https://gitlab.com'))
+
+    def authorize(self):
+        return redirect(self.service.get_authorize_url(
+            scope='openid email',
+            response_type='code',
+            redirect_uri=self.get_callback_url()))
+
+    def callback(self):
+        if 'code' not in request.args:
+            return (None, None, None)
+        r = self.service.get_raw_access_token(
+            method='POST',
+            data={'code': request.args['code'],
+                  'grant_type': 'authorization_code',
+                  'redirect_uri': self.get_callback_url()})
+        oauth_info = r.json()
+        access_token = oauth_info['access_token']
+        id_token = oauth_info['id_token']
+        oauth_session = self.service.get_session(access_token)
+        idinfo = oauth_session.get(self.userinfo).json()
+        print(idinfo)
+        return (
+            self.provider_name + '$' + idinfo['sub'],
             idinfo.get('name'),
             idinfo.get('email'))
 
