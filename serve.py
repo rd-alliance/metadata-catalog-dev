@@ -635,6 +635,56 @@ class GitlabSignIn(OAuthSignIn):
             idinfo.get('email'))
 
 
+class OrcidSignIn(OAuthSignIn):
+    def __init__(self):
+        super(OrcidSignIn, self).__init__('orcid')
+        self.formatted_name = 'ORCID'
+        self.service = OAuth2Service(
+            name=self.provider_name,
+            client_id=self.consumer_id,
+            client_secret=self.consumer_secret,
+            authorize_url='https://sandbox.orcid.org/oauth/authorize',
+            access_token_url='https://sandbox.orcid.org/oauth/token',
+            base_url='https://pub.sandbox.orcid.org/v2.0/')
+
+    def authorize(self):
+        return redirect(self.service.get_authorize_url(
+            scope='/authenticate',
+            response_type='code',
+            redirect_uri=self.get_callback_url()))
+
+    def callback(self):
+        if 'code' not in request.args:
+            return (None, None, None)
+        r = self.service.get_raw_access_token(
+            method='POST',
+            data={'code': request.args['code'],
+                  'grant_type': 'authorization_code',
+                  'redirect_uri': self.get_callback_url()})
+        oauth_info = r.json()
+        access_token = oauth_info['access_token']
+        orcid = oauth_info['orcid']
+        oauth_session = self.service.get_session(access_token)
+        idinfo = oauth_session.get(
+            '{}/record'.format(orcid),
+            headers={'Content-type': 'application/vnd.orcid+json'}).json()
+        email = None
+        emails = idinfo.get('person', dict()).get('emails', dict()).get(
+            'email', list())
+        for email_obj in emails:
+            this_email = email_obj.get('email')
+            if this_email and email_obj.get('primary'):
+                email = this_email
+                break
+            elif email:
+                continue
+            email = this_email
+        return (
+            self.provider_name + '$' + orcid,
+            oauth_info.get('name'),
+            email)
+
+
 # Basic setup
 # ===========
 script_dir = os.path.dirname(__file__)
