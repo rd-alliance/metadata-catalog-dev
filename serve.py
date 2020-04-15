@@ -643,9 +643,9 @@ class OrcidSignIn(OAuthSignIn):
             name=self.provider_name,
             client_id=self.consumer_id,
             client_secret=self.consumer_secret,
-            authorize_url='https://sandbox.orcid.org/oauth/authorize',
-            access_token_url='https://sandbox.orcid.org/oauth/token',
-            base_url='https://pub.sandbox.orcid.org/v2.0/')
+            authorize_url='https://orcid.org/oauth/authorize',
+            access_token_url='https://orcid.org/oauth/token',
+            base_url='https://pub.orcid.org/v2.0/')
 
     def authorize(self):
         return redirect(self.service.get_authorize_url(
