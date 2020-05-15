@@ -3064,9 +3064,15 @@ def assess_conformance(series, document):
                     for subsubvalue in subvalue:
                         multi_dict_items.append(
                             ('{}-{}'.format(key, index), subsubvalue))
-                else:
+                elif key == 'keywords' or (series == 't' and key == 'type'):
                     multi_dict_items.append(
-                        ('{}-{}'.format(key, index), subvalue))
+                        (f'{key}-{index}', subvalue))
+                else:
+                    multi_dict_items.append((key, subvalue))
+        elif isinstance(value, dict):
+            for subkey, subvalue in value.items():
+                multi_dict_items.append(
+                    (f'{key}-{subkey}', subvalue))
         elif isinstance(value, dict):
             pass
         else:
