@@ -1,4 +1,10 @@
+description: This descriptor list is used for uploading information from EPGRIS National
+  Inventories of Plant Genetic Resources to EURISCO, the European Search Catalogue
+  for Plant Genetic Resources. It is intended for use only in data exchange.
 identifiers:
 - id: msc:m85
   scheme: RDA-MSCWG
+locations:
+- type: document
+  url: http://www.ecpgr.cgiar.org/fileadmin/templates/ecpgr.org/upload/MISC/EURISCO_Descriptors.pdf
 title: EURISCO Descriptors

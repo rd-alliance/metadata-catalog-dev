@@ -19,6 +19,8 @@ locations:
 relatedEntities:
 - id: msc:g104
   role: maintainer
+- id: msc:g121
+  role: user
 title: MARC (Machine-Readable Cataloging)
 versions:
 - issued: '1999-02-01'

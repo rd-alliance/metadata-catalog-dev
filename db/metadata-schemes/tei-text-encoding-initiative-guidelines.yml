@@ -1,0 +1,51 @@
+description: <p>The Text Encoding Initiative (TEI) Guidelines make recommendations
+  about suitable ways of representing those features of textual resources which need
+  to be identified explicitly in order to facilitate processing by computer programs.
+  They specify a set of XML tags in order to mark the textual metadata, text structure,
+  relationship between images and transcriptions and other features of interest. They
+  therefore primarily define a data format, but the TEI Header in particular includes
+  a native set of metadata and may include metadata from other schemas.</p><p>In their
+  decades of community driven development they have developed into a de-facto standard
+  in the production of textual data in the humanities. Since the release of version
+  P5, 2 to 4 new revisions have been released each year.</p>
+identifiers:
+- id: msc:m99
+  scheme: RDA-MSCWG
+keywords:
+- History
+- Languages
+locations:
+- type: website
+  url: http://www.tei-c.org/Guidelines/P5/
+- type: document
+  url: https://www.tei-c.org/release/doc/tei-p5-doc/en/html/index.html
+relatedEntities:
+- id: msc:g120
+  role: maintainer
+title: TEI (Text Encoding Initiative) Guidelines
+versions:
+- identifiers:
+  - id: 10.5281/zenodo.3459202
+    scheme: DOI
+  issued: '1990-11-01'
+  number: P1
+- identifiers:
+  - id: 10.5281/zenodo.3459220
+    scheme: DOI
+  issued: '1993-04-30'
+  number: P2
+- identifiers:
+  - id: 10.5281/zenodo.3459231
+    scheme: DOI
+  issued: '1999-05-19'
+  number: P3
+- identifiers:
+  - id: 10.5281/zenodo.3549615
+    scheme: DOI
+  issued: '2002-03-31'
+  number: P4
+- identifiers:
+  - id: 10.5281/zenodo.3413524
+    scheme: DOI
+  issued: '2007-11-02'
+  number: P5

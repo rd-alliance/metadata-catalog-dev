@@ -1,7 +1,6 @@
 description: <p>Ecological Metadata Language (EML) is a metadata specification particularly
   developed for the ecology discipline. It is based on prior work done by the Ecological
-  Society of America and associated efforts (Michener et al., 1997, Ecological Applications).</p><p>Sponsored
-  by ecoinformatics.org, EML Version 2.1.1 was released in 2011.</p>
+  Society of America and associated efforts (Michener et al., 1997, Ecological Applications).</p>
 identifiers:
 - id: msc:m16
   scheme: RDA-MSCWG
@@ -11,11 +10,13 @@ keywords:
 - Ecology
 - Zoology
 locations:
-- type: document
-  url: http://knb.ecoinformatics.org/software/eml/eml-2.1.1/index.html
 - type: website
-  url: http://knb.ecoinformatics.org/software/eml/
+  url: https://eml.ecoinformatics.org/
+- type: document
+  url: https://eml.ecoinformatics.org/schema
 relatedEntities:
+- id: msc:g119
+  role: maintainer
 - id: msc:g44
   role: user
 - id: msc:g63
@@ -25,3 +26,19 @@ relatedEntities:
 - id: msc:g72
   role: user
 title: EML (Ecological Metadata Language)
+versions:
+- issued: '2001-02-16'
+  number: 1.4.1
+- issued: '2002-12-11'
+  number: 2.0.0
+- issued: '2004-08-13'
+  number: 2.0.1
+- issued: '2009-05-11'
+  number: 2.1.0
+- issued: '2012-06-19'
+  number: 2.1.1
+- identifiers:
+  - id: 10.5063/F11834T2
+    scheme: DOI
+  issued: '2019-11-22'
+  number: 2.2.0

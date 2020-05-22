@@ -1,0 +1,12 @@
+description: Ecoinformatics.org is an open, voluntary collaboration of developers
+  and researchers that aims to produce software, systems, publications, and services
+  that are beneficial to the ecological and environmental sciences.
+identifiers:
+- id: msc:g119
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://ecoinformatics.org/
+name: Ecoinformatics.org
+types:
+- coordination group

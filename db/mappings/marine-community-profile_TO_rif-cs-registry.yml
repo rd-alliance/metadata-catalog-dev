@@ -1,0 +1,17 @@
+description: A mapping from the Marine Community Profile (or more generically ISO
+  19115:2003) to RIF-CS v1.6.1, for use by contributors to Research Data Australia.
+identifiers:
+- id: msc:c31
+  scheme: RDA-MSCWG
+locations:
+- type: library (XML)
+  url: https://www.ands.org.au/__data/assets/file/0005/397238/mcp-rifcs.zip
+relatedEntities:
+- id: msc:m22
+  role: input scheme
+- id: msc:m71
+  role: input scheme
+- id: msc:m98
+  role: output scheme
+- id: msc:g118
+  role: maintainer

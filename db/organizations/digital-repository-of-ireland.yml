@@ -1,0 +1,12 @@
+description: Digital Repository of Ireland (DRI) is a national trusted digital repository
+  (TDR) for Ireland’s social and cultural data. It supports records catalogued in
+  Dublin Core, EAD, MARC XML and MODS.
+identifiers:
+- id: msc:g121
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://www.dri.ie/
+name: Digital Repository of Ireland
+types:
+- archive

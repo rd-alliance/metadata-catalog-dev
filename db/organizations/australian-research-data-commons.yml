@@ -1,0 +1,15 @@
+description: The Australian Research Data Commons (ARDC) was formed on 1 July 2018,
+  merging the Australian National Data Service (ANDS), National eResearch Collaboration
+  Tools and Resources (Nectar) and the Research Data Services (RDS). It is an initiative
+  that enables Australian research community and industry access to nationally significant,
+  leading edge data intensive eInfrastructure, platforms, skills and collections of
+  high-quality data.
+identifiers:
+- id: msc:g118
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://ardc.edu.au/
+name: Australian Research Data Commons
+types:
+- coordination group

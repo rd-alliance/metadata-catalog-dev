@@ -1,7 +1,16 @@
+description: "The Insight Centre for Data Analytics was formed in 2013 as a collaboration\
+  \ between Dublin City University; the National University of Ireland, Galway; University\
+  \ College Cork; University College Dublin; and other partner institutions. It merged\
+  \ several existing research centres, including the Digital Enterprise Research Institute\
+  \ (<a href=\"https://web.archive.org/web/20190618125531/http://www.deri.ie/\">DERI</a>),\
+  \ part of NUI Galway and a centre of expertise in linked data and the Semantic Web.\r\
+  \n"
 identifiers:
 - id: msc:g102
   scheme: RDA-MSCWG
 locations:
 - type: website
-  url: http://www.deri.ie
-name: DERI
+  url: http://www.insight-centre.org/
+name: Insight Centre for Data Analytics
+types:
+- professional group

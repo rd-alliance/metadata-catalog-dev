@@ -15,6 +15,8 @@ relatedEntities:
   role: maintainer
 - id: msc:g114
   role: maintainer
+- id: msc:g121
+  role: user
 title: EAD (Encoded Archival Description)
 versions:
 - issued: '1998-08-01'

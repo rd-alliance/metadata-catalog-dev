@@ -14,12 +14,12 @@ locations:
 - type: library (XML)
   url: http://www.loc.gov/standards/mods/v3/MARC21slim_MODS3-6_XSLT2-0.xsl
 relatedEntities:
-- id: msc:g104
-  role: maintainer
 - id: msc:m88
   role: input scheme
 - id: msc:m97
   role: output scheme
+- id: msc:g104
+  role: maintainer
 versions:
 - issued: '2016-02-01'
   number: '2016'

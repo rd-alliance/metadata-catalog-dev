@@ -13,10 +13,10 @@ locations:
 relatedEntities:
 - id: msc:g104
   role: maintainer
-- id: msc:m15
-  role: input scheme
 - id: msc:m97
   role: output scheme
+- id: msc:m15
+  role: input scheme
 versions:
 - issued: '2012-08-12'
   number: '2012'
