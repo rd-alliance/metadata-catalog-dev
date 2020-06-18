@@ -287,8 +287,6 @@ location where further information about the scheme may be accessed:
         the specification.
       + *website*: The home page of a website dedicated to the scheme, or a web
         page collecting resources relevant to the scheme.
-      + *namespace*: Official namespace to use when using elements from this
-        scheme in Linked Data.
 
 *Notes*
 
