@@ -806,7 +806,7 @@ id_scheme_list = ['DOI']
 scheme_locations = [
     ('', ''), ('document', 'document'), ('website', 'website'),
     ('RDA-MIG', 'RDA MIG Schema'), ('DTD', 'XML/SGML DTD'),
-    ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema')]
+    ('XSD', 'XML Schema'), ('RDFS', 'RDF Schema'), ('namespace', 'namespace')]
 
 organization_locations = [
     ('', ''), ('website', 'website'), ('email', 'email address')]

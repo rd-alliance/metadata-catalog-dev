@@ -37,6 +37,8 @@
       <li><a class="btn btn-special" href="{{ location['url'] }}">Visit website</a></li>
       {% elif location['type'] == 'document' %}
       <li><a class="btn btn-special" href="{{ location['url'] }}">View specification</a></li>
+      {% elif location['type'] == 'namespace' %}
+      <li><a class="btn btn-special" href="{{ location['url'] }}">Official namespace</a></li>
       {% else %}
       <li><a class="btn btn-special" href="{{ location['url'] }}">View specification in {{ location['type'] }} format</a></li>
       {% endif %}
