@@ -38,6 +38,11 @@
       </div>
     </nav>
   </header>
+  <aside class="container">
+    <p class="alert alert-warning">The Metadata Standards Catalog will be
+      unavailable on Tuesday, 8 September 2020, to allow for essential
+      maintenance.</p>
+  </aside>
   <main class="container">
   <h1>{% if self.title() %}{{ self.title() }}{% else %}Metadata Standards Catalog{% endif %}</h1>
   {% with messages = get_flashed_messages(with_categories=True, category_filter=['error', 'message', 'success', 'warning']) %}
