@@ -1583,7 +1583,7 @@ def clean_dict(data):
             del data[key]
         elif value is None:
             del data[key]
-        elif key is 'csrf_token':
+        elif key == 'csrf_token':
             del data[key]
     return data
 
