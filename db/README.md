@@ -4,12 +4,12 @@ title: Metadata Standards Catalog Database
 
 # Introduction
 
-This directory contains a snapshot of the Metadata Standards Catalog database.
-It is staging area intended for migrating records to the Catalog from the
-Metadata Standards Directory.
+This directory contains a snapshot of the Metadata Standards Catalog database
+from when the version 1 code was retired in September 2020.
 
-It is not yet decided if there will be a role for the files herein once the
-Catalog has been launched, since the Catalog database will evolve independently.
+It was originally used as a staging area for migrating records to the Catalog
+from the Metadata Standards Directory, which is why the records are presented as
+a collection of YAML files instead of a compiled JSON database.
 
 # Entity model
 
