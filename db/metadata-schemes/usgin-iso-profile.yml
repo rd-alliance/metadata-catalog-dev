@@ -15,12 +15,12 @@ locations:
 - type: document
   url: http://usgin.github.io/usginspecs/USGIN_ISO_Metadata.htm
 relatedEntities:
-- id: msc:m22
-  role: parent scheme
 - id: msc:g116
   role: maintainer
 - id: msc:g116
   role: user
+- id: msc:m22
+  role: parent scheme
 title: USGIN (US Geoscience Information Network) Metadata Profile
 versions:
 - available: '2009-12-04'

@@ -15,8 +15,6 @@ locations:
 - type: document
   url: https://eml.ecoinformatics.org/schema
 relatedEntities:
-- id: msc:g119
-  role: maintainer
 - id: msc:g44
   role: user
 - id: msc:g63
@@ -25,6 +23,8 @@ relatedEntities:
   role: user
 - id: msc:g72
   role: user
+- id: msc:g119
+  role: maintainer
 title: EML (Ecological Metadata Language)
 versions:
 - issued: '2001-02-16'

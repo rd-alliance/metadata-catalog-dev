@@ -7,9 +7,9 @@ locations:
 - type: library (XML)
   url: https://www.ands.org.au/__data/assets/file/0004/397237/dublincore-rifcs.zip
 relatedEntities:
+- id: msc:g118
+  role: maintainer
 - id: msc:m15
   role: input scheme
 - id: msc:m98
   role: output scheme
-- id: msc:g118
-  role: maintainer

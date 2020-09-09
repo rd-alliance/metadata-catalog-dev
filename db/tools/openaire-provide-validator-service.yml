@@ -1,0 +1,24 @@
+creators:
+- familyName: Lempesis
+  fullName: Antonis Lempesis
+  givenName: 'Antonis '
+description: 'The OpenAIRE Validator Service allows data source managers to validate
+  the OAI-PMH publisher of their sources against the OpenAIRE Guidelines (different
+  versions of the guidelines). The tool returns a detailed evaluation of compliance
+  together with feedback on what has to be fixed in the metadata to achieve compliance. '
+identifiers:
+- id: msc:t67
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: http://provide.openaire.eu
+relatedEntities:
+- id: msc:g112
+  role: maintainer
+- id: msc:g112
+  role: funder
+- id: msc:m92
+  role: supported scheme
+title: OpenAIRE PROVIDE Validator Service
+types:
+- web application

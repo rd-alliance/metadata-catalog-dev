@@ -7,11 +7,11 @@ locations:
 - type: library (XML)
   url: https://www.ands.org.au/__data/assets/file/0011/397235/anzlic-rifcs.zip
 relatedEntities:
-- id: msc:m46
-  role: input scheme
+- id: msc:g118
+  role: maintainer
 - id: msc:m22
+  role: input scheme
+- id: msc:m46
   role: input scheme
 - id: msc:m98
   role: output scheme
-- id: msc:g118
-  role: maintainer

@@ -1,0 +1,46 @@
+creators:
+- familyName: Crosas
+  fullName: Mercè Crosas
+  givenName: Mercè
+description: "Dataverse is an open source web application to share, preserve, cite,\
+  \ explore, and analyze research data. It facilitates making data available to others,\
+  \ and allows you to replicate others' work more easily. Researchers, journals, data\
+  \ authors, publishers, data distributors, and affiliated institutions all receive\
+  \ academic credit and web visibility.\r\n\r\nDataverse has grown considerably over\
+  \ time and is now a major international collaborative project. We encourage you\
+  \ to join us."
+identifiers:
+- id: msc:t66
+  scheme: RDA-MSCWG
+locations:
+- type: website
+  url: https://dataverse.org/
+relatedEntities:
+- id: msc:g122
+  role: maintainer
+- id: msc:g122
+  role: funder
+- id: msc:m11
+  role: supported scheme
+- id: msc:m13
+  role: supported scheme
+- id: msc:m15
+  role: supported scheme
+- id: msc:m18
+  role: supported scheme
+- id: msc:m21
+  role: supported scheme
+- id: msc:m26
+  role: supported scheme
+- id: msc:m33
+  role: supported scheme
+- id: msc:m92
+  role: supported scheme
+- id: msc:m95
+  role: supported scheme
+title: Dataverse
+types:
+- web application
+versions:
+- issued: '2020-06-15'
+  number: '1'

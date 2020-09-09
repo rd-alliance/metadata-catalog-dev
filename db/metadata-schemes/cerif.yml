@@ -13,8 +13,6 @@ locations:
 - type: website
   url: http://www.eurocris.org/cerif/main-features-cerif
 relatedEntities:
-- id: msc:g112
-  role: user
 - id: msc:g99
   role: maintainer
 - id: msc:g100
@@ -22,4 +20,4 @@ relatedEntities:
 title: CERIF (Common European Research Information Format)
 versions:
 - issued: '2013-07-25'
-  number: 1.6
+  number: '1.6'

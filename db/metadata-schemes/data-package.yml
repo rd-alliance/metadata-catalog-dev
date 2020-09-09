@@ -15,10 +15,10 @@ locations:
 - type: website
   url: https://frictionlessdata.io/data-packages/
 relatedEntities:
-- id: msc:g101
-  role: maintainer
 - id: msc:g29
   role: user
+- id: msc:g101
+  role: maintainer
 title: Data Package
 versions:
 - issued: '2016-03-23'

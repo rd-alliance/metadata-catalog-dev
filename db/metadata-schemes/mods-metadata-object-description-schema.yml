@@ -16,12 +16,12 @@ locations:
 - type: website
   url: http://www.loc.gov/standards/mods/
 relatedEntities:
-- id: msc:m88
-  role: parent scheme
 - id: msc:g104
   role: maintainer
 - id: msc:g121
   role: user
+- id: msc:m88
+  role: parent scheme
 title: MODS (Metadata Object Description Schema)
 versions:
 - issued: '2007-08-22'

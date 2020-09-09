@@ -1,0 +1,18 @@
+description: IQSS researches and develops software and systems tools—a unique undertaking
+  in an academic environment. While social science research drives us, we strive to
+  create broad-based, powerful, scalable, extendable products that will be useful
+  in diverse research domains and scholarly environments. We aim to build tools that
+  will enable breakthrough advances in a sweeping range of social problems
+identifiers:
+- id: msc:g122
+  scheme: RDA-MSCWG
+- id: 03vek6s52
+  scheme: ROR
+- id: '100007229'
+  scheme: Crossref Funder ID
+locations:
+- type: website
+  url: https://www.iq.harvard.edu/
+name: Institute for Quantitative Social Science (IQSS)
+types:
+- professional group

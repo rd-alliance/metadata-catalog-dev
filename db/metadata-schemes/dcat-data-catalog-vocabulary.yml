@@ -21,10 +21,10 @@ locations:
 - type: website
   url: https://www.w3.org/2017/dxwg/wiki/Main_Page
 relatedEntities:
-- id: msc:m15
-  role: parent scheme
 - id: msc:g106
   role: maintainer
+- id: msc:m15
+  role: parent scheme
 title: DCAT (Data Catalog Vocabulary)
 versions:
 - issued: '2014-01-16'
