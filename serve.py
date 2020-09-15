@@ -283,12 +283,19 @@ class ApiUser(Document):
     def hash_password(self, password):
         self['password_hash'] = pwd_context.encrypt(password)
         user_db.table('api_users').update(
-            {'password_hash': self.get('password_hash')}, doc_ids=[self.doc_id])
+            {'password_hash': self.get('password_hash')},
+            doc_ids=[self.doc_id])
         return True
 
     def verify_password(self, password):
-        return pwd_context.verify_and_update(
+        result, new_hash = pwd_context.verify_and_update(
             password, self.get('password_hash'))
+        if new_hash:
+            self['password_hash'] = new_hash
+            user_db.table('api_users').update(
+                {'password_hash': self.get('password_hash')},
+                doc_ids=[self.doc_id])
+        return result
 
     def generate_auth_token(self, expiration=600):
         s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
