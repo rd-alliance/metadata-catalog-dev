@@ -2353,7 +2353,7 @@ def flash_result(matches, type):
 # User login
 # ==========
 class LoginForm(FlaskForm):
-    openid = StringField('OpenID URL', validators=[validators.URL])
+    openid = StringField('OpenID URL', validators=[validators.URL()])
 
 
 @app.route('/login', methods=['GET', 'POST'])
