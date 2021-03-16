@@ -613,7 +613,7 @@ The data model recognizes these three levels of conformance:
 
  #. **Useful**  
     The record contains at least a **title**, an **identifier**, a
-    **description**, a **keyword** and a **location**.
+    **description** and a **location**.
 
  #. **Complete**  
     The record contains all the above elements. Elements representing lists

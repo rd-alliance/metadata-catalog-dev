@@ -793,8 +793,7 @@ useful_fields = dict()
 useful_fields['m'] = ['title', 'identifiers', 'description', 'keywords',
                       'locations']
 useful_fields['g'] = ['name', 'identifiers']
-useful_fields['t'] = ['title', 'identifiers', 'description', 'keywords',
-                      'locations']
+useful_fields['t'] = ['title', 'identifiers', 'description', 'locations']
 useful_fields['c'] = ['identifiers', 'locations', 'input_schemes',
                       'output_schemes']
 useful_fields['e'] = ['identifiers', 'locations', 'endorsed_schemes']
