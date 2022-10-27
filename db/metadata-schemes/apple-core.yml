@@ -2,6 +2,8 @@ description: <p>Darwin Core documentation and recommendations for herbaria.</p>
 identifiers:
 - id: msc:m47
   scheme: RDA-MSCWG
+- id: https://fairsharing.org/726
+  scheme: FAIRsharing
 keywords:
 - Botany
 locations:

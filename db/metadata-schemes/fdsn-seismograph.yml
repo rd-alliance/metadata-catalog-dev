@@ -1,0 +1,21 @@
+description: The FDSN StationXML schema defines an XML representation of the most important and commonly-used structures of SEED 2.4 metadata with enhancements.
+  This format is intended primarily for the archival and exchange of seismological time series data and related metadata.
+  The goal is to allow mapping between SEED 2.4 dataless SEED volumes and this schema with as little transformation or loss of information as possible,
+  while at the same time simplifying station metadata representation when possible. Also, content and clarification has been added where lacking in the SEED standard.
+  When definitions and usage are under-defined the SEED manual should be referred to for clarification.
+identifiers:
+- id: msc:m1007
+  scheme: RDA-MSCWG
+- id: https://fairsharing.org/1434
+  scheme: FAIRsharing
+locations:
+- type: namespace
+  url: http://www.fdsn.org/xml/station/1
+- type: website
+  url: http://www.fdsn.org/xml/station/
+- type: document
+  url: http://docs.fdsn.org/projects/stationxml/en/latest/
+title: International Federation of Digital Seismograph Networks StationXML (FDSN StationXML)
+keywords:
+- Earth sciences
+- Geophysics

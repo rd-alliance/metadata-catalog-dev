@@ -19,6 +19,10 @@ keywords:
 locations:
 - type: website
   url: http://inspire.ec.europa.eu/
+- type: namespace
+  url: http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd
+- type: namespace
+  url: http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
 relatedEntities:
 - id: msc:m22
   role: parent scheme

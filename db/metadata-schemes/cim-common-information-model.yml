@@ -14,6 +14,8 @@ locations:
   url: https://earthsystemcog.org/projects/es-doc-models/cim_versions
 - type: website
   url: https://earthsystemcog.org/projects/es-doc-models/cim
+- type: XSD
+  url: https://github.com/ES-DOC/esdoc-cim/blob/v1.10.0/cim.xsd
 relatedEntities:
 - id: msc:g23
   role: user

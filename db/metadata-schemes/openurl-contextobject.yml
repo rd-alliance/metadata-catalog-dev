@@ -1,0 +1,14 @@
+description: The XML ContextObject Format is part of the standard ANSI/NISO Z39.88-2004 (R2010), a metadata standard based on XML. It serves to serialize a OpenURL ContextObject which is the information construct that describes an item that is the subject of a service request and the context within which the request is being made.
+identifiers:
+- id: msc:m1006
+  scheme: RDA-MSCWG
+locations:
+- type: namespace
+  url: info:ofi/fmt:xml:xsd:ctx
+- type: namespace
+  url: info:ofi/fmt:kev:mtx:ctx
+- type: document
+  url: https://groups.niso.org/apps/group_public/download.php/14833/z39_88_2004_r2010.pdf
+title: The XML ContextObject Format
+keywords:
+  -Multidisciplinary

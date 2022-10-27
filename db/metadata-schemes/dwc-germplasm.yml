@@ -8,6 +8,10 @@ keywords:
 locations:
 - type: website
   url: http://code.google.com/p/darwincore-germplasm/
+- type: namespace
+  url: http://purl.org/germplasm#
+- type: namespace
+  url: http://purl.org/germplasm/germplasmTerm#
 relatedEntities:
 - id: msc:m9
   role: parent scheme

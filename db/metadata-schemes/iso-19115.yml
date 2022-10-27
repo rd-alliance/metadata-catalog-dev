@@ -27,6 +27,10 @@ locations:
   url: http://standards.iso.org/iso/19115/-3/
 - type: website
   url: http://www.iso.org/iso/catalogue_detail.htm?csnumber=53798
+- type: namespace
+  url: http://www.isotc211.org/2005/gmd/gmd.xsd
+- type: namespace
+  url: http://www.isotc211.org/2005/gmd
 relatedEntities:
 - id: msc:g6
   role: user

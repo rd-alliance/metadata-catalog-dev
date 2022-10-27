@@ -16,6 +16,8 @@ keywords:
 locations:
 - type: website
   url: https://www.bodc.ac.uk/data/information_and_inventories/edmed/
+- type: XSD
+  url: EDMED_sdn_V1.2.xsd
 relatedEntities:
 - id: msc:m22
   role: parent scheme

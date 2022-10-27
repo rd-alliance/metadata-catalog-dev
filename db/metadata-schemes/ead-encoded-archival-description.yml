@@ -10,6 +10,8 @@ keywords:
 locations:
 - type: website
   url: https://www.loc.gov/ead/
+- type: namespace
+  url: urn:isbn:1-931666-22-9
 relatedEntities:
 - id: msc:g104
   role: maintainer

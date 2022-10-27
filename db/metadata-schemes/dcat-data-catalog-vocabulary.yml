@@ -13,6 +13,8 @@ description: <p>By using DCAT to describe datasets in data catalogs, publishers 
 identifiers:
 - id: msc:m12
   scheme: RDA-MSCWG
+keywords:
+- Multidisciplinary
 locations:
 - type: website
   url: http://www.w3.org/TR/vocab-dcat/
@@ -20,6 +22,8 @@ locations:
   url: https://www.w3.org/ns/dcat.ttl
 - type: website
   url: https://www.w3.org/2017/dxwg/wiki/Main_Page
+- type: namespace
+  url: http://www.w3.org/ns/dcat#
 relatedEntities:
 - id: msc:m15
   role: parent scheme

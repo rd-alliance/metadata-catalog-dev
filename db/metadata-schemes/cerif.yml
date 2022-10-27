@@ -12,6 +12,19 @@ locations:
   url: http://www.eurocris.org/Uploads/Web%20pages/CERIF-1.6/documentation/MInfo.html
 - type: website
   url: http://www.eurocris.org/cerif/main-features-cerif
+- type: XSD
+  url: https://www.eurocris.org/Uploads/Web%20pages/CERIF-1.6/CERIF_1.6_2.xsd
+- type: XSD
+  url: https://www.eurocris.org/Uploads/Web%20pages/CERIF-1.5/CERIF_1.5_1.xsd
+- type: namespace
+  url: urn:xmlns:org:eurocris:cerif-1.6-2
+- type: namespace
+  url: urn:xmlns:org:eurocris:cerif-1.5-1
+- type: namespace
+  url: urn:xmlns:org:eurocris:cerif-1.4-0
+- type: namespace
+  url: http://www.eurocris.org/ontologies/cerif/1.3#
+
 relatedEntities:
 - id: msc:g112
   role: user

@@ -25,6 +25,12 @@ locations:
   url: http://www.tdwg.org/standards/450
 - type: website
   url: http://rs.tdwg.org/dwc/index.htm
+- type: namespace
+  url: http://rs.tdwg.org/dwc/terms/
+- type: namespace
+  url: http://rs.tdwg.org/dwc/iri/
+- type: XSD
+  url: http://rs.tdwg.org/dwc/xsd/tdwg_dwc_simple.xsd
 relatedEntities:
 - id: msc:g4
   role: user

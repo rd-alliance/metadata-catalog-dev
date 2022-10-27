@@ -4,13 +4,15 @@ description: <p>A profile of ISO 19115, also mapping to the AGLS profile of Dubl
 identifiers:
 - id: msc:m46
   scheme: RDA-MSCWG
+- id: https://fairsharing.org/820
+  scheme: FAIRsharing
 keywords:
 - Cartography
 - Geography
 - Topography
 locations:
 - type: website
-  url: http://spatial.gov.au/resources/home
+  url: https://www.anzlic.gov.au/resources/anzlic-metadata-profile
 relatedEntities:
 - id: msc:m15
   role: parent scheme

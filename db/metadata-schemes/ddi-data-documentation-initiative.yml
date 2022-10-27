@@ -28,6 +28,32 @@ locations:
   url: http://www.ddialliance.org/Specification/
 - type: website
   url: http://www.ddialliance.org/
+- type: namespace
+  url: http://www.icpsr.umich.edu/DDI
+- type: XSD
+  url: http://www.ddialliance.org/DDI/schema/ddi3.1/dataset.xsd
+- type: namespace
+  url: ddi:codebook:2_5
+- type: namespace
+  url: ddi:dataset:3_3
+- type: namespace
+  url: ddi:dataset:3_2
+- type: namespace
+  url: ddi:dataset:3_1
+- type: namespace
+  url: ddi:dataset:3_0
+- type: XSD
+  url: https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd
+- type: XSD
+  url: https://ddialliance.org/Specification/DDI-Codebook/2.1/XMLSchema/codebook.xsd
+- type: XSD
+  url: https://ddialliance.org/Specification/DDI-Lifecycle/3.3/XMLSchema/instance.xsd
+- type: XSD
+  url: https://ddialliance.org/Specification/DDI-Lifecycle/3.2/XMLSchema/instance.xsd
+- type: XSD
+  url: https://ddialliance.org/Specification/DDI-Lifecycle/3.1/XMLSchema/instance.xsd
+- type: XSD
+  url: https://ddialliance.org/Specification/DDI-Lifecycle/3.0/XMLSchema/instance.xsd
 relatedEntities:
 - id: msc:g20
   role: user

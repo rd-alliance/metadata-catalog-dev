@@ -1,0 +1,8 @@
+description: <p>OpenSearch is a collection of technologies that allow publishing of search results in a format suitable for syndication and aggregation. It is a way for websites and search engines to publish search results in a standard and accessible format.</p>
+identifiers:
+- id: msc:m1001
+  scheme: RDA-MSCWG
+locations:
+- type: namespace
+  url: http://a9.com/-/spec/opensearch/1.1/
+title: OpenSearch

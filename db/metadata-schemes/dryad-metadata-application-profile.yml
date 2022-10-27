@@ -9,6 +9,14 @@ keywords:
 locations:
 - type: website
   url: http://wiki.datadryad.org/Metadata_Profile
+- type: namespace
+  url: http://datadryad.org/metadata/
+- type: XSD
+  url: http://datadryad.org/profile/v3.1/dryad.xsd
+- type: XSD
+  url: http://datadryad.org/profile/v3/dryad.xsd
+- type: XSD
+  url: http://ils.unc.edu/mrc/dryad/version1_0/dryad_1_0.xsd
 relatedEntities:
 - id: msc:m15
   role: parent scheme

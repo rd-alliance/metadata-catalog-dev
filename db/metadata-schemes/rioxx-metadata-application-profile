@@ -1,0 +1,12 @@
+description: The RIOXX metadata application profile has been developed for repositories to share metadata about the scholarly resources they contain.
+identifiers:
+- id: msc:m1004
+  scheme: RDA-MSCWG
+locations:
+- type: namespace
+  url: http://www.rioxx.net/schema/v2.0/rioxx/
+- type: website
+  url: https://www.rioxx.net/
+title: RIOXX Metadata Application Profile
+keywords:
+- Multidisciplinary

@@ -12,6 +12,32 @@ locations:
   url: http://dublincore.org/specifications/
 - type: website
   url: http://dublincore.org
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/2008/02/11/dcterms.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/simpledc20021212.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/2008/02/11/dc.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/2008/02/11/dcmitype.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/2008/02/11/simpledc.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/2008/02/11/qualifieddc.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/dc.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/dcterms.xsd
+- type: XSD
+  url: http://dublincore.org/schemas/xmls/qdc/dcmitype.xsd
+- type: XSD
+  url:
+- type: namespace
+  url: http://purl.org/dc/elements/1.1/
+- type: namespace
+  url: http://purl.org/dc/terms/
+- type: namespace
+  url: http://purl.org/dc/dcmitype/
 relatedEntities:
 - id: msc:g1
   role: user

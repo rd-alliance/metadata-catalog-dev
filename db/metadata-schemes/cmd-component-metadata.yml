@@ -1,0 +1,18 @@
+description: The Component MetaData Infrastructure (CMDI) was initiated by CLARIN.
+  The Component MetaData (CMD) core model provides a metadata standard for all language resources and tools including web services.
+identifiers:
+- id: msc:m1005
+  scheme: RDA-MSCWG
+locations:
+- type: namespace
+  url: http://www.clarin.eu/cmd/
+- type: namespace
+  url: https://www.clarin.eu/cmd/1
+- type: website
+  url: https://www.clarin.eu/content/component-metadata
+- type: document
+  url: https://pure.mpg.de/pubman/faces/ViewItemOverviewPage.jsp?itemId=item_1480943
+title: Component MetaData (CMD)
+keywords:
+- Linguistics
+- Languages

@@ -2,11 +2,17 @@ description: <p>An extension of the ABCD standard for DNA data.</p>
 identifiers:
 - id: msc:m42
   scheme: RDA-MSCWG
+- id: https://doi.org/10.25504/FAIRsharing.7tx4ac
+  scheme: FAIRsharing
 keywords:
 - Genetics
 locations:
 - type: website
   url: http://www.tdwg.org/standards/640/
+- type: XSD
+  url: http://www.dnabank-network.org/schemas/ABCDDNA/ABCDDNA.xsd
+- type: namespace
+  url: http://www.dnabank-network.org/schemas/ABCDDNA
 relatedEntities:
 - id: msc:m1
   role: parent scheme

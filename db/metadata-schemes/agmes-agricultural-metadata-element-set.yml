@@ -8,6 +8,8 @@ description: <p>A semantic standard developed by the Food and Agriculture Organi
 identifiers:
 - id: msc:m2
   scheme: RDA-MSCWG
+- id: https://doi.org/10.25504/FAIRsharing.vd694s
+  scheme: FAIRsharing
 keywords:
 - Agricultural economics
 - Agriculture
@@ -18,6 +20,8 @@ locations:
   url: http://aims.fao.org/es/standards/agmes/namespace-specification
 - type: website
   url: http://aims.fao.org/standards/agmes
+- type: namespace
+  url: http://purl.org/agmes/1.1/
 relatedEntities:
 - id: msc:g2
   role: user

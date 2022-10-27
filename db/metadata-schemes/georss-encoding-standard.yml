@@ -1,0 +1,14 @@
+description: <p>GeoRSS is designed as a lightweight, community driven way to extend existing RSS feeds with simple geographic information. The GeoRSS standard provides for encoding location in an interoperable manner so that applications can request, aggregate, share and map geographically tag feeds.</p>
+identifiers:
+- id: msc:m1000
+  scheme: RDA-MSCWG
+keywords:
+- Earth sciences
+locations:
+- type: website
+  url: http://www.georss.org
+- type: namespace
+  url: http://www.georss.org/georss/
+- type: namespace
+  url: http://schemas.opengis.net/georss/1.0/
+title: GeoRSS

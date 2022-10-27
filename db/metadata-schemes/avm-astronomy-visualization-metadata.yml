@@ -19,6 +19,8 @@ locations:
   url: http://www.virtualastronomy.org/avm_metadata.php#2
 - type: website
   url: http://www.virtualastronomy.org/avm_metadata.php
+- type: namespace
+  url: http://www.communicatingastronomy.org/avm/1.0/
 relatedEntities:
 - id: msc:g88
   role: user

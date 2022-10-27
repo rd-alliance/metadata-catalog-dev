@@ -1,0 +1,28 @@
+description: QuakeML is a flexible, extensible and modular XML representation of seismological data which is intended to cover a broad
+  range of fields of application in modern seismology. QuakeML is an open standard and is developed by a distributed team in a transparent
+  collaborative manner. The flexible approach of QuakeML allows further extensions of the standard in order to represent waveform data,
+  macroseismic information, probability density functions, slip distributions, shake maps, and others.
+identifiers:
+- id: msc:m1008
+  scheme: RDA-MSCWG
+- id: https://fairsharing.org/1444
+  scheme: FAIRsharing
+locations:
+- type: namespace
+  url: http://quakeml.org/xmlns/quakeml/2.0
+- type: namespace
+  url: http://quakeml.org/xmlns/quakeml/1.2
+- type: namespace
+  url: http://quakeml.org/xmlns/quakeml/1.1
+- type: namespace
+  url: http://quakeml.org/xmlns/quakeml/1.0.1
+- type: namespace
+  url: http://quakeml.org/xmlns/quakeml/1.0
+- type: website
+  url: https://quake.ethz.ch/quakeml
+-type: document
+  url: http://www.quakeml.org/
+title: QuakeML
+keywords:
+- Earth sciences
+- Geophysics

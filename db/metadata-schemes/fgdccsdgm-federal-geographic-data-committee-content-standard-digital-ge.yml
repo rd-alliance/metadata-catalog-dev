@@ -22,6 +22,10 @@ locations:
   url: http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/v2_0698.pdf
 - type: website
   url: http://www.fgdc.gov/metadata/geospatial-metadata-standards/
+- type: XSD
+  url: https://www.fgdc.gov/schemas/metadata/fgdc-std-001-1998.xsd
+- type: XSD
+  url: https://www.fgdc.gov/schemas/metadata/fgdc-std-001.2-2001.xsd
 relatedEntities:
 - id: msc:g13
   role: user

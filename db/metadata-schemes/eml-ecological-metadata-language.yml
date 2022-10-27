@@ -14,6 +14,18 @@ locations:
   url: https://eml.ecoinformatics.org/
 - type: document
   url: https://eml.ecoinformatics.org/schema
+- type: namespace
+  url: eml://eml.ecoinformatics.org/eml-2.0.0
+- type: namespace
+  url: eml://ecoinformatics.org/eml-2.1.0
+- type: namespace
+  url: eml://ecoinformatics.org/eml-2.1.1
+- type: namespace
+  url: https://eml.ecoinformatics.org/eml-2.2.0
+- type: namespace
+  url: https://eml.ecoinformatics.org/eml-2.2.1
+- type: XSD
+  url: https://eml.ecoinformatics.org/schema/eml_xsd
 relatedEntities:
 - id: msc:g119
   role: maintainer

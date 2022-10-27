@@ -10,6 +10,8 @@ keywords:
 locations:
 - type: website
   url: http://www.w3.org/TR/vocab-adms/
+- type: namespace
+  url: http://www.w3.org/ns/adms#
 relatedEntities:
 - id: msc:m12
   role: parent scheme

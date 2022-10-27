@@ -4,11 +4,15 @@ description: <p>An application of Dublin Core designed to improve visibility and
 identifiers:
 - id: msc:m44
   scheme: RDA-MSCWG
+- id: https://fairsharing.org/751
+  scheme: FAIRsharing
 keywords:
 - Multidisciplinary
 locations:
 - type: website
   url: http://www.agls.gov.au
+- type: namespace
+  url: http://www.agls.gov.au/agls/terms/
 relatedEntities:
 - id: msc:m15
   role: parent scheme

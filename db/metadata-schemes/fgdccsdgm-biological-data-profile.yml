@@ -1,5 +1,5 @@
 description: <p>A profile of the FGDC/CSDGM metadata standard, intended to support
-  the collection and processing of biological data.</p>
+  the collection and processing of biological data. </p>
 identifiers:
 - id: msc:m59
   scheme: RDA-MSCWG

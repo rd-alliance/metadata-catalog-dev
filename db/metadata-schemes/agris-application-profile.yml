@@ -4,6 +4,8 @@ description: <p>A metadata standard drawing on Dublin Core&#160;and&#160;AgMES&#
 identifiers:
 - id: msc:m45
   scheme: RDA-MSCWG
+- id: https://doi.org/10.25504/FAIRsharing.32e620
+  scheme: FAIRsharing
 keywords:
 - Agricultural economics
 - Agriculture
@@ -12,6 +14,8 @@ keywords:
 locations:
 - type: website
   url: http://www.fao.org/docrep/008/ae909e/ae909e00.htm
+- type: namespace
+  url: http://www.fao.org/agris
 relatedEntities:
 - id: msc:m2
   role: parent scheme

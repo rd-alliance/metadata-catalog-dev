@@ -22,6 +22,12 @@ locations:
   url: http://gcmd.nasa.gov/add/difguide/WRITEADIF.pdf
 - type: website
   url: http://gcmd.nasa.gov/add/difguide/
+- type: XSD
+  url: https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd
+- type: XSD
+  url: http://gcmd.nasa.gov/Aboutus/xml/dif/dif.xsd
+- type: XSD
+  url: https://git.earthdata.nasa.gov/projects/EMFD/repos/dif-schemas/browse/10.x/dif.xsd
 relatedEntities:
 - id: msc:g8
   role: user

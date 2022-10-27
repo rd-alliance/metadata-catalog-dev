@@ -1,0 +1,13 @@
+description: The MPEG-21 Digital Item Declaration Language (DIDL) is a XML-packaging specification which aims to set up an abstraction and interoperabilty schema for declaring digital items.
+  Within the MPEG-21 framework, a digital object is enriched with representation, identification, and description.
+identifiers:
+- id: msc:m1003
+  scheme: RDA-MSCWG
+locations:
+- type: namespace
+  url: urn:mpeg:mpeg21:2002:02-DIDL-NS
+- type: document
+  url: http://www.dlib.org/dlib/november03/bekaert/11bekaert.html
+title: Digital Item Declaration Language (DIDL)
+keywords:
+- Multidisciplinary

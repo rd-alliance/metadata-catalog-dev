@@ -15,6 +15,10 @@ keywords:
 locations:
 - type: website
   url: http://icatproject-contrib.github.io/CSMD/
+- type: namespace
+  url: http://www.purl.org/net/CSMD/4.0#
+- type: namespace
+  url: http://www.escience.clrc.ac.uk/schemas/scientific
 relatedEntities:
 - id: msc:g28
   role: user

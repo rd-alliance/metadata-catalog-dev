@@ -10,6 +10,8 @@ description: <p>The <a href="http://www.tdwg.org/standards/115/">Access to Biolo
 identifiers:
 - id: msc:m1
   scheme: RDA-MSCWG
+- id: https://doi.org/10.25504/FAIRsharing.kr3215
+  scheme: FAIRsharing
 keywords:
 - Biological diversity
 - Botany
@@ -23,6 +25,18 @@ locations:
   url: http://www.tdwg.org/standards/115/
 - type: website
   url: http://wiki.tdwg.org/ABCD
+- type: XSD
+  url: https://abcd.tdwg.org/xml/ABCD_3.0.xsd
+- type: namespace
+  url: http://www.tdwg.org/schemas/abcd/3.0
+- type: XSD
+  url: https://abcd.tdwg.org/xml/ABCD_2.1.xsd
+- type: namespace
+  url: http://www.tdwg.org/schemas/abcd/2.1
+- type: XSD
+  url: https://abcd.tdwg.org/xml/ABCD_2.06.xsd
+- type: namespace
+  url: http://www.tdwg.org/schemas/abcd/2.06
 relatedEntities:
 - id: msc:g11
   role: user

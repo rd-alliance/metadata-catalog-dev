@@ -9,6 +9,10 @@ keywords:
 locations:
 - type: website
   url: http://ecrystals.chem.soton.ac.uk
+- type: XSD
+  url: http://naca.central.cranfield.ac.uk/ethos-oai/2.0/uketd_dc.xsd
+- type: namespace
+  url: http://naca.central.cranfield.ac.uk/ethos-oai/uketd_dc/
 relatedEntities:
 - id: msc:m15
   role: parent scheme
